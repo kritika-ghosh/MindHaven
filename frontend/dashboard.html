@@ -156,15 +156,14 @@
                             <th class="py-3 px-4">Date &amp; Time</th>
                             <th class="py-3 px-4">Burnout Level</th>
                             <th class="py-3 px-4 text-center">Vitality</th>
-                            <th class="py-3 px-4 text-center font-semibold">Tension (EAR/MAR)</th>
+                            <th class="py-3 px-4 font-semibold">Tension (EAR/MAR)</th>
                             <th class="py-3 px-4">Voice Sentiment Summary</th>
-                            <th class="py-3 px-4 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="history-table-body" class="divide-y divide-white/10 text-sm font-semibold">
                         <!-- Loaded dynamically -->
                         <tr>
-                            <td colspan="6" class="text-center py-8 text-on-surface-variant/60">Retrieving secure biometric telemetry...</td>
+                            <td colspan="5" class="text-center py-8 text-on-surface-variant/60">Retrieving secure biometric telemetry...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -458,11 +457,6 @@
                         <td class="py-4 px-4 max-w-xs truncate">
                             <div class="text-xs">${transcriptSnippet}</div>
                             <div class="text-[10px] text-on-surface-variant/50 font-bold uppercase mt-0.5">${sentiment}</div>
-                        </td>
-                        <td class="py-4 px-4 text-right">
-                            <button onclick="viewDetails(${idx})" class="px-3 py-1.5 bg-white/50 border border-white/60 hover:bg-primary hover:text-white rounded-full text-xs font-bold transition-all inline-flex items-center gap-1 shadow-sm">
-                                <span class="material-symbols-outlined text-[12px]">visibility</span>Inspect
-                            </button>
                         </td>
                     </tr>
                 `;
