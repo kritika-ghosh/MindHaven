@@ -231,27 +231,27 @@ def get_suggestion_text(burnout_score: float) -> str:
     """Generates the suggestion text based on the predicted score."""
     if burnout_score == 0.0:
         return (
-            "Your burnout score is **Low** (0-20). You're feeling good and active. "
+            "Your burnout score is Low (0-20). You're feeling good and active. "
             "Maintain healthy work-life habits, practice gratitude journaling, and promote regular physical activity."
         )
     elif burnout_score == 1.0:
         return (
-            "Your burnout score is **Mild** (20-40). You're under a little stress. "
+            "Your burnout score is Mild (20-40). You're under a little stress. "
             "Use the Pomodoro Technique, try Box Breathing (4s in, 4s hold, 4s out, 4s hold), and schedule 'disconnect' periods."
         )
     elif burnout_score == 2.0:
         return (
-            "Your burnout score is **Moderate** (40-60). You're starting to feel physical and emotional exhaustion. "
+            "Your burnout score is Moderate (40-60). You're starting to feel physical and emotional exhaustion. "
             "Implement a Digital Detox, prioritize 20-30 minutes of aerobic exercise 3 times a week, and focus on good sleep hygiene (7-9 hours)."
         )
     elif burnout_score == 3.0:
         return (
-            "Your burnout score is **High** (60-80). Your burnout symptoms are persistent. "
+            "Your burnout score is High (60-80). Your burnout symptoms are persistent. "
             "Take mandatory time off, consider a Mindfulness-Based Stress Reduction (MBSR) course, and seek professional help (EAP or therapist)."
         )
     else:
         return (
-            "Your burnout score is **Severe** (80-100). You feel completely burned out. **Immediate professional help is needed.** "
+            "Your burnout score is Severe (80-100). You feel completely burned out. Immediate professional help is needed. "
             "Access Crisis Resources (e.g., call 988), consult a doctor immediately, and prioritize your health over work. Work can wait."
         )
 
