@@ -59,7 +59,8 @@
             </div>
             <span class="font-title-md text-xl font-extrabold tracking-tight text-on-surface">MindHaven</span>
         </div>
-        <div class="flex gap-4">
+        <div class="flex gap-6 items-center">
+            <a href="about.html" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors">About Us</a>
             <a href="auth.html" class="px-6 py-2.5 bg-white/40 border border-white/60 hover:bg-white/60 text-on-surface font-semibold text-sm rounded-full transition-all active:scale-95 shadow-sm">
                 Sign In
             </a>
@@ -116,7 +117,60 @@
                 <h3 class="font-bold text-lg text-on-surface">Interactive Quiz</h3>
                 <p class="text-sm text-on-surface-variant/80">Short, scientifically grounded psychometric queries to target burnout hot-spots.</p>
             </div>
-        </div>
+        <!-- Research Benchmarks Section -->
+        <section class="w-full max-w-5xl mt-24 space-y-10 border-t border-white/20 pt-16">
+            <div class="space-y-4">
+                <span class="text-xs font-bold uppercase tracking-widest text-primary opacity-80">Scientific Foundation</span>
+                <h2 class="text-2xl md:text-4xl font-extrabold text-on-surface tracking-tight">Our Hybrid Diagnostic Engine</h2>
+                <p class="text-sm text-on-surface-variant max-w-2xl mx-auto font-medium">MindHaven integrates psychological theory with machine learning models trained on custom student datasets at VIT Bhopal University.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+                <!-- Research Panel 1 -->
+                <div class="glass-card p-8 rounded-[2rem] border border-white/50 shadow-md space-y-4">
+                    <div class="flex items-center gap-3 text-primary">
+                        <span class="material-symbols-outlined text-2xl">insights</span>
+                        <h3 class="font-extrabold text-lg">Predictive Performance</h3>
+                    </div>
+                    <p class="text-sm text-on-surface-variant/90 leading-relaxed font-medium">
+                        Our underlying system utilizes a trained <strong>CatBoost Classifier</strong>, achieving an overall accuracy of <strong>78%</strong> across five levels of severity. The training protocol implements SMOTE oversampling to eliminate dataset bias.
+                    </p>
+                    <div class="pt-2 flex justify-between items-center text-xs font-bold text-on-surface-variant/70">
+                        <span>Classification Accuracy</span>
+                        <span class="text-primary text-sm font-extrabold">78%</span>
+                    </div>
+                    <div class="w-full bg-white/30 h-1.5 rounded-full overflow-hidden">
+                        <div class="bg-primary h-full rounded-full" style="width: 78%"></div>
+                    </div>
+                </div>
+
+                <!-- Research Panel 2 -->
+                <div class="glass-card p-8 rounded-[2rem] border border-white/50 shadow-md space-y-4">
+                    <div class="flex items-center gap-3 text-secondary">
+                        <span class="material-symbols-outlined text-2xl">calculate</span>
+                        <h3 class="font-extrabold text-lg">Biometric Geometric Ratios</h3>
+                    </div>
+                    <p class="text-sm text-on-surface-variant/90 leading-relaxed font-medium">
+                        Instead of pure subjective reports, the system measures physiological indicators like <strong>Eye Aspect Ratio (EAR)</strong> and <strong>Mouth Aspect Ratio (MAR)</strong> via MediaPipe to detect fatigue patterns and yawning frequencies.
+                    </p>
+                    <a href="about.html" class="inline-flex items-center gap-1 text-xs font-extrabold text-secondary hover:underline pt-2">
+                        View Mathematical Formulas
+                        <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Call to read full paper -->
+            <div class="glass-card p-6 rounded-[2rem] border border-white/50 shadow flex flex-col md:flex-row justify-between items-center gap-4 text-left">
+                <div>
+                    <h4 class="font-extrabold text-base text-on-surface">VIT Bhopal University Research Paper</h4>
+                    <p class="text-xs text-on-surface-variant/85 font-medium mt-1">Read the complete study: "Towards Unbiased Student Burnout Detection: A Hybrid Approach"</p>
+                </div>
+                <a href="about.html" class="px-6 py-2.5 bg-white/50 border border-white/60 hover:bg-primary hover:text-white text-on-surface font-bold text-xs rounded-full transition-all active:scale-95 shadow-sm inline-flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm">menu_book</span>Read Full Paper
+                </a>
+            </div>
+        </section>
     </main>
 
     <!-- Footer -->

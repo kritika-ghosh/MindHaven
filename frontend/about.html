@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>MindHaven | Research &amp; About Us</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link href="css/styles.css" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/theme.js"></script>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen overflow-x-hidden relative" style="font-family:'Plus Jakarta Sans',sans-serif;">
+    <!-- WebGL Background Canvas -->
+    <canvas id="webgl-bg"></canvas>
+
+    <!-- Page Transition Overlay -->
+    <div id="page-transition-overlay"></div>
+
+    <!-- Top Navigation Bar -->
+    <header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-5 md:px-16 py-4 backdrop-blur-xl border-b border-white/20" style="background:rgba(252,249,248,0.35)">
+        <div class="flex items-center gap-2">
+            <a href="index.html" class="w-8 h-8 rounded-full flex items-center justify-center text-white flex-shrink-0" style="background:#8455ef">
+                <span class="material-symbols-outlined text-[20px]" style="font-variation-settings:'FILL' 1">psychology</span>
+            </a>
+            <span class="font-extrabold text-lg tracking-tight" style="color:#1c1b1b">MindHaven</span>
+        </div>
+        <nav style="display:flex;gap:32px;align-items:center;">
+            <a href="assess.html"   style="font-size:0.85rem;font-weight:700;color:#494454;text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='#6b38d4'" onmouseout="this.style.color='#494454'">Assess</a>
+            <a href="insights.html"  style="font-size:0.85rem;font-weight:700;color:#494454;text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='#6b38d4'" onmouseout="this.style.color='#494454'">Insights</a>
+            <a href="dashboard.html" style="font-size:0.85rem;font-weight:700;color:#494454;text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='#6b38d4'" onmouseout="this.style.color='#494454'">Dashboard</a>
+            <a href="breathe.html" style="font-size:0.85rem;font-weight:700;color:#494454;text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='#6b38d4'" onmouseout="this.style.color='#494454'">Breathe</a>
+            <span                   style="font-size:0.85rem;font-weight:800;color:#6b38d4;white-space:nowrap;">About Us</span>
+        </nav>
+        <div class="flex items-center gap-3 flex-shrink-0">
+            <a href="auth.html" id="auth-btn" class="px-5 py-2 bg-white/40 border border-white/60 hover:bg-white/60 text-on-surface font-semibold text-xs rounded-full transition-all active:scale-95 shadow-sm">
+                Sign In
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="pt-32 pb-24 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto space-y-16 relative z-10">
+        
+        <!-- Hero Section: The Paper Title -->
+        <section class="text-center space-y-6 max-w-4xl mx-auto">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary font-bold text-xs uppercase tracking-wider">
+                <span class="material-symbols-outlined text-sm">menu_book</span>
+                Research &amp; Methodology
+            </div>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-on-surface tracking-tight leading-tight">
+                Towards Unbiased Student Burnout Detection
+            </h1>
+            <p class="text-lg md:text-xl font-bold text-secondary">
+                A Hybrid Approach Combining Psychometric, Visual, and Acoustic Signals
+            </p>
+            <div class="text-xs text-on-surface-variant font-bold uppercase tracking-widest pt-2">
+                School of Computing Science, Engineering and Artificial Intelligence <br/>
+                <span class="text-primary">VIT Bhopal University, Madhya Pradesh</span>
+            </div>
+        </section>
+
+
+
+        <!-- Paper Sections -->
+        <section class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            <!-- Left Side: Table of Contents -->
+            <div class="lg:col-span-4 sticky top-24 space-y-4">
+                <div class="glass-card p-6 rounded-3xl border border-white/40 shadow-lg">
+                    <h3 class="font-extrabold text-lg text-on-surface mb-4">Paper Outline</h3>
+                    <ul class="space-y-3 text-sm font-semibold text-on-surface-variant/80">
+                        <li><a href="#abstract" class="hover:text-primary transition-colors flex items-center gap-2"><span class="material-symbols-outlined text-base">description</span>Abstract</a></li>
+                        <li><a href="#introduction" class="hover:text-primary transition-colors flex items-center gap-2"><span class="material-symbols-outlined text-base">info</span>I. Introduction</a></li>
+                        <li><a href="#methodology" class="hover:text-primary transition-colors flex items-center gap-2"><span class="material-symbols-outlined text-base">clinical_notes</span>II. Methodology</a></li>
+                        <li><a href="#formulas" class="hover:text-primary transition-colors flex items-center gap-2"><span class="material-symbols-outlined text-base">calculate</span>III. Geometric Ratios</a></li>
+                        <li><a href="#results" class="hover:text-primary transition-colors flex items-center gap-2"><span class="material-symbols-outlined text-base">bar_chart</span>IV. Results &amp; Metrics</a></li>
+                        <li><a href="#conclusion" class="hover:text-primary transition-colors flex items-center gap-2"><span class="material-symbols-outlined text-base">verified</span>V. Conclusion &amp; References</a></li>
+                    </ul>
+                </div>
+                
+                <div class="glass-card p-6 rounded-3xl border border-white/40 shadow-lg text-center">
+                    <span class="text-2xl font-extrabold text-primary leading-none">78%</span>
+                    <p class="text-xs font-bold text-on-surface mt-1">CatBoost Classification Accuracy</p>
+                </div>
+            </div>
+
+            <!-- Right Side: Content Details -->
+            <div class="lg:col-span-8 space-y-12">
+                <!-- Abstract -->
+                <div id="abstract" class="glass-card p-8 md:p-10 rounded-[2.5rem] border border-white/50 shadow-md scroll-mt-24 space-y-4">
+                    <div class="flex items-center gap-3 text-primary">
+                        <span class="material-symbols-outlined text-2xl font-bold">description</span>
+                        <h3 class="text-xl font-extrabold">Abstract</h3>
+                    </div>
+                    <p class="text-sm md:text-base text-on-surface-variant leading-relaxed font-medium">
+                        Mental burnout is a significant occupational and psychological issue that arises especially among college students who regularly face academic and social pressure in their life. This paper introduces a multimodal system that detects mental burnout in students which integrates data in a flow starting from questionnaire, facial expressions, and voice sentiment analysis to provide a more unbiased result. Due to the lack of a suitable public dataset for such a problem, a new custom dataset has been created with great precautions.
+                    </p>
+                    <p class="text-sm md:text-base text-on-surface-variant leading-relaxed font-medium">
+                        The architecture processes each data path starting with an initial questionnaire which provides a self-reported baseline, facial analysis which computes the eye and mouth aspect ratios (EAR/MAR) and detects emotions using the Deepface library, and voice sentiment analysis via VADER library which calculates the compound sentiment of how the person is feeling. These variety of features are then fused and fed into a CatBoost machine learning model, which achieved an accuracy of 78%.
+                    </p>
+                </div>
+
+                <!-- Section I: Introduction -->
+                <div id="introduction" class="glass-card p-8 md:p-10 rounded-[2.5rem] border border-white/50 shadow-md scroll-mt-24 space-y-4">
+                    <div class="flex items-center gap-3 text-secondary">
+                        <span class="material-symbols-outlined text-2xl font-bold">info</span>
+                        <h3 class="text-xl font-extrabold">I. Introduction &amp; Motivation</h3>
+                    </div>
+                    <p class="text-sm md:text-base text-on-surface-variant leading-relaxed font-medium">
+                        In today’s society, mental burnout has come out to be a crucial challenge to an individual’s overall well-being and productivity. The pressures of academic stress and changes in the surroundings can make college students highly prone to burnout and thus need detection and support.
+                    </p>
+                    <p class="text-sm md:text-base text-on-surface-variant leading-relaxed font-medium">
+                        Traditional methods have relied majorly on self-report clinical questionnaires, which tend to miss real-time emotional fluctuations and suffer from subjective individual bias. By utilizing multi-modal fusion, our model combines data from three distinct sources (arranged survey, facial aspect ratios, and acoustic sentiment) to create an objective, unbiased evaluation.
+                    </p>
+                </div>
+
+                <!-- Section II: Methodology -->
+                <div id="methodology" class="glass-card p-8 md:p-10 rounded-[2.5rem] border border-white/50 shadow-md scroll-mt-24 space-y-6">
+                    <div class="flex items-center gap-3 text-primary">
+                        <span class="material-symbols-outlined text-2xl font-bold">clinical_notes</span>
+                        <h3 class="text-xl font-extrabold">II. Architecture &amp; Methodology</h3>
+                    </div>
+                    
+                    <div class="space-y-4 text-sm md:text-base text-on-surface-variant font-medium">
+                        <p>Our empirical methodology is divided into a structured three-part pipeline:</p>
+                        <ul class="space-y-3 pl-4 list-decimal">
+                            <li>
+                                <strong>Psychometric Baseline (Survey):</strong> A questionnaire covering aspects of academic burnout derived from the Maslach Burnout Inventory (MBI) to set a self-reported cognitive state.
+                            </li>
+                            <li>
+                                <strong>Facial Geometric Indicators (Computer Vision):</strong> A 20-second camera capture extracts EAR and MAR landmarks dynamically. Deepface is used to compute facial expression scores (Positive, Neutral, Negative).
+                            </li>
+                            <li>
+                                <strong>Acoustic Sentimental Channel:</strong> Live vocals are captured and processed through Speech Recognition. Sentiment compound scores are computed via the Valence Aware Dictionary and sEntiment Reasoner (VADER) library.
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Section III: Formulas -->
+                <div id="formulas" class="glass-card p-8 md:p-10 rounded-[2.5rem] border border-white/50 shadow-md scroll-mt-24 space-y-6">
+                    <div class="flex items-center gap-3 text-secondary">
+                        <span class="material-symbols-outlined text-2xl font-bold">calculate</span>
+                        <h3 class="text-xl font-extrabold">III. Geometric Feature Formulas</h3>
+                    </div>
+                    
+                    <div class="space-y-6 font-medium text-sm md:text-base text-on-surface-variant">
+                        <!-- EAR -->
+                        <div class="space-y-2">
+                            <h4 class="font-extrabold text-on-surface">1. Eye Aspect Ratio (EAR)</h4>
+                            <p class="text-xs text-on-surface-variant/80">Calculates eye fatigue based on vertical and horizontal landmark distances:</p>
+                            <div class="bg-white/40 p-4 rounded-xl border border-white/60 font-mono text-xs text-primary overflow-x-auto">
+                                EAR = (dist(P2, P6) + dist(P3, P5)) / (2 * dist(P1, P4))
+                            </div>
+                        </div>
+
+                        <!-- MAR -->
+                        <div class="space-y-2">
+                            <h4 class="font-extrabold text-on-surface">2. Mouth Aspect Ratio (MAR)</h4>
+                            <p class="text-xs text-on-surface-variant/80">Measures physical tension and yawning frequencies based on vertical height and width:</p>
+                            <div class="bg-white/40 p-4 rounded-xl border border-white/60 font-mono text-xs text-primary overflow-x-auto">
+                                MAR = (max_y(INNER_MOUTH) - min_y(INNER_MOUTH)) / dist(L454, L234)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section IV: Results -->
+                <div id="results" class="glass-card p-8 md:p-10 rounded-[2.5rem] border border-white/50 shadow-md scroll-mt-24 space-y-6">
+                    <div class="flex items-center gap-3 text-primary">
+                        <span class="material-symbols-outlined text-2xl font-bold">bar_chart</span>
+                        <h3 class="text-xl font-extrabold">IV. Results &amp; Benchmarks</h3>
+                    </div>
+                    
+                    <p class="text-sm md:text-base text-on-surface-variant font-medium leading-relaxed">
+                        Through rigorous evaluation, the <strong>CatBoost Classifier</strong> yielded the highest accuracy of <strong>78%</strong> on the custom multimodal dataset, outperforming traditional classifiers such as Random Forest (69%) and Logistic Regression (54%).
+                    </p>
+
+                    <div class="overflow-x-auto w-full">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="border-b border-white/20 text-on-surface-variant/60 uppercase font-bold">
+                                    <th class="py-2 pr-4">Burnout Class</th>
+                                    <th class="py-2 px-4 text-center">Precision</th>
+                                    <th class="py-2 px-4 text-center">Recall</th>
+                                    <th class="py-2 px-4 text-center">F1-Score</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-white/10 font-bold text-on-surface/85">
+                                <tr><td class="py-2 pr-4">0.0 (Low)</td><td class="py-2 px-4 text-center text-primary">0.85</td><td class="py-2 px-4 text-center">0.85</td><td class="py-2 px-4 text-center">0.85</td></tr>
+                                <tr><td class="py-2 pr-4">1.0 (Mild)</td><td class="py-2 px-4 text-center text-primary">0.69</td><td class="py-2 px-4 text-center">0.75</td><td class="py-2 px-4 text-center">0.72</td></tr>
+                                <tr><td class="py-2 pr-4">2.0 (Moderate)</td><td class="py-2 px-4 text-center text-primary">0.73</td><td class="py-2 px-4 text-center">0.73</td><td class="py-2 px-4 text-center">0.73</td></tr>
+                                <tr><td class="py-2 pr-4">3.0 (High)</td><td class="py-2 px-4 text-center text-primary">0.80</td><td class="py-2 px-4 text-center">0.89</td><td class="py-2 px-4 text-center">0.84</td></tr>
+                                <tr><td class="py-2 pr-4">4.0 (Severe)</td><td class="py-2 px-4 text-center text-primary">0.86</td><td class="py-2 px-4 text-center">0.67</td><td class="py-2 px-4 text-center">0.75</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Section V: Conclusion -->
+                <div id="conclusion" class="glass-card p-8 md:p-10 rounded-[2.5rem] border border-white/50 shadow-md scroll-mt-24 space-y-4">
+                    <div class="flex items-center gap-3 text-secondary">
+                        <span class="material-symbols-outlined text-2xl font-bold">verified</span>
+                        <h3 class="text-xl font-extrabold">V. Conclusion &amp; Future Directions</h3>
+                    </div>
+                    <p class="text-sm md:text-base text-on-surface-variant leading-relaxed font-medium">
+                        This project successfully validated a multimodal machine learning framework that evaluates student burnout levels objectively. Feature importance graphs confirm that physiological facial indicators (MAR &amp; EAR) are the most significant markers, proving the necessity of multi-modal features over subjective reports.
+                    </p>
+                    <p class="text-sm md:text-base text-on-surface-variant leading-relaxed font-medium">
+                        Future extensions will focus on gathering long-term temporal sequences from individuals to map fatigue fluctuations throughout semesters and incorporating wearable sensors like heart-rate variability for continuous diagnosis.
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full text-center py-6 border-t border-white/20 bg-white/5 backdrop-blur-md">
+        <p class="text-xs text-on-surface-variant/60 font-semibold">
+            &copy; 2026 MindHaven Wellness Inc. Powered by VIT Bhopal University Research.
+        </p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/3d-elements.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if user is logged in to change Sign In to Dashboard / Logout
+            const isAuth = localStorage.getItem('mindhaven_auth') === 'true';
+            const isGuest = localStorage.getItem('mindhaven_guest') === 'true';
+            const authBtn = document.getElementById('auth-btn');
+            
+            if (isAuth || isGuest) {
+                authBtn.textContent = 'Dashboard';
+                authBtn.setAttribute('href', 'dashboard.html');
+            }
+        });
+    </script>
+</body>
+</html>
