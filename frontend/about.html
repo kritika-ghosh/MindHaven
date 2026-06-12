@@ -30,11 +30,11 @@
             <span class="font-extrabold text-lg tracking-tight" style="color:#1c1b1b">MindHaven</span>
         </div>
         <nav style="display:flex;gap:32px;align-items:center;">
+            <span                   style="font-size:0.85rem;font-weight:800;color:#6b38d4;white-space:nowrap;">About Us</span>
             <a href="assess.html"   style="font-size:0.85rem;font-weight:700;color:#494454;text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='#6b38d4'" onmouseout="this.style.color='#494454'">Assess</a>
             <a href="insights.html"  style="font-size:0.85rem;font-weight:700;color:#494454;text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='#6b38d4'" onmouseout="this.style.color='#494454'">Insights</a>
             <a href="dashboard.html" style="font-size:0.85rem;font-weight:700;color:#494454;text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='#6b38d4'" onmouseout="this.style.color='#494454'">Dashboard</a>
             <a href="breathe.html" style="font-size:0.85rem;font-weight:700;color:#494454;text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='#6b38d4'" onmouseout="this.style.color='#494454'">Breathe</a>
-            <span                   style="font-size:0.85rem;font-weight:800;color:#6b38d4;white-space:nowrap;">About Us</span>
         </nav>
         <div class="flex items-center gap-3 flex-shrink-0">
             <a href="auth.html" id="auth-btn" class="px-5 py-2 bg-white/40 border border-white/60 hover:bg-white/60 text-on-surface font-semibold text-xs rounded-full transition-all active:scale-95 shadow-sm">
@@ -83,9 +83,13 @@
                     </ul>
                 </div>
                 
-                <div class="glass-card p-6 rounded-3xl border border-white/40 shadow-lg text-center">
+                <div class="glass-card p-6 rounded-3xl border border-white/40 shadow-lg text-center flex flex-col items-center gap-3">
                     <span class="text-2xl font-extrabold text-primary leading-none">78%</span>
                     <p class="text-xs font-bold text-on-surface mt-1">CatBoost Classification Accuracy</p>
+                    <a href="assess.html" class="w-full pill-3d py-3 text-white font-bold text-sm rounded-full flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md mt-2">
+                        <span class="material-symbols-outlined text-sm">medical_services</span>
+                        Try It Out
+                    </a>
                 </div>
             </div>
 
