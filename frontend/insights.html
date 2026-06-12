@@ -12,6 +12,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/config.js"></script>
     <script src="js/theme.js"></script>
 
     <style>
@@ -40,7 +42,7 @@
         <nav style="display:flex;gap:32px;align-items:center;">
             <a href="assess.html"   style="font-size:0.85rem;font-weight:700;color:#494454;text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='#6b38d4'" onmouseout="this.style.color='#494454'">Assess</a>
             <span                   style="font-size:0.85rem;font-weight:800;color:#6b38d4;white-space:nowrap;">Insights</span>
-            <a href="index.html"    style="font-size:0.85rem;font-weight:700;color:#494454;text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='#6b38d4'" onmouseout="this.style.color='#494454'">Main Gate</a>
+            <a href="dashboard.html" style="font-size:0.85rem;font-weight:700;color:#494454;text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='#6b38d4'" onmouseout="this.style.color='#494454'">Dashboard</a>
             <a href="breathe.html" style="font-size:0.85rem;font-weight:700;color:#494454;text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='#6b38d4'" onmouseout="this.style.color='#494454'">Breathe</a>
         </nav>
         <div class="flex items-center gap-3 flex-shrink-0">
@@ -239,17 +241,70 @@
     <script src="js/utils.js"></script>
     <script src="js/3d-elements.js"></script>
     <script>
-        // Check page visibility and load results
-        document.addEventListener('DOMContentLoaded', () => {
-            // Check auth state — allow both regular auth and guest mode
-            const isAuth = localStorage.getItem('mindhaven_auth') === 'true';
-            const isGuest = localStorage.getItem('mindhaven_guest') === 'true';
-            if (!isAuth && !isGuest) {
-                window.location.href = "auth.html";
-                return;
-            }
+        // Pull the Groq key from js/config.js (gitignored) or define it here
+        const GROQ_KEY = window.MINDHAVEN_CONFIG?.GROQ_KEY || "";
+        const GROQ_MODEL = "llama3-70b-8192";
 
-            loadAnalysisData();
+        async function generateLLMInsight(predictionData, answers) {
+            if (!GROQ_KEY || GROQ_KEY.startsWith("gsk_YOUR")) {
+                console.log("No valid Groq key configured. Using default model suggestions.");
+                return predictionData.suggestion;
+            }
+            try {
+                const debug = predictionData.debug_data || {};
+                const scoreLabels = ['Low', 'Mild', 'Moderate', 'High', 'Severe'];
+                const label = scoreLabels[Math.round(predictionData.burnout_score)] || 'Moderate';
+
+                const prompt = `
+You are MindHaven, an empathetic AI wellness coach. Analyse the following burnout assessment data and provide a warm, personalised, actionable mental health report in 3 short paragraphs (no bullet points, no headers). Be specific — reference the actual numbers.
+
+ASSESSMENT DATA:
+- Burnout Score: ${predictionData.burnout_score}/4.0 (${label})
+- Questionnaire Answers (5 questions on frequency of burnout symptoms):
+  Q1 (Mental clarity): ${answers[0]}
+  Q2 (Disconnecting from work): ${answers[1]}
+  Q3 (Physical/emotional drain): ${answers[2]}
+  Q4 (Lack of motivation): ${answers[3]}
+  Q5 (Irritability): ${answers[4]}
+- Facial Analysis: Eye tension (EAR): ${debug['EAR'] || 'N/A'}, Mouth tension (MAR): ${debug['MAR'] || 'N/A'}
+- Emotional Expression: Positive ${debug['Emotions']?.['Positive %'] || '?'}, Neutral ${debug['Emotions']?.['Neutral %'] || '?'}, Negative ${debug['Emotions']?.['Negative %'] || '?'}
+- Voice Transcript: "${debug['Voice Transcript'] || 'Not captured'}"
+- Voice Sentiment: ${debug['Sentiment'] || 'N/A'}
+
+Paragraph 1: What the data reveals about this person's current mental state (empathetic, non-clinical tone).
+Paragraph 2: The most important immediate action they should take today.
+Paragraph 3: A 7-day recovery micro-plan with 3 specific, time-bound actions.
+`.trim();
+
+                const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + GROQ_KEY
+                    },
+                    body: JSON.stringify({
+                        model: GROQ_MODEL,
+                        messages: [{ role: 'user', content: prompt }],
+                        max_tokens: 600,
+                        temperature: 0.7
+                    })
+                });
+
+                if (!res.ok) throw new Error(`Groq API returned ${res.status}`);
+                const json = await res.json();
+                return json.choices?.[0]?.message?.content || predictionData.suggestion;
+            } catch(e) {
+                console.error("Groq insight generation failed:", e);
+                return predictionData.suggestion;
+            }
+        }
+
+        // Check page visibility and load results
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check auth state — allow both regular auth and guest mode
+            await requireAuth();
+
+            await loadAnalysisData();
 
             // GSAP ScrollTrigger Section Transitions
             gsap.registerPlugin(ScrollTrigger);
@@ -283,26 +338,75 @@
         });
 
         // Parse local storage prediction results
-        function loadAnalysisData() {
-            const resultStr = localStorage.getItem('burnout_prediction');
-            if (!resultStr) {
-                // Generate simulated if empty
+        async function loadAnalysisData() {
+            let data = null;
+            let resultStr = localStorage.getItem('burnout_prediction');
+            
+            // If logged in via Supabase, fetch the latest assessment row
+            if (sb) {
+                try {
+                    const { data: { session } } = await sb.auth.getSession();
+                    if (session) {
+                        const { data: dbData, error } = await sb
+                            .from('assessments')
+                            .select('*')
+                            .eq('user_id', session.user.id)
+                            .order('created_at', { ascending: false })
+                            .limit(1);
+                        if (!error && dbData && dbData.length > 0) {
+                            const dbRow = dbData[0];
+                            data = {
+                                id: dbRow.id,
+                                answers: dbRow.answers,
+                                burnout_score: dbRow.burnout_score,
+                                suggestion: dbRow.llm_insight || dbRow.suggestion,
+                                debug_data: {
+                                    "Questionnaire Answers": dbRow.answers,
+                                    "EAR": dbRow.ear,
+                                    "MAR": dbRow.mar,
+                                    "Emotions": {
+                                        "Positive %": dbRow.emo_pos ? dbRow.emo_pos + '%' : '0%',
+                                        "Neutral %": dbRow.emo_neu ? dbRow.emo_neu + '%' : '0%',
+                                        "Negative %": dbRow.emo_neg ? dbRow.emo_neg + '%' : '0%'
+                                    },
+                                    "Voice Transcript": dbRow.voice_transcript,
+                                    "Sentiment": dbRow.sentiment_compound ? "Comp: " + dbRow.sentiment_compound : "N/A"
+                                }
+                            };
+                            
+                            // If llm_insight is null in database, try generating it via Groq
+                            if (!dbRow.llm_insight && GROQ_KEY && !GROQ_KEY.startsWith("gsk_YOUR")) {
+                                const newInsight = await generateLLMInsight(data, dbRow.answers);
+                                if (newInsight && newInsight !== dbRow.suggestion) {
+                                    data.suggestion = newInsight;
+                                    await sb.from('assessments').update({ llm_insight: newInsight }).eq('id', dbRow.id);
+                                }
+                            }
+                            
+                            localStorage.setItem('burnout_prediction', JSON.stringify(data));
+                        }
+                    }
+                } catch(err) {
+                    console.error("Failed to load assessment from Supabase:", err);
+                }
+            }
+            
+            if (!data && resultStr) {
+                try {
+                    data = JSON.parse(resultStr);
+                } catch(e) {}
+            }
+            
+            if (!data) {
                 setSimulatedDetails();
                 return;
             }
             
             try {
-                const data = JSON.parse(resultStr);
                 const score = parseFloat(data.burnout_score);
                 const suggestion = data.suggestion;
                 const debug = data.debug_data || {};
                 
-                // Map burnout_score (float 0.0 - 4.0) to Vitality Score (100 - 0)
-                // 0.0 -> Vitality 94
-                // 1.0 -> Vitality 78
-                // 2.0 -> Vitality 56
-                // 3.0 -> Vitality 32
-                // 4.0 -> Vitality 12
                 let vitality = 84;
                 let label = "Optimal Focus";
                 let desc = "Your current cognitive balance is in a recovery phase.";
@@ -333,10 +437,7 @@
                 document.getElementById('vitality-label').textContent = label;
                 document.getElementById('vitality-desc').textContent = desc;
                 
-                // Load AI diagnosis text
                 document.getElementById('diagnosis-text').textContent = suggestion;
-                
-                // Load Debug metrics
                 document.getElementById('voice-transcript').textContent = debug["Voice Transcript"] || "Audio session recorded silently. No linguistic cues deciphered.";
                 document.getElementById('sentiment-score').textContent = debug["Sentiment"] || "Neutral";
                 

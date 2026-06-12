@@ -10,6 +10,7 @@
   <link href="css/styles.css" rel="stylesheet"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/theme.js"></script>
   <style>
     .phase { display: none; }
@@ -52,6 +53,8 @@
     <div class="hidden md:flex gap-8 items-center">
       <span class="text-sm font-extrabold" style="color:#6b38d4">Assess</span>
       <a class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors" href="insights.html">Insights</a>
+      <a class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors" href="dashboard.html">Dashboard</a>
+      <a class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors" href="breathe.html">Breathe</a>
     </div>
     <div class="w-10 h-10 rounded-full border-2 overflow-hidden" style="border-color:#6b38d4">
       <img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBztPBgUikdMRMvVm0IcNyj_V_FC7lgVwYQoa0gT_EeoVPA8zk5nygf1oGRHBEtEQMPrxWClUc7YBf7klJQw9fF5-pfjK0rlkgxCbMJJMrghdtUw6JaTJM6-iovQaSrOqiarGKkV34uchNJUf87OxzbhTSwpgUyCB2qA9Zxn3QhHsOEJaNhBSyZMrtc18W70IXuxNKXkJtJCKHxinc_SmUW3_1vk-H1_kaFIU4ISLXkVY0n6St9c8YVesNCghMyMNIJDyYXotwgeg" alt="Profile"/>
@@ -608,6 +611,11 @@
           const data = await res.json();
           console.log('API response:', data);
           localStorage.setItem('burnout_prediction', JSON.stringify(data));
+          try {
+            await saveAssessment(data, answers);
+          } catch(se) {
+            console.error('Failed to save assessment to Supabase:', se);
+          }
           window.location.href = 'insights.html';
         } else {
           const errText = await res.text();
@@ -650,8 +658,13 @@
           }
         };
 
-        setTimeout(() => {
+        setTimeout(async () => {
           localStorage.setItem('burnout_prediction', JSON.stringify(fallback));
+          try {
+            await saveAssessment(fallback, answers);
+          } catch(se) {
+            console.error('Failed to save simulated assessment to Supabase:', se);
+          }
           window.location.href = 'insights.html';
         }, 1200);
       }
@@ -660,11 +673,10 @@
     // ───────────────────────────────────────────────
     // INIT
     // ───────────────────────────────────────────────
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Re-enable auth guard check using Supabase requireAuth
+      await requireAuth();
       renderQuestion();
-      // Temporarily bypass auth check so it's easier to test
-      // Uncomment below to re-enable auth guard:
-      // if (!localStorage.getItem('mindhaven_auth')) { window.location.href = 'auth.html'; }
     });
   </script>
 </body>

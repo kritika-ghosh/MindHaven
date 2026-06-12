@@ -1,6 +1,18 @@
+/* ── Supabase Initialization ───────────────────────────────── */
+const SUPABASE_URL = "https://dunaajtllzvwqguvuebg.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_camf03NTjQHIr5pK-V1DDA_fr8nzNcK";
+let sb = null;
+
+if (typeof supabase !== 'undefined') {
+  sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+} else {
+  console.warn("Supabase SDK is not loaded. Please include the SDK script before utils.js.");
+}
+
 /* ═══════════════════════════════════════════════════════════════
    js/utils.js  —  Shared helpers used across all pages
-═══════════════════════════════════════════════════════════════ */
+   Customized for Supabase & Burnout Assessment
+   ═══════════════════════════════════════════════════════════════ */
 
 /* ── Page transition (fade to dark, then navigate) ──────────── */
 function navigateTo(href) {
@@ -92,13 +104,87 @@ function seedGuestData() {
 }
 
 /* ── Auth guard ─────────────────────────────────────────────── */
-function requireAuth(redirectTo) {
+async function requireAuth(redirectTo) {
   redirectTo = redirectTo || 'auth.html';
-  var isAuth  = localStorage.getItem('mindhaven_auth')  === 'true';
   var isGuest = localStorage.getItem('mindhaven_guest') === 'true';
-  if (!isAuth && !isGuest) {
-    window.location.href = redirectTo;
-    return false;
+  if (isGuest) {
+    return { user: { email: 'guest@mindhaven.demo', user_metadata: { full_name: 'Judge (Demo)' } } };
   }
-  return true;
+  
+  if (sb) {
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) {
+        localStorage.setItem('mindhaven_auth', 'true');
+        localStorage.setItem('mindhaven_user', session.user.user_metadata?.full_name || session.user.email || 'User');
+        return session;
+      }
+    } catch (e) {
+      console.error("Supabase session check failed:", e);
+    }
+  }
+  
+  window.location.href = redirectTo;
+  return null;
+}
+
+/* ── Save assessment results to Supabase ────────────────────── */
+async function saveAssessment(predictionData, answers) {
+  if (!sb) {
+    console.warn('Supabase is not initialized. Skipping DB save.');
+    return null;
+  }
+  
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) {
+      console.log('User is guest or not logged in. Skipping DB save.');
+      return null;
+    }
+    
+    var debug = predictionData.debug_data || {};
+    var emotions = debug['Emotions'] || {};
+    
+    // Extract compound sentiment score
+    var sentimentStr = debug['Sentiment'] || '';
+    var compoundScore = null;
+    if (sentimentStr) {
+      var match = sentimentStr.match(/Comp:\s*([-\d.]+)/i);
+      if (match) compoundScore = parseFloat(match[1]);
+    }
+    
+    // Helper to clean numeric values
+    var parseVal = function(v) {
+      if (!v) return null;
+      var clean = parseFloat(v.toString().replace(/%/g, ''));
+      return isNaN(clean) ? null : clean;
+    };
+    
+    var row = {
+      user_id: session.user.id,
+      answers: answers,
+      burnout_score: parseFloat(predictionData.burnout_score),
+      vitality_score: burnoutToVitality(predictionData.burnout_score),
+      suggestion: predictionData.suggestion,
+      ear: parseVal(debug['EAR']),
+      mar: parseVal(debug['MAR']),
+      emo_pos: parseVal(emotions['Positive %']),
+      emo_neu: parseVal(emotions['Neutral %']),
+      emo_neg: parseVal(emotions['Negative %']),
+      sentiment_compound: compoundScore,
+      voice_transcript: debug['Voice Transcript'] || null,
+      llm_insight: predictionData.llm_insight || null
+    };
+    
+    const { data, error } = await sb.from('assessments').insert(row).select();
+    if (error) {
+      console.error('Error inserting assessment:', error.message);
+      return null;
+    }
+    console.log('Successfully saved assessment to Supabase:', data);
+    return data;
+  } catch (err) {
+    console.error('Failed to save assessment:', err);
+    return null;
+  }
 }

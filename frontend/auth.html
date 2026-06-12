@@ -10,6 +10,7 @@
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/theme.js"></script>
     <link href="css/styles.css" rel="stylesheet"/>
 </head>
@@ -172,19 +173,87 @@
             }
         }
 
-        // Sign in / Sign up (mock — swap for Supabase later)
-        function handleAuthSubmit(event, mode) {
+        // Sign in / Sign up with Supabase
+        async function handleAuthSubmit(event, mode) {
             event.preventDefault();
-            localStorage.setItem('mindhaven_auth', 'true');
-            localStorage.setItem('mindhaven_user',
-                mode === 'signup'
-                    ? (document.getElementById('signup-name').value || 'User')
-                    : 'User');
-            navigateTo('assess.html');
+            
+            // Clear any old flags
+            localStorage.removeItem('mindhaven_guest');
+            localStorage.removeItem('mindhaven_auth');
+            localStorage.removeItem('mindhaven_user');
+            
+            if (!sb) {
+                alert('Supabase service is currently unavailable. Please check configurations.');
+                return;
+            }
+            
+            // Show progress indicator
+            const btn = event.target.querySelector('button[type="submit"]');
+            const origLabel = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<span class="material-symbols-outlined text-[18px] animate-spin">sync</span> Connecting...`;
+            
+            try {
+                if (mode === 'signup') {
+                    const name = document.getElementById('signup-name').value;
+                    const email = document.getElementById('signup-email').value;
+                    const password = document.getElementById('signup-password').value;
+                    
+                    if (password.length < 6) {
+                        throw new Error("Cipher must be at least 6 characters.");
+                    }
+                    
+                    const { data, error } = await sb.auth.signUp({
+                        email: email,
+                        password: password,
+                        options: {
+                            data: {
+                                full_name: name
+                            }
+                        }
+                    });
+                    
+                    if (error) throw error;
+                    
+                    // Supabase auto-signs-in if email confirmation is disabled.
+                    // If email confirmation is enabled, session might be null.
+                    if (data.session) {
+                        localStorage.setItem('mindhaven_auth', 'true');
+                        localStorage.setItem('mindhaven_user', name || email);
+                        navigateTo('assess.html');
+                    } else {
+                        alert('Account created! Please check your email for verification before signing in.');
+                        btn.disabled = false;
+                        btn.innerHTML = origLabel;
+                    }
+                } else {
+                    const email = document.getElementById('signin-email').value;
+                    const password = document.getElementById('signin-password').value;
+                    
+                    const { data, error } = await sb.auth.signInWithPassword({
+                        email: email,
+                        password: password
+                    });
+                    
+                    if (error) throw error;
+                    
+                    localStorage.setItem('mindhaven_auth', 'true');
+                    localStorage.setItem('mindhaven_user', data.user.user_metadata?.full_name || email);
+                    navigateTo('assess.html');
+                }
+            } catch (err) {
+                console.error("Auth error:", err);
+                alert('Access Denied: ' + err.message);
+                btn.disabled = false;
+                btn.innerHTML = origLabel;
+            }
         }
 
         // Guest / demo login — uses seedGuestData() from utils.js
         function guestLogin() {
+            if (sb) {
+                sb.auth.signOut().catch(() => {});
+            }
             seedGuestData();
             navigateTo('insights.html');
         }

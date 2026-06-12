@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>MindHaven | Biometric Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link href="css/styles.css" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/theme.js"></script>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen overflow-x-hidden relative" style="font-family:'Plus Jakarta Sans',sans-serif;">
+    <!-- WebGL Background Canvas -->
+    <canvas id="webgl-bg"></canvas>
+
+    <!-- Page Transition Overlay -->
+    <div id="page-transition-overlay"></div>
+
+    <!-- Top Navigation Bar -->
+    <header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-5 md:px-16 py-4 backdrop-blur-xl border-b border-white/20" style="background:rgba(252,249,248,0.35)">
+        <div class="flex items-center gap-2">
+            <a href="index.html" class="w-8 h-8 rounded-full flex items-center justify-center text-white flex-shrink-0" style="background:#8455ef">
+                <span class="material-symbols-outlined text-[20px]" style="font-variation-settings:'FILL' 1">psychology</span>
+            </a>
+            <span class="font-extrabold text-lg tracking-tight" style="color:#1c1b1b">MindHaven</span>
+        </div>
+        <nav style="display:flex;gap:32px;align-items:center;">
+            <a href="assess.html"   style="font-size:0.85rem;font-weight:700;color:#494454;text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='#6b38d4'" onmouseout="this.style.color='#494454'">Assess</a>
+            <a href="insights.html"  style="font-size:0.85rem;font-weight:700;color:#494454;text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='#6b38d4'" onmouseout="this.style.color='#494454'">Insights</a>
+            <span                   style="font-size:0.85rem;font-weight:800;color:#6b38d4;white-space:nowrap;">Dashboard</span>
+            <a href="breathe.html" style="font-size:0.85rem;font-weight:700;color:#494454;text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='#6b38d4'" onmouseout="this.style.color='#494454'">Breathe</a>
+        </nav>
+        <div class="flex items-center gap-3 flex-shrink-0">
+            <div class="w-10 h-10 rounded-full overflow-hidden border-2" style="border-color:rgba(107,56,212,0.25)">
+                <img id="user-avatar" alt="Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAc6gUeyepdAYeiT1kNrp5-bdopO8mAEmM2WIzSh9bpb2Y8TkI54s9vjF4LOjA-CNNSNpSIm2Nafm88rhjVUOlTI8-roRmdfUWKGWgE_3pEHvtFLMdpNR54iDmZ10yU7khzKni1gysp2QOiwlfBItm6VE2jqvz2_7DYcsgWy_MT8xRh26dZs3VT8biI-c1qOrW-itV65RWqBh47nVVfQNZsyeyEZK6p5YBW1aXF5mY1SvjDylraJKV-3IumaI8po6FbnGl31hDdjQ"/>
+            </div>
+            <button onclick="handleLogout()" class="hidden md:flex items-center gap-1 text-xs font-bold text-red-500 hover:text-red-700 bg-white/20 border border-white/40 px-3 py-1.5 rounded-full transition-all">
+                <span class="material-symbols-outlined text-[14px]">logout</span>Sign Out
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="pt-32 pb-24 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto space-y-12 relative z-10">
+        
+        <!-- Header / Intro -->
+        <section class="flex flex-col md:flex-row md:justify-between md:items-end gap-6 border-b border-white/20 pb-8">
+            <div class="space-y-2">
+                <span class="text-xs font-bold uppercase tracking-widest text-primary opacity-80" id="welcome-subtitle">Session Archive &amp; Telemetry</span>
+                <h1 class="text-3xl md:text-5xl font-extrabold text-on-surface tracking-tight" id="welcome-title">Your Burnout Analysis</h1>
+            </div>
+            <div class="flex flex-wrap gap-3">
+                <a href="assess.html" class="pill-3d px-6 py-3 rounded-full text-white font-bold text-sm flex items-center gap-2 shadow-lg">
+                    <span class="material-symbols-outlined text-lg">medical_services</span>
+                    New Assessment
+                </a>
+                <button onclick="handleLogout()" class="md:hidden flex items-center gap-1 text-sm font-bold text-white bg-red-500/80 px-4 py-3 rounded-full transition-all">
+                    <span class="material-symbols-outlined text-lg">logout</span>Sign Out
+                </button>
+            </div>
+        </section>
+
+        <!-- Stat Cards -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- Card 1: Burnout Avg -->
+            <div class="glass-card p-6 rounded-3xl border border-white/50 shadow flex items-center gap-4">
+                <div class="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-2xl" style="font-variation-settings:'FILL' 1">heart_broken</span>
+                </div>
+                <div>
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant/60">Average Burnout</span>
+                    <p class="text-2xl font-extrabold text-on-surface mt-0.5" id="avg-burnout">-</p>
+                    <span id="avg-burnout-badge" class="inline-block px-2 py-0.5 mt-1 rounded text-[10px] font-extrabold uppercase tracking-wide bg-gray-100 text-gray-700">Checking</span>
+                </div>
+            </div>
+
+            <!-- Card 2: Vitality Avg -->
+            <div class="glass-card p-6 rounded-3xl border border-white/50 shadow flex items-center gap-4">
+                <div class="w-12 h-12 rounded-2xl bg-secondary/10 text-secondary flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-2xl" style="font-variation-settings:'FILL' 1">ecg</span>
+                </div>
+                <div>
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant/60">Vitality Index</span>
+                    <p class="text-2xl font-extrabold text-on-surface mt-0.5" id="avg-vitality">-</p>
+                    <span class="text-[10px] font-bold text-on-surface-variant/75 block mt-1">Average neuro-balance</span>
+                </div>
+            </div>
+
+            <!-- Card 3: Sessions Logged -->
+            <div class="glass-card p-6 rounded-3xl border border-white/50 shadow flex items-center gap-4">
+                <div class="w-12 h-12 rounded-2xl bg-green-500/10 text-green-600 flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-2xl" style="font-variation-settings:'FILL' 1">history</span>
+                </div>
+                <div>
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant/60">Assessments Done</span>
+                    <p class="text-2xl font-extrabold text-on-surface mt-0.5" id="total-sessions">0</p>
+                    <span class="text-[10px] font-bold text-green-600 block mt-1">Telemetry sets archived</span>
+                </div>
+            </div>
+
+            <!-- Card 4: Dominant Emotion -->
+            <div class="glass-card p-6 rounded-3xl border border-white/50 shadow flex items-center gap-4">
+                <div class="w-12 h-12 rounded-2xl bg-yellow-500/10 text-yellow-600 flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-2xl" style="font-variation-settings:'FILL' 1">mood</span>
+                </div>
+                <div>
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant/60">Dominant State</span>
+                    <p class="text-2xl font-extrabold text-on-surface mt-0.5" id="dominant-emotion">-</p>
+                    <span class="text-[10px] font-bold text-on-surface-variant/75 block mt-1">Facial analytic mode</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Charts Section -->
+        <section class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- Line Chart: Vitality Trend -->
+            <div class="glass-card p-6 md:p-8 rounded-[2rem] border border-white/50 shadow lg:col-span-8 flex flex-col justify-between">
+                <div class="mb-4">
+                    <h3 class="font-extrabold text-lg text-on-surface">Cognitive Vitality Trend</h3>
+                    <p class="text-xs text-on-surface-variant/80">Neuro-vitality score calculated over subsequent sessions (higher is better)</p>
+                </div>
+                <div class="w-full relative h-[300px]">
+                    <canvas id="vitality-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- Radar Chart: Emotional Expression Balance -->
+            <div class="glass-card p-6 md:p-8 rounded-[2rem] border border-white/50 shadow lg:col-span-4 flex flex-col justify-between">
+                <div class="mb-4">
+                    <h3 class="font-extrabold text-lg text-on-surface">Biometric Signature</h3>
+                    <p class="text-xs text-on-surface-variant/80">Aggregated facial expressiveness ratios</p>
+                </div>
+                <div class="w-full relative h-[300px] flex items-center justify-center">
+                    <canvas id="emotions-chart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Historical Archive Table -->
+        <section class="glass-card p-6 md:p-8 rounded-[2rem] border border-white/50 shadow space-y-6">
+            <div>
+                <h3 class="font-extrabold text-xl text-on-surface">Telemetry Archive</h3>
+                <p class="text-xs text-on-surface-variant/80">All records retrieved from your neural assessment nodes. Select any row to inspect detail reports.</p>
+            </div>
+            
+            <div class="overflow-x-auto w-full">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-white/20 text-xs font-bold uppercase tracking-wider text-on-surface-variant/60">
+                            <th class="py-3 px-4">Date &amp; Time</th>
+                            <th class="py-3 px-4">Burnout Level</th>
+                            <th class="py-3 px-4 text-center">Vitality</th>
+                            <th class="py-3 px-4 text-center font-semibold">Tension (EAR/MAR)</th>
+                            <th class="py-3 px-4">Voice Sentiment Summary</th>
+                            <th class="py-3 px-4 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-table-body" class="divide-y divide-white/10 text-sm font-semibold">
+                        <!-- Loaded dynamically -->
+                        <tr>
+                            <td colspan="6" class="text-center py-8 text-on-surface-variant/60">Retrieving secure biometric telemetry...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- Scripts -->
+    <script src="js/utils.js"></script>
+    <script src="js/3d-elements.js"></script>
+    <script>
+        let vitalityChartInstance = null;
+        let emotionsChartInstance = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Require authentication session (registers state details)
+            await requireAuth();
+            
+            // Set header profile details
+            const username = localStorage.getItem('mindhaven_user') || 'User';
+            document.getElementById('welcome-title').textContent = `${username}'s Burnout Analysis`;
+            document.getElementById('welcome-subtitle').textContent = localStorage.getItem('mindhaven_guest') === 'true' 
+                ? 'Session Archive & Telemetry (GUEST MODE)' 
+                : 'Session Archive & Telemetry (AUTHENTICATED SUBJECT)';
+
+            // Fetch history and render analytics
+            await loadDashboardData();
+        });
+
+        async function loadDashboardData() {
+            let records = [];
+            const isGuest = localStorage.getItem('mindhaven_guest') === 'true';
+
+            if (isGuest) {
+                // Populate mock history for presentation/judges
+                records = generateMockHistory();
+            } else if (sb) {
+                try {
+                    const { data: { session } } = await sb.auth.getSession();
+                    if (session) {
+                        const { data, error } = await sb
+                            .from('assessments')
+                            .select('*')
+                            .eq('user_id', session.user.id)
+                            .order('created_at', { ascending: false });
+                        
+                        if (!error && data) {
+                            records = data;
+                        } else if (error) {
+                            console.error('Database fetch error:', error);
+                        }
+                    }
+                } catch(e) {
+                    console.error('Failed to access database:', e);
+                }
+            }
+
+            if (records.length === 0) {
+                document.getElementById('history-table-body').innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center py-12 text-on-surface-variant/70">
+                            <span class="material-symbols-outlined text-4xl block mb-2 opacity-50">analytics</span>
+                            No assessment history found. Take your first assessment to populate your dashboard!
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            // Calculate metrics
+            renderMetricSummary(records);
+
+            // Render Chart.js visual graphs
+            renderDashboardCharts(records);
+
+            // Populate table list
+            renderHistoryTable(records);
+        }
+
+        function renderMetricSummary(rows) {
+            let totalBurnout = 0;
+            let totalVitality = 0;
+            let totalPos = 0, totalNeu = 0, totalNeg = 0;
+            let validEmotionsCount = 0;
+
+            rows.forEach(r => {
+                totalBurnout += parseFloat(r.burnout_score) || 0;
+                totalVitality += parseInt(r.vitality_score) || 0;
+                
+                if (r.emo_pos !== null || r.emo_neu !== null || r.emo_neg !== null) {
+                    totalPos += parseFloat(r.emo_pos) || 0;
+                    totalNeu += parseFloat(r.emo_neu) || 0;
+                    totalNeg += parseFloat(r.emo_neg) || 0;
+                    validEmotionsCount++;
+                }
+            });
+
+            const avgBurnout = totalBurnout / rows.length;
+            const avgVitality = totalVitality / rows.length;
+
+            document.getElementById('avg-burnout').textContent = avgBurnout.toFixed(1) + ' / 4.0';
+            document.getElementById('avg-vitality').textContent = Math.round(avgVitality) + '%';
+            document.getElementById('total-sessions').textContent = rows.length;
+
+            const badge = document.getElementById('avg-burnout-badge');
+            const roundedScore = Math.round(avgBurnout);
+            const scoreLabels = ['Low', 'Mild', 'Moderate', 'High', 'Severe'];
+            const label = scoreLabels[roundedScore] || 'Moderate';
+            badge.textContent = label;
+
+            if (roundedScore === 0) {
+                badge.className = "inline-block px-2.5 py-0.5 mt-1 rounded-full text-[10px] font-extrabold uppercase tracking-wide bg-green-100 text-green-700";
+            } else if (roundedScore === 1) {
+                badge.className = "inline-block px-2.5 py-0.5 mt-1 rounded-full text-[10px] font-extrabold uppercase tracking-wide bg-blue-100 text-blue-700";
+            } else if (roundedScore === 2) {
+                badge.className = "inline-block px-2.5 py-0.5 mt-1 rounded-full text-[10px] font-extrabold uppercase tracking-wide bg-yellow-100 text-yellow-700";
+            } else if (roundedScore === 3) {
+                badge.className = "inline-block px-2.5 py-0.5 mt-1 rounded-full text-[10px] font-extrabold uppercase tracking-wide bg-orange-100 text-orange-700";
+            } else {
+                badge.className = "inline-block px-2.5 py-0.5 mt-1 rounded-full text-[10px] font-extrabold uppercase tracking-wide bg-red-100 text-red-700";
+            }
+
+            // Dominant emotion
+            if (validEmotionsCount > 0) {
+                const avgPos = totalPos / validEmotionsCount;
+                const avgNeu = totalNeu / validEmotionsCount;
+                const avgNeg = totalNeg / validEmotionsCount;
+                
+                let dominant = 'Neutral';
+                if (avgPos > avgNeu && avgPos > avgNeg) dominant = 'Positive';
+                else if (avgNeg > avgNeu && avgNeg > avgPos) dominant = 'Negative Tension';
+                
+                document.getElementById('dominant-emotion').textContent = dominant;
+            } else {
+                document.getElementById('dominant-emotion').textContent = 'Balanced';
+            }
+        }
+
+        function renderDashboardCharts(rows) {
+            // Sort ascending for chronological trend
+            const chronRows = [...rows].reverse();
+            
+            const labels = chronRows.map((r, i) => {
+                const date = new Date(r.created_at);
+                return date.toLocaleDateString(undefined, {month: 'short', day: 'numeric'}) + ` (N-${chronRows.length - i})`;
+            });
+            const vitalityScores = chronRows.map(r => r.vitality_score);
+            const burnoutScores = chronRows.map(r => r.burnout_score);
+
+            // 1. Vitality trend line chart
+            const ctxLine = document.getElementById('vitality-chart').getContext('2d');
+            if (vitalityChartInstance) vitalityChartInstance.destroy();
+            
+            vitalityChartInstance = new Chart(ctxLine, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Vitality Score %',
+                            data: vitalityScores,
+                            borderColor: '#8455ef',
+                            backgroundColor: 'rgba(132, 85, 239, 0.08)',
+                            fill: true,
+                            tension: 0.35,
+                            borderWidth: 3,
+                            pointBackgroundColor: '#6b38d4',
+                            pointHoverRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            min: 0,
+                            max: 100,
+                            ticks: { font: { family: 'Plus Jakarta Sans', weight: 'bold' } }
+                        },
+                        x: {
+                            ticks: { font: { family: 'Plus Jakarta Sans', weight: 'bold' } }
+                        }
+                    }
+                }
+            });
+
+            // 2. Emotion Radar Chart (Average pos/neu/neg expression)
+            let avgPos = 0, avgNeu = 0, avgNeg = 0, count = 0;
+            rows.forEach(r => {
+                if (r.emo_pos !== null && r.emo_neu !== null && r.emo_neg !== null) {
+                    avgPos += parseFloat(r.emo_pos) || 0;
+                    avgNeu += parseFloat(r.emo_neu) || 0;
+                    avgNeg += parseFloat(r.emo_neg) || 0;
+                    count++;
+                }
+            });
+
+            if (count > 0) {
+                avgPos = avgPos / count;
+                avgNeu = avgNeu / count;
+                avgNeg = avgNeg / count;
+            } else {
+                avgPos = 15; avgNeu = 65; avgNeg = 20; // Simulated values
+            }
+
+            const ctxRadar = document.getElementById('emotions-chart').getContext('2d');
+            if (emotionsChartInstance) emotionsChartInstance.destroy();
+
+            emotionsChartInstance = new Chart(ctxRadar, {
+                type: 'radar',
+                data: {
+                    labels: ['Positive Expression', 'Neutral State', 'Negative Tension'],
+                    datasets: [{
+                        label: 'Average Expression %',
+                        data: [avgPos, avgNeu, avgNeg],
+                        backgroundColor: 'rgba(107, 56, 212, 0.2)',
+                        borderColor: '#6b38d4',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#8455ef'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: { display: true },
+                            suggestedMin: 0,
+                            suggestedMax: 100,
+                            ticks: { display: false },
+                            pointLabels: {
+                                font: { family: 'Plus Jakarta Sans', weight: 'extrabold', size: 10 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderHistoryTable(rows) {
+            const tbody = document.getElementById('history-table-body');
+            tbody.innerHTML = '';
+
+            rows.forEach((r, idx) => {
+                const date = new Date(r.created_at);
+                const dateStr = date.toLocaleDateString(undefined, {month: 'short', day: 'numeric', year: 'numeric'});
+                const timeStr = date.toLocaleTimeString(undefined, {hour: '2-digit', minute:'2-digit'});
+                
+                const scoreLabels = ['Low', 'Mild', 'Moderate', 'High', 'Severe'];
+                const burnoutText = scoreLabels[Math.round(r.burnout_score)] || 'Moderate';
+                
+                let badgeClass = "bg-gray-100 text-gray-700";
+                if (Math.round(r.burnout_score) === 0) badgeClass = "bg-green-100 text-green-700";
+                else if (Math.round(r.burnout_score) === 1) badgeClass = "bg-blue-100 text-blue-700";
+                else if (Math.round(r.burnout_score) === 2) badgeClass = "bg-yellow-100 text-yellow-700";
+                else if (Math.round(r.burnout_score) === 3) badgeClass = "bg-orange-100 text-orange-700";
+                else if (Math.round(r.burnout_score) === 4) badgeClass = "bg-red-100 text-red-700";
+
+                const ear = r.ear !== null ? r.ear.toFixed(2) : '-';
+                const mar = r.mar !== null ? r.mar.toFixed(2) : '-';
+
+                const transcriptSnippet = r.voice_transcript 
+                    ? `"${r.voice_transcript.substring(0, 42)}..."`
+                    : '<span class="text-on-surface-variant/40 italic">No speech audio</span>';
+
+                const sentiment = r.sentiment_compound !== null
+                    ? `Comp: ${r.sentiment_compound.toFixed(2)}`
+                    : 'N/A';
+
+                // Helper to serialize row for JavaScript function arg
+                const rowStr = JSON.stringify(r).replace(/'/g, "&#39;").replace(/"/g, "&quot;");
+
+                const rowHtml = `
+                    <tr class="hover:bg-white/30 transition-all">
+                        <td class="py-4 px-4">
+                            <div>${dateStr}</div>
+                            <div class="text-[10px] text-on-surface-variant/60 font-semibold">${timeStr}</div>
+                        </td>
+                        <td class="py-4 px-4">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-extrabold uppercase tracking-wide ${badgeClass}">${burnoutText}</span>
+                        </td>
+                        <td class="py-4 px-4 text-center font-extrabold text-primary">${r.vitality_score}%</td>
+                        <td class="py-4 px-4 text-center text-xs font-mono font-semibold">${ear} / ${mar}</td>
+                        <td class="py-4 px-4 max-w-xs truncate">
+                            <div class="text-xs">${transcriptSnippet}</div>
+                            <div class="text-[10px] text-on-surface-variant/50 font-bold uppercase mt-0.5">${sentiment}</div>
+                        </td>
+                        <td class="py-4 px-4 text-right">
+                            <button onclick="viewDetails('${rowStr}')" class="px-3 py-1.5 bg-white/50 border border-white/60 hover:bg-primary hover:text-white rounded-full text-xs font-bold transition-all inline-flex items-center gap-1 shadow-sm">
+                                <span class="material-symbols-outlined text-[12px]">visibility</span>Inspect
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', rowHtml);
+            });
+        }
+
+        // View detail report in Insights.html
+        function viewDetails(rowEscapedStr) {
+            try {
+                // Decode HTML entities in JSON string
+                const decodedJson = rowEscapedStr.replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+                const row = JSON.parse(decodedJson);
+
+                // Reconstruct assessment data object
+                const data = {
+                    burnout_score: row.burnout_score,
+                    suggestion: row.llm_insight || row.suggestion,
+                    debug_data: {
+                        "Questionnaire Answers": row.answers,
+                        "EAR": row.ear ? row.ear.toFixed(2) : 'N/A',
+                        "MAR": row.mar ? row.mar.toFixed(2) : 'N/A',
+                        "Emotions": {
+                            "Positive %": row.emo_pos ? row.emo_pos.toFixed(0) + '%' : '0%',
+                            "Neutral %": row.emo_neu ? row.emo_neu.toFixed(0) + '%' : '0%',
+                            "Negative %": row.emo_neg ? row.emo_neg.toFixed(0) + '%' : '0%'
+                        },
+                        "Voice Transcript": row.voice_transcript,
+                        "Sentiment": row.sentiment_compound ? "Comp: " + row.sentiment_compound.toFixed(2) : "Neutral"
+                    }
+                };
+
+                // Set to local storage so insights page pulls it
+                localStorage.setItem('burnout_prediction', JSON.stringify(data));
+                navigateTo('insights.html');
+            } catch(e) {
+                console.error("Failed to parse row details:", e);
+            }
+        }
+
+        // Logout
+        async function handleLogout() {
+            localStorage.removeItem('mindhaven_auth');
+            localStorage.removeItem('mindhaven_guest');
+            localStorage.removeItem('mindhaven_user');
+            localStorage.removeItem('burnout_prediction');
+            
+            if (sb) {
+                await sb.auth.signOut().catch(() => {});
+            }
+            navigateTo('auth.html');
+        }
+
+        // Generate 6 mock telemetry rows for judges (guest mode)
+        function generateMockHistory() {
+            const now = new Date();
+            const daysAgo = (n) => new Date(now.getTime() - n * 24 * 60 * 60 * 1000);
+
+            return [
+                {
+                    id: "mock-1",
+                    created_at: now.toISOString(),
+                    answers: ["Rarely", "Often", "Sometimes", "Often", "Sometimes"],
+                    burnout_score: 2,
+                    vitality_score: 54,
+                    suggestion: "Based on your multi-modal biometric profile, you are experiencing Moderate Burnout. Your facial expression analysis detected elevated brow tension (EAR: 0.24) and reduced smile frequency. Speech sentiment analysis revealed a compound negativity score of -0.18 with a slightly monotone vocal pitch pattern. Recommended interventions: 20-min daily mindfulness sessions, strict work-hour boundaries, and periodic Nadi Shodhana pranayama.",
+                    ear: 0.24,
+                    mar: 0.18,
+                    emo_pos: 8,
+                    emo_neu: 57,
+                    emo_neg: 35,
+                    sentiment_compound: -0.18,
+                    voice_transcript: "I've been pretty stressed lately... work deadlines are piling up and I can't seem to switch off even in the evenings.",
+                    llm_insight: null
+                },
+                {
+                    id: "mock-2",
+                    created_at: daysAgo(2).toISOString(),
+                    answers: ["Sometimes", "Often", "Often", "Always", "Often"],
+                    burnout_score: 3.2,
+                    vitality_score: 28,
+                    suggestion: "Severe burnout indications are present. Critical levels of emotional exhaustion detected. Immediate boundaries recommended.",
+                    ear: 0.21,
+                    mar: 0.19,
+                    emo_pos: 3,
+                    emo_neu: 42,
+                    emo_neg: 55,
+                    sentiment_compound: -0.42,
+                    voice_transcript: "It's just too much right now. The pressure is constant and I don't feel like I'm making any progress.",
+                    llm_insight: null
+                },
+                {
+                    id: "mock-3",
+                    created_at: daysAgo(4).toISOString(),
+                    answers: ["Rarely", "Sometimes", "Sometimes", "Often", "Sometimes"],
+                    burnout_score: 2.1,
+                    vitality_score: 52,
+                    suggestion: "Moderate burnout patterns. Fatigue indicators require intervention. Integrate Box Breathing.",
+                    ear: 0.26,
+                    mar: 0.15,
+                    emo_pos: 12,
+                    emo_neu: 65,
+                    emo_neg: 23,
+                    sentiment_compound: -0.05,
+                    voice_transcript: "Struggling to keep up with deadlines but trying to get some breathing room during the weekends.",
+                    llm_insight: null
+                },
+                {
+                    id: "mock-4",
+                    created_at: daysAgo(7).toISOString(),
+                    answers: ["Never", "Often", "Often", "Always", "Always"],
+                    burnout_score: 3.8,
+                    vitality_score: 14,
+                    suggestion: "Exhaustion metrics critical. Immediate relaxation cycles and workload reduction are suggested. Mandate digital dark blocks.",
+                    ear: 0.19,
+                    mar: 0.21,
+                    emo_pos: 2,
+                    emo_neu: 35,
+                    emo_neg: 63,
+                    sentiment_compound: -0.68,
+                    voice_transcript: "I can barely stay awake during the day but then I can't sleep at night thinking about work.",
+                    llm_insight: null
+                },
+                {
+                    id: "mock-5",
+                    created_at: daysAgo(10).toISOString(),
+                    answers: ["Sometimes", "Sometimes", "Rarely", "Sometimes", "Rarely"],
+                    burnout_score: 1.2,
+                    vitality_score: 75,
+                    suggestion: "Mild stress levels detected. Focus and mental clarity indicators are healthy.",
+                    ear: 0.28,
+                    mar: 0.13,
+                    emo_pos: 24,
+                    emo_neu: 62,
+                    emo_neg: 14,
+                    sentiment_compound: 0.22,
+                    voice_transcript: "Things are going alright, we finished a major release last week so the pressure has dropped a bit.",
+                    llm_insight: null
+                },
+                {
+                    id: "mock-6",
+                    created_at: daysAgo(14).toISOString(),
+                    answers: ["Always", "Never", "Never", "Rarely", "Never"],
+                    burnout_score: 0.4,
+                    vitality_score: 90,
+                    suggestion: "Optimal focus metrics. Total stress balance and cognitive clarity achieved. Maintain current rhythm.",
+                    ear: 0.31,
+                    mar: 0.12,
+                    emo_pos: 45,
+                    emo_neu: 50,
+                    emo_neg: 5,
+                    sentiment_compound: 0.54,
+                    voice_transcript: "Feeling really fresh today. Ready to take on new tasks and feeling motivated.",
+                    llm_insight: null
+                }
+            ];
+        }
+    </script>
+</body>
+</html>
