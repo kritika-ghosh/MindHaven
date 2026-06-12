@@ -234,6 +234,9 @@
                 return;
             }
 
+            // Store records globally for interactive button reference
+            window.dashboardRecords = records;
+
             // Calculate metrics
             renderMetricSummary(records);
 
@@ -441,9 +444,6 @@
                     ? `Comp: ${r.sentiment_compound.toFixed(2)}`
                     : 'N/A';
 
-                // Helper to serialize row for JavaScript function arg
-                const rowStr = JSON.stringify(r).replace(/'/g, "&#39;").replace(/"/g, "&quot;");
-
                 const rowHtml = `
                     <tr class="hover:bg-white/30 transition-all">
                         <td class="py-4 px-4">
@@ -460,7 +460,7 @@
                             <div class="text-[10px] text-on-surface-variant/50 font-bold uppercase mt-0.5">${sentiment}</div>
                         </td>
                         <td class="py-4 px-4 text-right">
-                            <button onclick="viewDetails('${rowStr}')" class="px-3 py-1.5 bg-white/50 border border-white/60 hover:bg-primary hover:text-white rounded-full text-xs font-bold transition-all inline-flex items-center gap-1 shadow-sm">
+                            <button onclick="viewDetails(${idx})" class="px-3 py-1.5 bg-white/50 border border-white/60 hover:bg-primary hover:text-white rounded-full text-xs font-bold transition-all inline-flex items-center gap-1 shadow-sm">
                                 <span class="material-symbols-outlined text-[12px]">visibility</span>Inspect
                             </button>
                         </td>
@@ -471,11 +471,10 @@
         }
 
         // View detail report in Insights.html
-        function viewDetails(rowEscapedStr) {
+        function viewDetails(idx) {
             try {
-                // Decode HTML entities in JSON string
-                const decodedJson = rowEscapedStr.replace(/&quot;/g, '"').replace(/&#39;/g, "'");
-                const row = JSON.parse(decodedJson);
+                const row = window.dashboardRecords[idx];
+                if (!row) return;
 
                 // Reconstruct assessment data object
                 const data = {
@@ -483,15 +482,15 @@
                     suggestion: row.llm_insight || row.suggestion,
                     debug_data: {
                         "Questionnaire Answers": row.answers,
-                        "EAR": row.ear ? row.ear.toFixed(2) : 'N/A',
-                        "MAR": row.mar ? row.mar.toFixed(2) : 'N/A',
+                        "EAR": row.ear !== null && row.ear !== undefined ? parseFloat(row.ear).toFixed(2) : 'N/A',
+                        "MAR": row.mar !== null && row.mar !== undefined ? parseFloat(row.mar).toFixed(2) : 'N/A',
                         "Emotions": {
-                            "Positive %": row.emo_pos ? row.emo_pos.toFixed(0) + '%' : '0%',
-                            "Neutral %": row.emo_neu ? row.emo_neu.toFixed(0) + '%' : '0%',
-                            "Negative %": row.emo_neg ? row.emo_neg.toFixed(0) + '%' : '0%'
+                            "Positive %": row.emo_pos !== null && row.emo_pos !== undefined ? parseFloat(row.emo_pos).toFixed(0) + '%' : '0%',
+                            "Neutral %": row.emo_neu !== null && row.emo_neu !== undefined ? parseFloat(row.emo_neu).toFixed(0) + '%' : '0%',
+                            "Negative %": row.emo_neg !== null && row.emo_neg !== undefined ? parseFloat(row.emo_neg).toFixed(0) + '%' : '0%'
                         },
                         "Voice Transcript": row.voice_transcript,
-                        "Sentiment": row.sentiment_compound ? "Comp: " + row.sentiment_compound.toFixed(2) : "Neutral"
+                        "Sentiment": row.sentiment_compound !== null && row.sentiment_compound !== undefined ? "Comp: " + parseFloat(row.sentiment_compound).toFixed(2) : "Neutral"
                     }
                 };
 

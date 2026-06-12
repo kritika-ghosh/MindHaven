@@ -306,33 +306,22 @@ Paragraph 3: A 7-day recovery micro-plan with 3 specific, time-bound actions.
 
             await loadAnalysisData();
 
-            // GSAP ScrollTrigger Section Transitions
-            gsap.registerPlugin(ScrollTrigger);
-            
-            gsap.utils.toArray('.scroll-section').forEach(section => {
-                gsap.from(section, {
-                    scrollTrigger: {
-                        trigger: section,
-                        start: "top 85%",
-                        toggleActions: "play none none none"
-                    },
-                    y: 40,
-                    opacity: 0,
-                    duration: 1.0,
-                    ease: "power3.out"
-                });
+            // Clean & bulletproof entrance animations for all sections
+            gsap.from('.scroll-section', {
+                y: 20,
+                opacity: 0,
+                duration: 0.8,
+                stagger: 0.25,
+                ease: "power2.out"
             });
 
             // Stagger child elements of Grid Action Plans
             gsap.from("#action-plan-grid > div", {
-                scrollTrigger: {
-                    trigger: "#action-plan-grid",
-                    start: "top 80%"
-                },
-                y: 30,
+                y: 20,
                 opacity: 0,
-                stagger: 0.2,
-                duration: 0.8,
+                stagger: 0.15,
+                duration: 0.6,
+                delay: 0.5,
                 ease: "power2.out"
             });
         });
