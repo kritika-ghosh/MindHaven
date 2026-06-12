@@ -39,7 +39,7 @@
             </a>
             <span class="font-extrabold text-lg tracking-tight" style="color:#1c1b1b">MindHaven</span>
         </div>
-        <nav style="display:flex;gap:32px;align-items:center;">
+        <nav class="hidden md:flex" style="display:flex;gap:32px;align-items:center;">
             <a href="about.html" style="font-size:0.85rem;font-weight:700;color:#494454;text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='#6b38d4'" onmouseout="this.style.color='#494454'">About Us</a>
             <a href="assess.html"   style="font-size:0.85rem;font-weight:700;color:#494454;text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='#6b38d4'" onmouseout="this.style.color='#494454'">Assess</a>
             <span                   style="font-size:0.85rem;font-weight:800;color:#6b38d4;white-space:nowrap;">Insights</span>
@@ -54,7 +54,7 @@
     </header>
 
     <!-- Main Content Grid -->
-    <main class="pt-32 pb-24 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto space-y-24">
+    <main class="pt-32 pb-36 md:pb-24 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto space-y-24">
         
         <!-- Section 1: The Verdict -->
         <section class="flex flex-col items-center text-center space-y-12 scroll-section">
@@ -441,5 +441,28 @@ Paragraph 3: A 7-day recovery micro-plan with 3 specific, time-bound actions.
             }, 1000);
         }
     </script>
+    <!-- Mobile Bottom Navigation Bar -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/60 backdrop-blur-xl border-t border-white/20 flex justify-around items-center py-2 px-4 shadow-lg">
+        <a href="about.html" class="flex flex-col items-center gap-0.5 text-on-surface-variant/80 hover:text-primary transition-colors py-1">
+            <span class="material-symbols-outlined text-xl">info</span>
+            <span class="text-[10px] font-bold">About Us</span>
+        </a>
+        <a href="assess.html" class="flex flex-col items-center gap-0.5 text-on-surface-variant/80 hover:text-primary transition-colors py-1">
+            <span class="material-symbols-outlined text-xl">medical_services</span>
+            <span class="text-[10px] font-bold">Assess</span>
+        </a>
+        <a href="insights.html" class="flex flex-col items-center gap-0.5 text-primary transition-colors py-1">
+            <span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">insights</span>
+            <span class="text-[10px] font-extrabold">Insights</span>
+        </a>
+        <a href="dashboard.html" class="flex flex-col items-center gap-0.5 text-on-surface-variant/80 hover:text-primary transition-colors py-1">
+            <span class="material-symbols-outlined text-xl">dashboard</span>
+            <span class="text-[10px] font-bold">Dashboard</span>
+        </a>
+        <a href="breathe.html" class="flex flex-col items-center gap-0.5 text-on-surface-variant/80 hover:text-primary transition-colors py-1">
+            <span class="material-symbols-outlined text-xl">spa</span>
+            <span class="text-[10px] font-bold">Breathe</span>
+        </a>
+    </nav>
 </body>
 </html>

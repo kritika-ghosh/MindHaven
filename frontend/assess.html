@@ -62,7 +62,7 @@
     </div>
   </header>
 
-  <main class="relative z-10 pt-28 pb-36 max-w-5xl mx-auto px-5 md:px-16 flex flex-col gap-8">
+  <main class="relative z-10 pt-28 pb-48 md:pb-36 max-w-5xl mx-auto px-5 md:px-16 flex flex-col gap-8">
 
     <!-- Phase Progress Indicators -->
     <section class="flex flex-col items-center gap-3">
@@ -680,5 +680,28 @@
       renderQuestion();
     });
   </script>
+    <!-- Mobile Bottom Navigation Bar -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/60 backdrop-blur-xl border-t border-white/20 flex justify-around items-center py-2 px-4 shadow-lg">
+        <a href="about.html" class="flex flex-col items-center gap-0.5 text-on-surface-variant/80 hover:text-primary transition-colors py-1">
+            <span class="material-symbols-outlined text-xl">info</span>
+            <span class="text-[10px] font-bold">About Us</span>
+        </a>
+        <a href="assess.html" class="flex flex-col items-center gap-0.5 text-primary transition-colors py-1">
+            <span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">medical_services</span>
+            <span class="text-[10px] font-extrabold">Assess</span>
+        </a>
+        <a href="insights.html" class="flex flex-col items-center gap-0.5 text-on-surface-variant/80 hover:text-primary transition-colors py-1">
+            <span class="material-symbols-outlined text-xl">insights</span>
+            <span class="text-[10px] font-bold">Insights</span>
+        </a>
+        <a href="dashboard.html" class="flex flex-col items-center gap-0.5 text-on-surface-variant/80 hover:text-primary transition-colors py-1">
+            <span class="material-symbols-outlined text-xl">dashboard</span>
+            <span class="text-[10px] font-bold">Dashboard</span>
+        </a>
+        <a href="breathe.html" class="flex flex-col items-center gap-0.5 text-on-surface-variant/80 hover:text-primary transition-colors py-1">
+            <span class="material-symbols-outlined text-xl">spa</span>
+            <span class="text-[10px] font-bold">Breathe</span>
+        </a>
+    </nav>
 </body>
 </html>
