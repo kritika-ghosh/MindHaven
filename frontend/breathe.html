@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MindHaven | Pranayama Studio</title>
+  <meta name="description" content="Guided pranayama breathing exercises to reduce burnout and restore mental balance."/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <link href="css/styles.css" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+    /* ── Orb ────────────────────────────────────── */
+    #orb-wrap {
+      position: relative;
+      width: 260px; height: 260px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    #prog-svg {
+      position: absolute;
+      top: 0; left: 0;
+      width: 260px; height: 260px;
+      transform: rotate(-90deg);
+    }
+    #prog-track { fill: none; stroke: rgba(107,56,212,0.12); stroke-width: 6; }
+    #prog-fill  { fill: none; stroke: url(#rg); stroke-width: 6; stroke-linecap: round;
+                  stroke-dasharray: 741; stroke-dashoffset: 741;
+                  transition: stroke-dashoffset 0.95s linear; }
+    #breath-orb {
+      position: relative; z-index: 2;
+      width: 198px; height: 198px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #c4a2ff, #6b38d4 55%, #260059);
+      box-shadow: 0 0 64px rgba(107,56,212,0.5), inset 0 0 28px rgba(255,255,255,0.14);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 2px;
+      color: #fff;
+      user-select: none;
+      transition: width 0.9s cubic-bezier(0.4,0,0.2,1), height 0.9s cubic-bezier(0.4,0,0.2,1);
+    }
+    #orb-ring-pulse {
+      position: absolute; z-index: 1;
+      width: 220px; height: 220px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(107,56,212,0.22);
+      animation: ringPulse 2.8s ease-in-out infinite;
+    }
+    @keyframes ringPulse { 0%,100%{ transform:scale(1); opacity:.55; } 50%{ transform:scale(1.06); opacity:.15; } }
+
+    /* ── Phase badge ────────────────────────────── */
+    .phase-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 14px; border-radius: 99px;
+      font-size: 0.68rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+    }
+    .pb-inhale { background: rgba(107,56,212,0.12); color: #6b38d4; }
+    .pb-hold   { background: rgba(111,70,185,0.12); color: #6f46b9; }
+    .pb-exhale { background: rgba(93,90,105,0.1);  color: #5d5a69; }
+
+    /* ── Round dots ─────────────────────────────── */
+    .rd {
+      height: 8px; width: 8px; border-radius: 99px;
+      background: rgba(107,56,212,0.18);
+      transition: all 0.3s ease;
+    }
+    .rd.done    { background: #6b38d4; }
+    .rd.current { background: #6b38d4; width: 24px; }
+
+    /* ── Step numbers ───────────────────────────── */
+    .snum {
+      min-width: 26px; height: 26px; border-radius: 50%;
+      background: rgba(107,56,212,0.1); color: #6b38d4;
+      font-weight: 800; font-size: 0.72rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.25s ease;
+    }
+    .snum.lit { background: #6b38d4; color: #fff; }
+
+    /* ── Technique selector ─────────────────────── */
+    .tcard {
+      cursor: pointer;
+      transition: all 0.22s ease;
+      border: 1.5px solid rgba(255,255,255,0.45);
+    }
+    .tcard:hover { transform: translateY(-3px); }
+    .tcard.sel {
+      border-color: rgba(107,56,212,0.5) !important;
+      background: rgba(107,56,212,0.07) !important;
+      box-shadow: 0 6px 24px rgba(107,56,212,0.15);
+    }
+    .tcard.sel .tname { color: #6b38d4 !important; }
+    .tcard.sel .ticon { color: #6b38d4 !important; }
+
+    /* ── Buttons ────────────────────────────────── */
+    .btn-primary {
+      background: linear-gradient(135deg, #8455ef, #6b38d4);
+      color: #fff; font-weight: 800; font-size: 0.85rem;
+      border-radius: 16px; border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 14px 24px;
+      box-shadow: 0 4px 20px rgba(107,56,212,0.3);
+      transition: all 0.18s ease;
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 28px rgba(107,56,212,0.35); }
+    .btn-primary:active { transform: scale(0.97); }
+    .btn-secondary {
+      background: rgba(255,255,255,0.35);
+      color: #1c1b1b; font-weight: 800; font-size: 0.85rem;
+      border-radius: 16px; border: 1.5px solid rgba(255,255,255,0.6);
+      cursor: pointer; padding: 14px 18px;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.18s ease;
+    }
+    .btn-secondary:hover { background: rgba(255,255,255,0.6); }
+    .btn-secondary:active { transform: scale(0.97); }
+
+    /* ── Toast ──────────────────────────────────── */
+    #done-toast {
+      position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: linear-gradient(135deg,#22c55e,#16a34a);
+      color: #fff; font-weight: 800; font-size: 0.85rem;
+      padding: 14px 28px; border-radius: 99px;
+      display: flex; align-items: center; gap: 8px;
+      box-shadow: 0 8px 32px rgba(34,197,94,0.35);
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      z-index: 200;
+    }
+    #done-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body style="background:#fcf9f8; min-height:100vh; overflow-x:hidden; color:#1c1b1b;">
+
+  <canvas id="webgl-bg"></canvas>
+
+  <!-- Ambient blobs -->
+  <div class="fixed inset-0 overflow-hidden pointer-events-none" style="z-index:0">
+    <div class="floating-sphere" style="width:520px;height:520px;top:-120px;left:-120px;opacity:0.22;"></div>
+    <div class="floating-sphere" style="width:380px;height:380px;bottom:-60px;right:-80px;opacity:0.17;animation-delay:-6s"></div>
+  </div>
+
+  <!-- ─── Header ───────────────────────────────────── -->
+  <header style="position:fixed;top:0;left:0;width:100%;z-index:50;display:flex;justify-content:space-between;align-items:center;padding:14px 64px;backdrop-filter:blur(24px);background:rgba(252,249,248,0.35);border-bottom:1px solid rgba(255,255,255,0.22);">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <a href="index.html" style="width:40px;height:40px;border-radius:50%;background:#8455ef;display:flex;align-items:center;justify-content:center;text-decoration:none;">
+        <span class="material-symbols-outlined" style="color:#fff;font-variation-settings:'FILL' 1">psychology</span>
+      </a>
+      <span style="font-weight:800;font-size:1.15rem;color:#1c1b1b;letter-spacing:-0.02em;">MindHaven</span>
+    </div>
+    <div style="display:flex;gap:32px;align-items:center;font-size:0.85rem;font-weight:700;">
+      <a href="assess.html" style="color:#494454;text-decoration:none;">Assess</a>
+      <a href="insights.html" style="color:#494454;text-decoration:none;">Insights</a>
+      <span style="color:#6b38d4;">Breathe</span>
+    </div>
+    <a href="insights.html" style="display:flex;align-items:center;gap:6px;font-size:0.75rem;font-weight:700;color:#494454;text-decoration:none;padding:8px 16px;border-radius:99px;border:1px solid rgba(0,0,0,0.1);background:rgba(255,255,255,0.35);transition:all 0.2s ease;" onmouseover="this.style.background='rgba(255,255,255,0.65)'" onmouseout="this.style.background='rgba(255,255,255,0.35)'">
+      <span class="material-symbols-outlined" style="font-size:1rem;">arrow_back</span>
+      Back to Insights
+    </a>
+  </header>
+
+  <main style="max-width:1100px;margin:0 auto;padding:112px 40px 80px;position:relative;z-index:1;">
+
+    <!-- Hero -->
+    <div style="text-align:center;margin-bottom:36px;">
+      <p style="font-size:0.72rem;font-weight:800;letter-spacing:0.15em;text-transform:uppercase;color:#6b38d4;margin-bottom:10px;">Pranayama Studio</p>
+      <h1 style="font-size:clamp(2rem,5vw,3.2rem);font-weight:800;letter-spacing:-0.03em;color:#1c1b1b;margin:0 0 12px;">Guided Breathing Exercises</h1>
+      <p style="font-size:0.875rem;color:#494454;max-width:520px;margin:0 auto;line-height:1.65;">Restore your nervous system with ancient pranayama techniques. Choose a practice, follow the visual guide, and reset.</p>
+    </div>
+
+    <!-- ─── Technique Selector ────────────────────── -->
+    <div id="tgrid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:32px;"></div>
+
+    <!-- ─── Studio Grid ───────────────────────────── -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;" id="studio-grid">
+
+      <!-- LEFT: Orb + Controls -->
+      <div class="glass-card" style="border-radius:36px;border:1.5px solid rgba(255,255,255,0.5);box-shadow:0 8px 40px rgba(0,0,0,0.06);padding:36px 28px;display:flex;flex-direction:column;align-items:center;gap:20px;">
+
+        <!-- Title -->
+        <div style="text-align:center;">
+          <h2 id="s-title" style="font-size:1.2rem;font-weight:800;color:#1c1b1b;margin:0 0 4px;">Box Breathing</h2>
+          <p  id="s-sub"   style="font-size:0.72rem;color:#494454;margin:0;">4-4-4-4 · Stress Reset · 5 rounds</p>
+        </div>
+
+        <!-- Orb -->
+        <div id="orb-wrap">
+          <svg id="prog-svg" viewBox="0 0 260 260">
+            <defs>
+              <linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#c4a2ff"/>
+                <stop offset="100%" stop-color="#6b38d4"/>
+              </linearGradient>
+            </defs>
+            <circle id="prog-track" cx="130" cy="130" r="118"/>
+            <circle id="prog-fill"  cx="130" cy="130" r="118"/>
+          </svg>
+          <div id="orb-ring-pulse"></div>
+          <div id="breath-orb">
+            <span id="orb-phase" style="font-size:0.85rem;font-weight:800;opacity:0.9;">Ready</span>
+            <span id="orb-count" style="font-size:2.8rem;font-weight:800;line-height:1;">–</span>
+            <span style="font-size:0.62rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;opacity:0.55;">seconds</span>
+          </div>
+        </div>
+
+        <!-- Phase badge -->
+        <div id="phase-badge" class="phase-badge pb-inhale">
+          <span class="material-symbols-outlined" style="font-size:0.9rem;font-variation-settings:'FILL' 1">air</span>
+          Inhale
+        </div>
+
+        <!-- Round dots -->
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+          <div id="round-dots" style="display:flex;gap:6px;align-items:center;"></div>
+          <p  id="round-lbl" style="font-size:0.72rem;font-weight:700;color:#494454;margin:0;">Round 1 of 5</p>
+        </div>
+
+        <!-- Buttons -->
+        <div style="display:flex;gap:10px;width:100%;">
+          <button id="start-btn" class="btn-primary" style="flex:1;" onclick="toggleSession()">
+            <span class="material-symbols-outlined" id="start-icon">play_arrow</span>
+            <span id="start-lbl">Start Session</span>
+          </button>
+          <button class="btn-secondary" onclick="resetSession()" title="Reset">
+            <span class="material-symbols-outlined">replay</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- RIGHT: Steps + Benefits + Tip -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+
+        <!-- Step-by-step -->
+        <div class="glass-card" style="border-radius:32px;border:1.5px solid rgba(255,255,255,0.5);box-shadow:0 4px 24px rgba(0,0,0,0.05);padding:28px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;">
+            <span class="material-symbols-outlined" style="color:#6b38d4;font-variation-settings:'FILL' 1">format_list_numbered</span>
+            <h3 style="font-size:0.95rem;font-weight:800;color:#1c1b1b;margin:0;">Step-by-Step Guide</h3>
+          </div>
+          <div id="step-guide" style="display:flex;flex-direction:column;gap:14px;"></div>
+        </div>
+
+        <!-- Benefits -->
+        <div class="glass-card" style="border-radius:32px;border:1.5px solid rgba(255,255,255,0.5);box-shadow:0 4px 24px rgba(0,0,0,0.05);padding:28px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:18px;">
+            <span class="material-symbols-outlined" style="color:#6b38d4;font-variation-settings:'FILL' 1">favorite</span>
+            <h3 style="font-size:0.95rem;font-weight:800;color:#1c1b1b;margin:0;">Benefits</h3>
+          </div>
+          <div id="ben-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"></div>
+        </div>
+
+        <!-- Tip -->
+        <div id="tip-box" style="border-radius:24px;padding:18px 20px;font-size:0.82rem;font-weight:500;line-height:1.65;background:rgba(107,56,212,0.06);border:1.5px solid rgba(107,56,212,0.16);color:#1c1b1b;">
+          <span class="material-symbols-outlined" style="font-size:1rem;vertical-align:middle;color:#6b38d4;margin-right:4px;">lightbulb</span>
+          <strong style="color:#6b38d4;">Tip:</strong>
+          <span id="tip-text">Sit comfortably with your spine erect. Close your eyes and breathe naturally for a few moments before starting.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── All Techniques Overview ────────────────── -->
+    <section style="margin-top:56px;">
+      <h2 style="font-size:1.15rem;font-weight:800;color:#1c1b1b;margin:0 0 20px;">All Techniques at a Glance</h2>
+      <div id="overview-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;"></div>
+    </section>
+
+  </main>
+
+  <!-- Completion Toast -->
+  <div id="done-toast">
+    <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">check_circle</span>
+    Session complete! Well done &#127807;
+  </div>
+
+  <script src="js/3d-elements.js"></script>
+  <script>
+  /* ════════════════════════════════════════════════════
+     TECHNIQUES DATA
+  ════════════════════════════════════════════════════ */
+  var TECHNIQUES = [
+    {
+      id: 'box', name: 'Box Breathing', icon: 'crop_square',
+      sub: '4-4-4-4 \u00b7 Stress Reset \u00b7 5 rounds', rounds: 5, color: '#6b38d4',
+      phases: [
+        { label: 'Inhale', cls: 'pb-inhale', icon: 'air',          dur: 4, isIn: true  },
+        { label: 'Hold',   cls: 'pb-hold',   icon: 'pause_circle',  dur: 4              },
+        { label: 'Exhale', cls: 'pb-exhale', icon: 'keyboard_arrow_down', dur: 4, isOut: true },
+        { label: 'Hold',   cls: 'pb-hold',   icon: 'pause_circle',  dur: 4              }
+      ],
+      steps: [
+        'Sit upright in a comfortable chair or on the floor.',
+        'Exhale all air from your lungs completely before starting.',
+        'Inhale through the nose for 4 counts \u2014 feel your belly expand.',
+        'Hold your breath gently for 4 counts with a full chest.',
+        'Exhale slowly through the mouth for 4 counts.',
+        'Hold the empty lungs for 4 counts before the next round.'
+      ],
+      benefits: ['Reduces cortisol', 'Calms nervous system', 'Sharpens focus', 'Used by Navy SEALs'],
+      tip: 'Keep your eyes closed and visualise the four sides of a box as you breathe.'
+    },
+    {
+      id: 'pranav', name: 'Pranav (Om)', icon: 'self_improvement',
+      sub: '6-0-6-0 \u00b7 Meditative \u00b7 7 rounds', rounds: 7, color: '#6f46b9',
+      phases: [
+        { label: 'Inhale', cls: 'pb-inhale', icon: 'air',               dur: 6, isIn: true  },
+        { label: 'Exhale', cls: 'pb-exhale', icon: 'keyboard_arrow_down', dur: 6, isOut: true }
+      ],
+      steps: [
+        'Sit in a comfortable meditative posture.',
+        'Close your eyes and relax your face, jaw and shoulders.',
+        'Inhale deeply through the nose for 6 counts.',
+        'As you exhale, mentally or audibly chant "Ommm" for 6 counts.',
+        'Feel the vibration resonating from chest to head.',
+        'Pause naturally between rounds \u2014 do not rush.'
+      ],
+      benefits: ['Deep relaxation', 'Lowers blood pressure', 'Enhances mindfulness', 'Reduces anxiety'],
+      tip: 'The humming vibration of Om stimulates the vagus nerve \u2014 even silent mental chanting works.'
+    },
+    {
+      id: 'nadi', name: 'Nadi Shodhana', icon: 'swap_horiz',
+      sub: '4-4-4 \u00b7 Alternate Nostril \u00b7 6 rounds', rounds: 6, color: '#8455ef',
+      phases: [
+        { label: 'Inhale (L)', cls: 'pb-inhale', icon: 'air',               dur: 4, isIn: true  },
+        { label: 'Hold',       cls: 'pb-hold',   icon: 'pause_circle',       dur: 4              },
+        { label: 'Exhale (R)', cls: 'pb-exhale', icon: 'keyboard_arrow_down', dur: 4, isOut: true },
+        { label: 'Inhale (R)', cls: 'pb-inhale', icon: 'air',               dur: 4, isIn: true  },
+        { label: 'Hold',       cls: 'pb-hold',   icon: 'pause_circle',       dur: 4              },
+        { label: 'Exhale (L)', cls: 'pb-exhale', icon: 'keyboard_arrow_down', dur: 4, isOut: true }
+      ],
+      steps: [
+        'Sit comfortably with your left hand resting on your knee.',
+        'Raise your right hand \u2014 thumb closes right nostril, ring finger closes left.',
+        'Close the right nostril. Inhale slowly through the left for 4 counts.',
+        'Close both nostrils and hold for 4 counts.',
+        'Release the right nostril, exhale slowly for 4 counts.',
+        'Inhale right for 4, hold for 4, exhale left for 4. That is one full round.'
+      ],
+      benefits: ['Balances left/right brain', 'Clears energy channels', 'Instant stress relief', 'Improves lung capacity'],
+      tip: 'If holding feels uncomfortable, skip the holds initially and just alternate nostrils on each breath.'
+    },
+    {
+      id: 'f478', name: '4-7-8 Breath', icon: 'bedtime',
+      sub: '4-7-8 \u00b7 Sleep & Calm \u00b7 4 rounds', rounds: 4, color: '#5d5a69',
+      phases: [
+        { label: 'Inhale', cls: 'pb-inhale', icon: 'air',               dur: 4, isIn: true  },
+        { label: 'Hold',   cls: 'pb-hold',   icon: 'pause_circle',       dur: 7              },
+        { label: 'Exhale', cls: 'pb-exhale', icon: 'keyboard_arrow_down', dur: 8, isOut: true }
+      ],
+      steps: [
+        'Place the tip of your tongue behind your upper front teeth throughout.',
+        'Exhale completely through your mouth, making a whoosh sound.',
+        'Close your mouth and inhale quietly through your nose for 4 counts.',
+        'Hold your breath for 7 counts \u2014 keep your tongue in position.',
+        'Exhale completely through your mouth for 8 counts (whoosh sound).',
+        'Do only 4 rounds at first, then build up gradually over weeks.'
+      ],
+      benefits: ['Induces sleep quickly', 'Stops panic attacks', 'Lowers heart rate', 'Activates parasympathetic system'],
+      tip: 'Created by Dr. Andrew Weil \u2014 the most powerful technique for rapid calming in crisis moments.'
+    },
+    {
+      id: 'kap', name: 'Kapalabhati', icon: 'whatshot',
+      sub: '1-1 \u00b7 Energising \u00b7 3 rounds', rounds: 3, color: '#d97706',
+      phases: [
+        { label: 'Pump Out',   cls: 'pb-exhale', icon: 'keyboard_arrow_down', dur: 1, isOut: true },
+        { label: 'Passive In', cls: 'pb-inhale', icon: 'air',               dur: 1, isIn: true  }
+      ],
+      steps: [
+        'Sit upright with both hands on your knees, palms facing up.',
+        'Take a deep natural inhale through both nostrils.',
+        'Sharply and forcefully exhale through the nose \u2014 stomach pulls in hard.',
+        'Allow the inhale to happen passively as the belly relaxes.',
+        'Repeat the pumping rhythm: one sharp exhale + passive inhale = 1 pump.',
+        'Complete 30 pumps per round, then rest 30 sec with normal breathing.'
+      ],
+      benefits: ['Boosts energy instantly', 'Detoxifies lungs', 'Strengthens core', 'Clears sinuses'],
+      tip: 'Only the exhale is active \u2014 the inhale is completely passive. Start slow (1 pump per 2 sec) then build speed.'
+    }
+  ];
+
+  /* ════════════════════════════════════════════════════
+     STATE
+  ════════════════════════════════════════════════════ */
+  var active    = TECHNIQUES[0];
+  var running   = false;
+  var round     = 0;
+  var phaseIdx  = 0;
+  var tickTimer = null;
+  var CIRC      = 2 * Math.PI * 118; // ~741.4
+
+  /* ════════════════════════════════════════════════════
+     RENDER TECHNIQUE CARDS
+  ════════════════════════════════════════════════════ */
+  function buildTGrid() {
+    var g = document.getElementById('tgrid');
+    g.innerHTML = '';
+    TECHNIQUES.forEach(function(t) {
+      var d = document.createElement('div');
+      d.className = 'tcard glass-card' + (t.id === active.id ? ' sel' : '');
+      d.id = 'tc-' + t.id;
+      d.style.cssText = 'border-radius:18px;padding:16px 8px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;';
+      d.innerHTML =
+        '<span class="material-symbols-outlined ticon" style="font-size:2rem;color:#494454;font-variation-settings:\'FILL\' 1">' + t.icon + '</span>' +
+        '<p class="tname" style="font-size:0.7rem;font-weight:800;color:#1c1b1b;margin:0;line-height:1.3;">' + t.name + '</p>';
+      d.onclick = function() { selectTech(t.id); };
+      g.appendChild(d);
+    });
+  }
+
+  function buildOverview() {
+    var g = document.getElementById('overview-grid');
+    g.innerHTML = '';
+    TECHNIQUES.forEach(function(t) {
+      var d = document.createElement('div');
+      d.className = 'glass-card';
+      d.style.cssText = 'border-radius:24px;border:1.5px solid rgba(255,255,255,0.45);padding:20px;cursor:pointer;transition:all 0.22s ease;';
+      d.innerHTML =
+        '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">' +
+          '<div style="width:40px;height:40px;border-radius:12px;background:' + t.color + '18;display:flex;align-items:center;justify-content:center;flex-shrink:0;">' +
+            '<span class="material-symbols-outlined" style="color:' + t.color + ';font-variation-settings:\'FILL\' 1">' + t.icon + '</span>' +
+          '</div>' +
+          '<div>' +
+            '<p style="font-size:0.85rem;font-weight:800;color:#1c1b1b;margin:0 0 2px;">' + t.name + '</p>' +
+            '<p style="font-size:0.67rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#49445480;margin:0;">' + t.rounds + ' rounds</p>' +
+          '</div>' +
+        '</div>' +
+        '<p style="font-size:0.78rem;color:#494454;line-height:1.6;margin:0 0 12px;">' + t.steps[0] + '</p>' +
+        '<div style="display:flex;flex-wrap:wrap;gap:6px;">' +
+          t.benefits.slice(0,2).map(function(b) {
+            return '<span style="font-size:0.67rem;font-weight:800;padding:3px 10px;border-radius:99px;background:' + t.color + '14;color:' + t.color + ';">' + b + '</span>';
+          }).join('') +
+        '</div>';
+      d.onmouseover = function() { d.style.transform = 'translateY(-3px)'; };
+      d.onmouseout  = function() { d.style.transform = ''; };
+      d.onclick = function() {
+        selectTech(t.id);
+        document.getElementById('s-title').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      };
+      g.appendChild(d);
+    });
+  }
+
+  /* ════════════════════════════════════════════════════
+     RENDER ACTIVE TECHNIQUE UI
+  ════════════════════════════════════════════════════ */
+  function renderUI() {
+    var t = active;
+    document.getElementById('s-title').textContent = t.name;
+    document.getElementById('s-sub').textContent   = t.sub;
+    document.getElementById('tip-text').textContent = t.tip;
+
+    /* Steps */
+    var sg = document.getElementById('step-guide');
+    sg.innerHTML = '';
+    t.steps.forEach(function(s, i) {
+      var row = document.createElement('div');
+      row.style.cssText = 'display:flex;gap:12px;align-items:flex-start;';
+      row.innerHTML =
+        '<div class="snum" id="sn' + i + '">' + (i + 1) + '</div>' +
+        '<p style="font-size:0.82rem;font-weight:500;color:#494454;line-height:1.65;margin:0;padding-top:3px;">' + s + '</p>';
+      sg.appendChild(row);
+    });
+
+    /* Benefits */
+    var bg = document.getElementById('ben-grid');
+    bg.innerHTML = '';
+    t.benefits.forEach(function(b) {
+      var card = document.createElement('div');
+      card.style.cssText = 'display:flex;align-items:center;gap:8px;border-radius:12px;padding:10px 12px;border:1.5px solid rgba(255,255,255,0.45);background:rgba(255,255,255,0.38);';
+      card.innerHTML =
+        '<span class="material-symbols-outlined" style="font-size:1rem;color:#6b38d4;font-variation-settings:\'FILL\' 1;flex-shrink:0;">check_circle</span>' +
+        '<span style="font-size:0.75rem;font-weight:700;color:#1c1b1b;">' + b + '</span>';
+      bg.appendChild(card);
+    });
+
+    /* Round dots */
+    buildDots();
+
+    /* Orb reset */
+    setOrbIdle();
+    setPhaseBadge({ label: 'Ready', cls: 'pb-inhale', icon: 'air' });
+    resetRing();
+
+    /* Button reset */
+    document.getElementById('start-icon').textContent = 'play_arrow';
+    document.getElementById('start-lbl').textContent  = 'Start Session';
+  }
+
+  function buildDots() {
+    var wrap = document.getElementById('round-dots');
+    wrap.innerHTML = '';
+    for (var i = 0; i < active.rounds; i++) {
+      var d = document.createElement('div');
+      d.className = 'rd' + (i === 0 ? ' current' : '');
+      d.id = 'rd' + i;
+      wrap.appendChild(d);
+    }
+    document.getElementById('round-lbl').textContent = 'Round 1 of ' + active.rounds;
+  }
+
+  function selectTech(id) {
+    if (running) stopSession();
+    active = TECHNIQUES.find(function(t) { return t.id === id; });
+    document.querySelectorAll('.tcard').forEach(function(c) { c.classList.remove('sel'); });
+    var el = document.getElementById('tc-' + id);
+    if (el) el.classList.add('sel');
+    round = 0; phaseIdx = 0;
+    renderUI();
+  }
+
+  /* ════════════════════════════════════════════════════
+     SESSION CONTROL
+  ════════════════════════════════════════════════════ */
+  function toggleSession() {
+    if (running) {
+      pauseSession();
+    } else {
+      startSession();
+    }
+  }
+
+  function startSession() {
+    running  = true;
+    round    = 0;
+    phaseIdx = 0;
+    document.getElementById('start-icon').textContent = 'pause';
+    document.getElementById('start-lbl').textContent  = 'Pause';
+    updateDots(0);
+    runPhase();
+  }
+
+  function pauseSession() {
+    running = false;
+    clearTimeout(tickTimer);
+    document.getElementById('start-icon').textContent = 'play_arrow';
+    document.getElementById('start-lbl').textContent  = 'Resume';
+  }
+
+  function stopSession() {
+    running = false;
+    clearTimeout(tickTimer);
+  }
+
+  function resetSession() {
+    stopSession();
+    round = 0; phaseIdx = 0;
+    document.getElementById('start-icon').textContent = 'play_arrow';
+    document.getElementById('start-lbl').textContent  = 'Start Session';
+    buildDots();
+    setOrbIdle();
+    resetRing();
+    setPhaseBadge({ label: 'Inhale', cls: 'pb-inhale', icon: 'air' });
+    lightStep(-1);
+  }
+
+  /* ════════════════════════════════════════════════════
+     PHASE ENGINE
+  ════════════════════════════════════════════════════ */
+  function runPhase() {
+    if (!running) return;
+    var phase   = active.phases[phaseIdx];
+    var dur     = phase.dur;
+
+    // Update orb text
+    document.getElementById('orb-phase').textContent = phase.label;
+    document.getElementById('orb-count').textContent = dur;
+
+    // Animate orb size: grow on inhale, shrink on exhale, stay on hold
+    if (phase.isIn)      animateOrb(true,  dur);
+    else if (phase.isOut) animateOrb(false, dur);
+
+    // Update badge + step highlight
+    setPhaseBadge(phase);
+    lightStep(Math.min(phaseIdx + 1, active.steps.length - 1));
+
+    // Start ring fill
+    fillRing(0);
+    var startT = Date.now();
+    var durMs  = dur * 1000;
+
+    var remaining = dur;
+
+    var tick = function() {
+      if (!running) return;
+      remaining--;
+      document.getElementById('orb-count').textContent = Math.max(0, remaining);
+
+      var elapsed  = Date.now() - startT;
+      var progress = Math.min(elapsed / durMs, 1);
+      fillRing(progress);
+
+      if (remaining > 0) {
+        tickTimer = setTimeout(tick, 1000);
+      } else {
+        nextPhase();
+      }
+    };
+
+    tickTimer = setTimeout(tick, 1000);
+  }
+
+  function nextPhase() {
+    phaseIdx++;
+    if (phaseIdx >= active.phases.length) {
+      phaseIdx = 0;
+      round++;
+      if (round >= active.rounds) { finishSession(); return; }
+      updateDots(round);
+      document.getElementById('round-lbl').textContent = 'Round ' + (round + 1) + ' of ' + active.rounds;
+    }
+    runPhase();
+  }
+
+  function finishSession() {
+    running = false;
+    clearTimeout(tickTimer);
+    document.getElementById('orb-phase').textContent = 'Done!';
+    document.getElementById('orb-count').textContent = '\u2713';
+    document.getElementById('start-icon').textContent = 'replay';
+    document.getElementById('start-lbl').textContent  = 'Start Again';
+    fillRing(1);
+
+    // Mark all dots done
+    for (var i = 0; i < active.rounds; i++) {
+      var d = document.getElementById('rd' + i);
+      if (d) { d.className = 'rd done'; }
+    }
+
+    // Toast
+    var toast = document.getElementById('done-toast');
+    toast.classList.add('show');
+    setTimeout(function() { toast.classList.remove('show'); }, 3800);
+  }
+
+  /* ════════════════════════════════════════════════════
+     HELPERS
+  ════════════════════════════════════════════════════ */
+  function setPhaseBadge(phase) {
+    var b = document.getElementById('phase-badge');
+    b.className = 'phase-badge ' + (phase.cls || 'pb-inhale');
+    b.innerHTML =
+      '<span class="material-symbols-outlined" style="font-size:0.88rem;font-variation-settings:\'FILL\' 1">' + (phase.icon || 'air') + '</span>' +
+      phase.label;
+  }
+
+  function lightStep(idx) {
+    for (var i = 0; i < 10; i++) {
+      var el = document.getElementById('sn' + i);
+      if (!el) continue;
+      if (i === idx) el.classList.add('lit'); else el.classList.remove('lit');
+    }
+  }
+
+  function updateDots(activeIdx) {
+    for (var i = 0; i < active.rounds; i++) {
+      var d = document.getElementById('rd' + i);
+      if (!d) continue;
+      d.className = 'rd' + (i < activeIdx ? ' done' : i === activeIdx ? ' current' : '');
+    }
+  }
+
+  /* Orb grow/shrink via CSS transition on width/height */
+  function animateOrb(grow, durSec) {
+    var orb = document.getElementById('breath-orb');
+    orb.style.transition = 'width ' + durSec + 's cubic-bezier(0.4,0,0.2,1), height ' + durSec + 's cubic-bezier(0.4,0,0.2,1)';
+    var size = grow ? 220 : 160;
+    orb.style.width  = size + 'px';
+    orb.style.height = size + 'px';
+  }
+
+  function setOrbIdle() {
+    var orb = document.getElementById('breath-orb');
+    orb.style.transition = 'width 0.6s ease, height 0.6s ease';
+    orb.style.width  = '198px';
+    orb.style.height = '198px';
+    document.getElementById('orb-phase').textContent = 'Ready';
+    document.getElementById('orb-count').textContent = '\u2013';
+  }
+
+  /* SVG progress ring */
+  function fillRing(progress) {
+    var pf = document.getElementById('prog-fill');
+    pf.style.transition = progress === 0 ? 'none' : 'stroke-dashoffset 0.95s linear';
+    pf.style.strokeDashoffset = CIRC * (1 - Math.min(progress, 1));
+  }
+
+  function resetRing() {
+    var pf = document.getElementById('prog-fill');
+    pf.style.transition = 'none';
+    pf.style.strokeDashoffset = CIRC;
+  }
+
+  /* ════════════════════════════════════════════════════
+     RESPONSIVE: collapse to single column on mobile
+  ════════════════════════════════════════════════════ */
+  function applyLayout() {
+    var grid = document.getElementById('studio-grid');
+    var tg   = document.getElementById('tgrid');
+    if (!grid || !tg) return;
+    if (window.innerWidth < 768) {
+      grid.style.gridTemplateColumns = '1fr';
+      tg.style.gridTemplateColumns   = 'repeat(3,1fr)';
+    } else {
+      grid.style.gridTemplateColumns = '1fr 1fr';
+      tg.style.gridTemplateColumns   = 'repeat(5,1fr)';
+    }
+  }
+  window.addEventListener('resize', applyLayout);
+
+  /* ════════════════════════════════════════════════════
+     BOOTSTRAP
+  ════════════════════════════════════════════════════ */
+  document.addEventListener('DOMContentLoaded', function() {
+    buildTGrid();
+    buildOverview();
+    renderUI();
+    applyLayout();
+  });
+  </script>
+</body>
+</html>

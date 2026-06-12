@@ -94,19 +94,19 @@
         }
     </style>
 </head>
-<body class="bg-background text-on-background font-body-md min-h-screen overflow-x-hidden immersive-3d-bg">
+<body class="bg-background text-on-background font-body-md min-h-screen overflow-x-hidden immersive-3d-bg" style="font-family:'Plus Jakarta Sans',sans-serif;">
     <!-- WebGL Background Canvas -->
     <canvas id="webgl-bg"></canvas>
 
     <!-- Page Transition Overlay -->
     <div id="page-transition-overlay"></div>
 
-    <!-- Floating Chat Button -->
-    <div class="fixed bottom-32 right-6 md:right-margin-desktop z-40 floating-element">
-        <button class="pill-3d px-6 py-4 rounded-full text-white font-semibold text-base flex items-center gap-3 group shadow-xl">
-            <span class="material-symbols-outlined group-hover:rotate-12 transition-transform">forum</span>
-            <span>Chat with Haven</span>
-        </button>
+    <!-- Floating Breathe Button -->
+    <div class="fixed bottom-32 right-6 md:right-16 z-40">
+        <a href="breathe.html" class="pill-3d px-6 py-4 rounded-full text-white font-semibold text-base flex items-center gap-3 group shadow-xl no-underline">
+            <span class="material-symbols-outlined group-hover:rotate-12 transition-transform">air</span>
+            <span>Breathe</span>
+        </a>
     </div>
 
     <!-- Top Navigation Bar -->
@@ -300,10 +300,10 @@
             <div class="absolute inset-0 bg-gradient-to-t from-primary/80 via-primary/20 to-transparent flex items-end p-8 md:p-12">
                 <div class="max-w-xl space-y-6">
                     <h3 class="text-2xl md:text-4xl font-extrabold text-white drop-shadow-md leading-tight">Unlock more profound insights through focused breathing.</h3>
-                    <button class="pill-3d px-8 py-4 text-white rounded-full font-bold flex items-center gap-2" onclick="openBreathingModal()">
+                    <a href="breathe.html" class="pill-3d px-8 py-4 text-white rounded-full font-bold flex items-center gap-2 no-underline">
                         <span class="material-symbols-outlined">air</span>
                         Start Breathing Exercise
-                    </button>
+                    </a>
                 </div>
             </div>
         </section>
@@ -370,8 +370,10 @@
     <script>
         // Check page visibility and load results
         document.addEventListener('DOMContentLoaded', () => {
-            // Check auth state
-            if (localStorage.getItem('mindhaven_auth') !== 'true') {
+            // Check auth state — allow both regular auth and guest mode
+            const isAuth = localStorage.getItem('mindhaven_auth') === 'true';
+            const isGuest = localStorage.getItem('mindhaven_guest') === 'true';
+            if (!isAuth && !isGuest) {
                 window.location.href = "auth.html";
                 return;
             }
