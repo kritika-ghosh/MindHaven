@@ -27,39 +27,31 @@
     <!-- Page Transition Overlay -->
     <div id="page-transition-overlay"></div>
 
-    <!-- Floating Breathe Button -->
-    <div class="fixed bottom-32 right-6 md:right-16 z-40">
-        <a href="breathe.html" class="pill-3d px-6 py-4 rounded-full text-white font-semibold text-base flex items-center gap-3 group shadow-xl no-underline">
-            <span class="material-symbols-outlined group-hover:rotate-12 transition-transform">air</span>
-            <span>Breathe</span>
-        </a>
-    </div>
+
 
     <!-- Top Navigation Bar -->
-    <header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-mobile md:px-margin-desktop py-4 bg-surface/30 backdrop-blur-xl border-b border-white/20 transition-all duration-300">
+    <header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-5 md:px-16 py-4 backdrop-blur-xl border-b border-white/20 transition-all duration-300" style="background:rgba(252,249,248,0.35)">
         <div class="flex items-center gap-2">
-            <a href="index.html" class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary">
-                <span class="material-symbols-outlined text-[20px]">auto_awesome</span>
+            <a href="index.html" class="w-8 h-8 rounded-full flex items-center justify-center text-white flex-shrink-0" style="background:#8455ef">
+                <span class="material-symbols-outlined text-[20px]" style="font-variation-settings:'FILL' 1">psychology</span>
             </a>
-            <h1 class="font-title-md text-title-md font-bold text-on-surface">MindHaven</h1>
+            <span class="font-extrabold text-lg tracking-tight" style="color:#1c1b1b">MindHaven</span>
         </div>
-        <div class="hidden md:flex gap-8 items-center">
-            <a class="font-label-sm text-sm text-on-surface-variant/80 hover:text-primary font-bold transition-colors" href="assess.html">Assess</a>
-            <a class="font-label-sm text-sm text-primary font-extrabold" href="#">Insights</a>
-            <a class="font-label-sm text-sm text-on-surface-variant/80 hover:text-primary font-bold transition-colors" href="index.html">Main Gate</a>
-        </div>
-        <div class="flex items-center gap-4">
-            <button class="p-2 hover:bg-white/20 rounded-full transition-colors active:scale-95 duration-150">
-                <span class="material-symbols-outlined text-on-surface">settings</span>
-            </button>
-            <div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary/20">
+        <nav style="display:flex;gap:32px;align-items:center;">
+            <a href="assess.html"   style="font-size:0.85rem;font-weight:700;color:#494454;text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='#6b38d4'" onmouseout="this.style.color='#494454'">Assess</a>
+            <span                   style="font-size:0.85rem;font-weight:800;color:#6b38d4;white-space:nowrap;">Insights</span>
+            <a href="index.html"    style="font-size:0.85rem;font-weight:700;color:#494454;text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='#6b38d4'" onmouseout="this.style.color='#494454'">Main Gate</a>
+            <a href="breathe.html" style="font-size:0.85rem;font-weight:700;color:#494454;text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='#6b38d4'" onmouseout="this.style.color='#494454'">Breathe</a>
+        </nav>
+        <div class="flex items-center gap-3 flex-shrink-0">
+            <div class="w-10 h-10 rounded-full overflow-hidden border-2" style="border-color:rgba(107,56,212,0.25)">
                 <img alt="Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAc6gUeyepdAYeiT1kNrp5-bdopO8mAEmM2WIzSh9bpb2Y8TkI54s9vjF4LOjA-CNNSNpSIm2Nafm88rhjVUOlTI8-roRmdfUWKGWgE_3pEHvtFLMdpNR54iDmZ10yU7khzKni1gysp2QOiwlfBItm6VE2jqvz2_7DYcsgWy_MT8xRh26dZs3VT8biI-c1qOrW-itV65RWqBh47nVVfQNZsyeyEZK6p5YBW1aXF5mY1SvjDylraJKV-3IumaI8po6FbnGl31hDdjQ"/>
             </div>
         </div>
     </header>
 
     <!-- Main Content Grid -->
-    <main class="pt-32 pb-40 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto space-y-24">
+    <main class="pt-32 pb-24 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto space-y-24">
         
         <!-- Section 1: The Verdict -->
         <section class="flex flex-col items-center text-center space-y-12 scroll-section">
@@ -235,60 +227,12 @@
         </section>
     </main>
 
-    <!-- Footer Action Bar -->
-    <footer class="fixed bottom-0 left-0 w-full z-40 px-margin-mobile md:px-margin-desktop py-6 bg-surface/50 backdrop-blur-3xl border-t border-white/20 shadow-md">
-        <div class="max-w-container-max mx-auto flex items-center justify-between">
-            <div class="hidden md:flex gap-8">
-                <button class="flex items-center gap-2 font-semibold text-xs text-on-surface-variant hover:text-primary transition-colors">
-                    <span class="material-symbols-outlined text-[20px]">share</span>
-                    Share Analysis
-                </button>
-                <button class="flex items-center gap-2 font-semibold text-xs text-on-surface-variant hover:text-primary transition-colors" onclick="window.location.href='assess.html'">
-                    <span class="material-symbols-outlined text-[20px]">history</span>
-                    Retake Assessment
-                </button>
-            </div>
-            <div class="flex items-center gap-4 w-full md:w-auto">
-                <button class="flex-1 md:flex-none px-6 py-3 glass-card rounded-full text-xs font-bold text-on-surface hover:bg-white/50 transition-all active:scale-95 border-white/50" onclick="window.location.href='index.html'">
-                    Save and Return
-                </button>
-                <button class="flex-1 md:flex-none px-8 py-3 bg-primary text-on-primary rounded-full text-xs font-bold shadow-[0_0_15px_rgba(107,56,212,0.3)] hover:bg-secondary transition-all active:scale-95 flex items-center justify-center gap-2">
-                    <span class="material-symbols-outlined text-[18px]">picture_as_pdf</span>
-                    Export PDF
-                </button>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Interactive Breathing Exercise Modal -->
-    <div id="breathing-modal" class="fixed inset-0 bg-black/40 backdrop-blur-2xl z-[100] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-all duration-500">
-        <div class="glass-card p-12 rounded-[40px] border-white/50 shadow-2xl max-w-lg w-full text-center relative flex flex-col items-center space-y-8">
-            <button class="absolute top-6 right-6 p-2 text-on-surface hover:bg-white/20 rounded-full transition-colors" onclick="closeBreathingModal()">
-                <span class="material-symbols-outlined">close</span>
-            </button>
-            
-            <div class="space-y-2">
-                <h3 class="text-2xl font-extrabold text-on-surface">Soma Breathing Loop</h3>
-                <p class="text-xs text-on-surface-variant uppercase font-bold tracking-widest">Coordinated Vagus Nerve Stimulation</p>
-            </div>
-
-            <!-- Pulsing 3D circle -->
-            <div class="w-48 h-48 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center text-white text-xl font-bold breathing-circle">
-                <span id="breathing-stage-text">Breathe In</span>
-            </div>
-
-            <div class="space-y-2">
-                <h4 class="text-lg font-extrabold text-primary" id="breathing-action-desc">Inhale deeply through your nose</h4>
-                <p class="text-sm text-on-surface-variant/80 font-medium" id="breathing-timer-text">04 seconds remaining</p>
-            </div>
-
-            <!-- Modal progress indicators -->
-            <div class="flex gap-2 justify-center">
-                <div class="h-2 w-8 bg-primary rounded-full" id="breathe-dot-in"></div>
-                <div class="h-2 w-8 bg-surface-container-highest rounded-full" id="breathe-dot-hold"></div>
-                <div class="h-2 w-8 bg-surface-container-highest rounded-full" id="breathe-dot-out"></div>
-            </div>
-        </div>
+    <!-- Retake Assessment footer strip -->
+    <div style="width:100%;padding:20px 64px;display:flex;justify-content:center;">
+        <a href="assess.html" style="display:inline-flex;align-items:center;gap:8px;font-size:0.8rem;font-weight:700;color:#494454;text-decoration:none;padding:10px 20px;border-radius:99px;border:1px solid rgba(0,0,0,0.1);background:rgba(255,255,255,0.4);transition:all 0.2s ease;" onmouseover="this.style.color='#6b38d4';this.style.borderColor='rgba(107,56,212,0.3)'" onmouseout="this.style.color='#494454';this.style.borderColor='rgba(0,0,0,0.1)'">
+            <span class="material-symbols-outlined" style="font-size:1rem;">replay</span>
+            Retake Assessment
+        </a>
     </div>
 
     <!-- Scripts -->
