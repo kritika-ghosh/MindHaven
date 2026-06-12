@@ -1,296 +1,271 @@
-/* Core Custom Styles for MindHaven */
+/* ═══════════════════════════════════════════════════════════════
+   MindHaven Design System — styles.css
+   Motion philosophy: calm, purposeful, never dizzying.
+   All page-level transitions: ease-out, ≤ 0.6s, no rotation.
+═══════════════════════════════════════════════════════════════ */
 
+/* ── Design Tokens ─────────────────────────────────────────── */
 :root {
-  --primary-glow: radial-gradient(circle, rgba(107, 56, 212, 0.15) 0%, rgba(111, 70, 185, 0) 70%);
-  --secondary-glow: radial-gradient(circle, rgba(111, 70, 185, 0.1) 0%, rgba(208, 188, 255, 0) 70%);
-  --glass-bg: rgba(255, 255, 255, 0.35);
-  --glass-bg-dark: rgba(15, 12, 25, 0.25);
-  --glass-border: rgba(255, 255, 255, 0.4);
-  --glass-border-dark: rgba(255, 255, 255, 0.1);
-  --glass-shadow: 0 8px 32px 0 rgba(111, 70, 185, 0.06);
-  --font-plus: 'Plus Jakarta Sans', sans-serif;
-  --font-inter: 'Inter', sans-serif;
+  --col-primary:   #6b38d4;
+  --col-secondary: #6f46b9;
+  --col-surface:   #fcf9f8;
+  --col-on-surface:#1c1b1b;
+  --col-muted:     #494454;
+
+  --glass-bg:      rgba(255, 255, 255, 0.38);
+  --glass-border:  rgba(255, 255, 255, 0.45);
+  --glass-shadow:  0 4px 24px rgba(107, 56, 212, 0.07);
+
+  --font-primary:  'Plus Jakarta Sans', sans-serif;
+
+  /* Motion tokens — change here to retime everywhere */
+  --dur-fast:   0.18s;
+  --dur-base:   0.30s;
+  --dur-slow:   0.55s;
+  --ease-out:   cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-in-out:cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Lift distances — keeps hover feedback subtle */
+  --lift-sm:    -2px;
+  --lift-md:    -4px;
 }
 
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-::-webkit-scrollbar-track {
-  background: rgba(252, 249, 248, 0.5);
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(107, 56, 212, 0.2);
-  border-radius: 9999px;
-  border: 2px solid transparent;
-  background-clip: padding-box;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(107, 56, 212, 0.4);
-  border: 2px solid transparent;
-  background-clip: padding-box;
-}
+/* ── Base ──────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
 
 body {
   min-height: 100vh;
-  font-family: var(--font-plus);
+  font-family: var(--font-primary);
+  background: var(--col-surface);
+  color: var(--col-on-surface);
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
-/* WebGL Canvas */
+/* ── Custom Scrollbar ──────────────────────────────────────── */
+::-webkit-scrollbar          { width: 6px; height: 6px; }
+::-webkit-scrollbar-track    { background: rgba(252,249,248,0.5); }
+::-webkit-scrollbar-thumb    { background: rgba(107,56,212,0.22); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover{ background: rgba(107,56,212,0.38); }
+
+/* ── WebGL canvas ──────────────────────────────────────────── */
 #webgl-bg {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  position: fixed; inset: 0;
+  width: 100%; height: 100%;
   z-index: -10;
   pointer-events: none;
 }
 
-/* Glassmorphism Styles */
+/* ── Glass card ────────────────────────────────────────────── */
+/*
+   No tilt, no rotateX/Y. Hover = subtle lift + shadow deepen.
+   Matches breathe.html's card behaviour exactly.
+*/
 .glass-card {
   background: var(--glass-bg);
-  backdrop-filter: blur(40px);
-  -webkit-backdrop-filter: blur(40px);
+  backdrop-filter: blur(36px);
+  -webkit-backdrop-filter: blur(36px);
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow);
-  transform-style: preserve-3d;
-  transition: transform 0.1s ease-out, box-shadow 0.3s ease, background 0.3s ease, border 0.3s ease;
-}
-
-.dark .glass-card {
-  background: var(--glass-bg-dark);
-  border: 1px solid var(--glass-border-dark);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  /* Only translate — no perspective/rotate */
+  transition:
+    transform  var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out),
+    background var(--dur-base) ease;
 }
 
 .glass-card::before {
   content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,0.05) 100%);
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg,
+    rgba(255,255,255,0.10) 0%,
+    rgba(255,255,255,0.00) 60%,
+    rgba(255,255,255,0.04) 100%);
   pointer-events: none;
   border-radius: inherit;
   z-index: 1;
 }
 
+/* Hover: lift only, no rotate */
+.glass-card:hover {
+  transform: translateY(var(--lift-md));
+  box-shadow: 0 12px 36px rgba(107,56,212,0.12);
+}
+
+/* Selected / active state */
 .glass-card-active {
-  background: rgba(107, 56, 212, 0.15) !important;
-  border: 1.5px solid rgba(107, 56, 212, 0.6) !important;
-  box-shadow: 
-      0 15px 30px rgba(107, 56, 212, 0.15),
-      inset 0 0 15px rgba(107, 56, 212, 0.05);
+  background: rgba(107,56,212,0.12) !important;
+  border: 1.5px solid rgba(107,56,212,0.5) !important;
+  box-shadow: 0 8px 24px rgba(107,56,212,0.14) !important;
 }
 
-/* 3D Tilt Glare Overlay */
-.card-glare {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  background: radial-gradient(circle at 0% 0%, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 80%);
-  z-index: 2;
-  mix-blend-mode: overlay;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-/* Floating Spheres */
+/* ── Floating ambient blobs ────────────────────────────────── */
 .floating-sphere {
   position: absolute;
   border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%, rgba(107, 56, 212, 0.3), rgba(111, 70, 185, 0.05));
-  filter: blur(50px);
+  background: radial-gradient(circle at 30% 30%,
+    rgba(107,56,212,0.28),
+    rgba(111,70,185,0.04));
+  filter: blur(52px);
   z-index: -5;
-  animation: float 20s infinite alternate ease-in-out;
+  animation: blobDrift 22s infinite alternate ease-in-out;
 }
 
-@keyframes float {
-  0% { transform: translate(0, 0) scale(1); }
-  100% { transform: translate(60px, 40px) scale(1.15); }
+@keyframes blobDrift {
+  0%   { transform: translate(0,    0)    scale(1);    }
+  100% { transform: translate(48px, 32px) scale(1.12); }
 }
 
-/* Choice Cards */
+/* ── Floating element (FAB / pill button) ──────────────────── */
+/*
+   Max movement: 8px vertical, slow period.
+   Matches breathe.html's "air" feel.
+*/
+.floating-element {
+  animation: gentleFloat 7s ease-in-out infinite;
+}
+
+@keyframes gentleFloat {
+  0%, 100% { transform: translateY(0px);   }
+  50%       { transform: translateY(-8px);  }
+}
+
+/* ── Subtle icon float (used in insights action cards) ─────── */
+.floating-3d {
+  animation: iconFloat 8s ease-in-out infinite;
+}
+
+@keyframes iconFloat {
+  0%, 100% { transform: translateY(0px);  }
+  50%       { transform: translateY(-5px); }
+}
+
+/* ── Primary pill button ───────────────────────────────────── */
+.pill-3d {
+  background: linear-gradient(135deg, #8455ef, #6b38d4);
+  box-shadow:
+    0 6px 18px rgba(107,56,212,0.22),
+    inset 0 2px 3px rgba(255,255,255,0.28),
+    inset 0 -2px 3px rgba(0,0,0,0.12);
+  transition:
+    transform  var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.pill-3d:hover {
+  transform: translateY(var(--lift-sm));
+  box-shadow:
+    0 10px 24px rgba(107,56,212,0.3),
+    inset 0 2px 3px rgba(255,255,255,0.28);
+}
+
+.pill-3d:active {
+  transform: scale(0.97) translateY(1px);
+  box-shadow: 0 3px 10px rgba(107,56,212,0.35);
+}
+
+/* ── Glass input ───────────────────────────────────────────── */
+.glass-input {
+  background: rgba(255,255,255,0.22);
+  border: 1px solid rgba(255,255,255,0.32);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--col-on-surface);
+  transition: background var(--dur-base) ease, border-color var(--dur-base) ease, box-shadow var(--dur-base) ease;
+}
+
+.glass-input:focus {
+  background: rgba(255,255,255,0.38);
+  border-color: var(--col-primary);
+  box-shadow: 0 0 0 3px rgba(107,56,212,0.10);
+  outline: none;
+}
+
+/* ── Page transition overlay ───────────────────────────────── */
+#page-transition-overlay {
+  position: fixed; inset: 0;
+  background: radial-gradient(circle at center, #260059 0%, #0c0814 100%);
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--dur-slow) ease;
+}
+
+/* ── Waveform bars (voice recorder) ────────────────────────── */
+.waveform-bar { height: 15%; }
+.waveform-bar.active {
+  animation: waveAnim 1.1s ease-in-out infinite alternate;
+}
+
+@keyframes waveAnim {
+  0%   { height: 15%; }
+  100% { height: 80%; }
+}
+
+/* ── Choice card (assessment quiz) ─────────────────────────── */
 .choice-card {
-  box-shadow: 
-      0 10px 20px -5px rgba(0, 0, 0, 0.03),
-      0 4px 6px -2px rgba(0, 0, 0, 0.02),
-      inset 0 1px 1px rgba(255, 255, 255, 0.6);
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) ease;
 }
 
 .choice-card:hover {
-  transform: translateY(-4px) scale(1.02);
+  transform: translateY(var(--lift-md));
+  box-shadow: 0 8px 24px rgba(107,56,212,0.12);
 }
 
-/* 3D Bubble Metric styling */
+/* ── Bubble metric (insights score orb) ─────────────────────── */
 .bubble-metric {
   position: relative;
-  background: radial-gradient(circle at 35% 35%, 
-      rgba(255, 255, 255, 0.95) 0%, 
-      rgba(255, 255, 255, 0.45) 45%, 
-      rgba(208, 188, 255, 0.2) 80%,
-      rgba(107, 56, 212, 0.08) 100%);
+  background: radial-gradient(circle at 35% 35%,
+    rgba(255,255,255,0.95) 0%,
+    rgba(255,255,255,0.50) 45%,
+    rgba(208,188,255,0.20) 80%,
+    rgba(107,56,212,0.08) 100%);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  box-shadow: 
-      inset -10px -10px 30px rgba(0,0,0,0.03),
-      inset 10px 10px 20px rgba(255,255,255,0.7),
-      0 30px 60px rgba(107, 56, 212, 0.15),
-      0 0 0 1px rgba(255,255,255,0.3);
-  transform-style: preserve-3d;
-  transition: transform 0.5s ease;
+  border: 1px solid rgba(255,255,255,0.8);
+  box-shadow:
+    inset -8px -8px 24px rgba(0,0,0,0.03),
+    inset  8px  8px 16px rgba(255,255,255,0.7),
+    0 24px 52px rgba(107,56,212,0.14);
 }
 
 .bubble-metric::after {
   content: '';
   position: absolute;
-  top: 15%;
-  left: 15%;
-  width: 25%;
-  height: 15%;
-  background: rgba(255, 255, 255, 0.85);
+  top: 15%; left: 15%;
+  width: 24%; height: 14%;
+  background: rgba(255,255,255,0.82);
   border-radius: 50%;
   filter: blur(4px);
   transform: rotate(-35deg);
 }
 
-/* Floating Animations */
-.floating-element {
-  animation: floatAnim 6s ease-in-out infinite;
-}
-
-@keyframes floatAnim {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-12px); }
-  100% { transform: translateY(0px); }
-}
-
-.floating-3d {
-  animation: floating3d 7s ease-in-out infinite;
-}
-
-@keyframes floating3d {
-  0% { transform: translateY(0px) rotateX(0deg) rotateY(0deg); }
-  33% { transform: translateY(-8px) rotateX(3deg) rotateY(6deg); }
-  66% { transform: translateY(6px) rotateX(-3deg) rotateY(-6deg); }
-  100% { transform: translateY(0px) rotateX(0deg) rotateY(0deg); }
-}
-
-/* Interactive 3D Pill button */
-.pill-3d {
-  background: linear-gradient(135deg, #8455ef, #6b38d4);
-  box-shadow: 
-      0 8px 20px rgba(107, 56, 212, 0.25),
-      inset 0 3px 3px rgba(255, 255, 255, 0.35),
-      inset 0 -3px 3px rgba(0, 0, 0, 0.15);
-  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-}
-
-.pill-3d:hover {
-  transform: translateY(-2px) scale(1.03);
-  box-shadow: 
-      0 12px 24px rgba(107, 56, 212, 0.35),
-      inset 0 3px 3px rgba(255, 255, 255, 0.35);
-}
-
-.pill-3d:active {
-  transform: scale(0.97) translateY(1px);
-  box-shadow: 0 4px 10px rgba(107, 56, 212, 0.4);
-}
-
-/* Audio Waveform animate */
-.waveform-bar {
-  animation: wave 1.2s ease-in-out infinite alternate;
-}
-
-@keyframes wave {
-  0% { height: 15%; }
-  100% { height: 85%; }
-}
-
-/* Breathing Circle Animation */
-.breathing-circle {
-  animation: breathe 12s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-  box-shadow: 0 0 50px rgba(132, 85, 239, 0.4);
-}
-
-@keyframes breathe {
-  0%, 100% {
-    transform: scale(1);
-    box-shadow: 0 0 30px rgba(132, 85, 239, 0.3);
-  }
-  33% { /* Breathe In - 4s */
-    transform: scale(1.4);
-    box-shadow: 0 0 70px rgba(132, 85, 239, 0.7), 0 0 120px rgba(107, 56, 212, 0.4);
-  }
-  66% { /* Hold - 4s */
-    transform: scale(1.4);
-    box-shadow: 0 0 80px rgba(107, 56, 212, 0.8), 0 0 140px rgba(132, 85, 239, 0.5);
-  }
-  /* Breathe Out - 4s takes it back to 100% */
-}
-
-/* Page Overlay Transition */
-#page-transition-overlay {
-  position: fixed;
-  inset: 0;
-  background: radial-gradient(circle at center, #260059 0%, #0c0814 100%);
-  z-index: 9999;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.5s ease;
-}
-
-/* Input Fields styling */
-.glass-input {
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  color: #1c1b1b;
-  transition: all 0.3s ease;
-}
-
-.glass-input:focus {
-  background: rgba(255, 255, 255, 0.35);
-  border-color: #6b38d4;
-  box-shadow: 0 0 15px rgba(107, 56, 212, 0.15);
-  outline: none;
-}
-
-.dark .glass-input {
-  background: rgba(0, 0, 0, 0.2);
-  border-color: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
-}
-
-.dark .glass-input:focus {
-  background: rgba(0, 0, 0, 0.35);
-  border-color: #8455ef;
-}
-
-/* Custom styles for slides and scroll trigger placeholders */
+/* ── Scroll reveal ─────────────────────────────────────────── */
 .scroll-reveal {
   opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.8s ease, transform 0.8s ease;
+  transform: translateY(24px);
+  transition: opacity var(--dur-slow) ease, transform var(--dur-slow) var(--ease-out);
 }
-
 .scroll-reveal.visible {
   opacity: 1;
   transform: translateY(0);
 }
 
-/* Camera feed and tracker grid */
+/* ── Camera tracker grid overlay ───────────────────────────── */
 .tracker-grid {
-  background-image: 
-    linear-gradient(rgba(132, 85, 239, 0.1) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(132, 85, 239, 0.1) 1px, transparent 1px);
+  background-image:
+    linear-gradient(rgba(132,85,239,0.10) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(132,85,239,0.10) 1px, transparent 1px);
   background-size: 20px 20px;
   background-position: center;
+}
+
+/* ── Glare overlay (kept but opacity capped at 0.5) ────────── */
+.card-glare {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  z-index: 2;
+  mix-blend-mode: overlay;
+  opacity: 0;
+  transition: opacity var(--dur-base) ease;
 }

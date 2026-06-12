@@ -8,40 +8,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Inter:wght@600&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="css/styles.css" rel="stylesheet"/>
-    <!-- Three.js and GSAP for premium animations -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <!-- Tailwind Configuration -->
-    <script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#6b38d4",
-                        "secondary": "#6f46b9",
-                        "background": "#fcf9f8",
-                        "on-background": "#1c1b1b",
-                        "surface": "#fcf9f8",
-                        "on-surface": "#1c1b1b",
-                        "on-surface-variant": "#494454",
-                        "primary-container": "#8455ef",
-                        "on-primary": "#ffffff"
-                    },
-                    spacing: {
-                        "margin-mobile": "20px",
-                        "margin-desktop": "64px",
-                        "container-max": "1280px"
-                    },
-                    fontFamily: {
-                        "body-md": ["Plus Jakarta Sans"],
-                        "title-md": ["Plus Jakarta Sans"]
-                    }
-                }
-            }
-        }
-    </script>
+    <script src="js/theme.js"></script>
+    <link href="css/styles.css" rel="stylesheet"/>
 </head>
 <body class="bg-background text-on-background font-body-md overflow-x-hidden min-h-screen relative flex items-center justify-center p-4">
     <!-- WebGL Background Canvas -->
@@ -166,96 +136,60 @@
         </div>
     </div>
 
-    <!-- Scripts -->
+    <!-- Shared JS -->
+    <script src="js/utils.js"></script>
     <script src="js/3d-elements.js"></script>
     <script>
-        // Entrance animation with GSAP
-        gsap.from("#auth-container", {
-            duration: 1.2,
+        // ── Calm entrance — 0.55s, y:18, power2.out (not power4) ──
+        gsap.from('#auth-container', {
+            duration: 0.55,
             opacity: 0,
-            y: 40,
-            ease: "power4.out"
+            y: 18,
+            ease: 'power2.out',
         });
 
-        // Form toggle logic
-        let currentMode = 'signin';
-        const signinForm = document.getElementById('signin-form');
-        const signupForm = document.getElementById('signup-form');
-        const authSubtitle = document.getElementById('auth-subtitle');
-        const toggleContainer = document.getElementById('toggle-container');
-        const wrapper = document.getElementById('forms-wrapper');
+        // Form toggle
+        var wrapper = document.getElementById('forms-wrapper');
 
         function toggleAuthMode(mode) {
-            currentMode = mode;
+            var signinForm     = document.getElementById('signin-form');
+            var signupForm     = document.getElementById('signup-form');
+            var authSubtitle   = document.getElementById('auth-subtitle');
+            var toggleContainer= document.getElementById('toggle-container');
+
             if (mode === 'signup') {
                 signinForm.classList.add('-translate-x-full');
                 signupForm.classList.remove('translate-x-full');
-                authSubtitle.textContent = "Establish a new secure mental evaluation node";
-                toggleContainer.innerHTML = 'Already registered? <button class="text-primary hover:underline ml-1 font-extrabold focus:outline-none" onclick="toggleAuthMode(\'signin\')" type="button">Verify credentials</button>';
-                // Increase form wrapper height for name field
-                gsap.to(wrapper, {height: 340, duration: 0.3});
+                authSubtitle.textContent = 'Create your MindHaven account';
+                toggleContainer.innerHTML = 'Already have an account? <button class="text-primary hover:underline ml-1 font-extrabold focus:outline-none" onclick="toggleAuthMode(\'signin\')" type="button">Sign in</button>';
+                gsap.to(wrapper, { height: 340, duration: 0.28, ease: 'power2.out' });
             } else {
                 signinForm.classList.remove('-translate-x-full');
                 signupForm.classList.add('translate-x-full');
-                authSubtitle.textContent = "Verify your identity to begin neural assessment";
-                toggleContainer.innerHTML = 'New subject node? <button class="text-primary hover:underline ml-1 font-extrabold focus:outline-none" onclick="toggleAuthMode(\'signup\')" type="button">Initialize Account</button>';
-                gsap.to(wrapper, {height: 270, duration: 0.3});
+                authSubtitle.textContent = 'Sign in to begin your assessment';
+                toggleContainer.innerHTML = 'New here? <button class="text-primary hover:underline ml-1 font-extrabold focus:outline-none" onclick="toggleAuthMode(\'signup\')" type="button">Create account</button>';
+                gsap.to(wrapper, { height: 270, duration: 0.28, ease: 'power2.out' });
             }
         }
-        
-        // Handle Submit and slide out transition
+
+        // Sign in / Sign up (mock — swap for Supabase later)
         function handleAuthSubmit(event, mode) {
             event.preventDefault();
-            
-            // Store a mock session
             localStorage.setItem('mindhaven_auth', 'true');
-            localStorage.setItem('mindhaven_user', mode === 'signup' ? document.getElementById('signup-name').value || 'Subject-01' : 'Subject-01');
-
-            // Play transition
-            const overlay = document.getElementById('page-transition-overlay');
-            overlay.style.pointerEvents = 'all';
-            
-            gsap.to(overlay, {
-                opacity: 1, 
-                duration: 0.6,
-                onComplete: () => {
-                    window.location.href = "assess.html";
-                }
-            });
+            localStorage.setItem('mindhaven_user',
+                mode === 'signup'
+                    ? (document.getElementById('signup-name').value || 'User')
+                    : 'User');
+            navigateTo('assess.html');
         }
 
+        // Guest / demo login — uses seedGuestData() from utils.js
         function guestLogin() {
-            // Seed fake burnout prediction data for demo/hackathon judges
-            const fakeData = {
-                burnout_score: 2,
-                suggestion: "Based on your multi-modal biometric profile, you are experiencing Moderate Burnout. Your facial expression analysis detected elevated brow tension (EAR: 0.24) and reduced smile frequency. Speech sentiment analysis revealed a compound negativity score of -0.18 with a slightly monotone vocal pitch pattern. Your questionnaire responses suggest persistent work-related cognitive load. Recommended interventions: 20-min daily mindfulness sessions, strict work-hour boundaries, and periodic Nadi Shodhana pranayama. Re-assess in 7 days to track recovery trajectory.",
-                debug_data: {
-                    "Questionnaire Answers": ["Rarely", "Often", "Sometimes", "Often", "Sometimes"],
-                    "EAR": "0.24 ± 0.04",
-                    "MAR": "0.18 ± 0.03",
-                    "Emotions": { "Positive %": "8%", "Neutral %": "57%", "Negative %": "35%" },
-                    "Voice Transcript": "I've been pretty stressed lately... work deadlines are piling up and I can't seem to switch off even in the evenings.",
-                    "Sentiment": "Pos: 0.06, Neu: 0.62, Neg: 0.32, Comp: -0.18",
-                    "Pitch": "118 Hz avg (slightly low)",
-                    "Subtypes": ["Emotional Exhaustion", "Depersonalisation"]
-                }
-            };
-            localStorage.setItem('mindhaven_guest', 'true');
-            localStorage.setItem('mindhaven_auth', 'true');
-            localStorage.setItem('mindhaven_user', 'Judge (Demo)');
-            localStorage.setItem('burnout_prediction', JSON.stringify(fakeData));
-
-            const overlay = document.getElementById('page-transition-overlay');
-            overlay.style.pointerEvents = 'all';
-            gsap.to(overlay, {
-                opacity: 1,
-                duration: 0.5,
-                onComplete: () => { window.location.href = 'insights.html'; }
-            });
+            seedGuestData();
+            navigateTo('insights.html');
         }
 
-        // Adjust wrapper height initially
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', function () {
             wrapper.style.height = '270px';
         });
     </script>
