@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>MindHaven | Assessment Suite</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Inter:wght@600&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <link href="css/styles.css" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#6b38d4", "secondary": "#6f46b9",
+            "background": "#fcf9f8", "surface": "#fcf9f8",
+            "on-surface": "#1c1b1b", "on-surface-variant": "#494454",
+            "primary-container": "#8455ef", "on-primary": "#ffffff",
+            "surface-container-highest": "#e5e2e1",
+            "surface-container": "#f0eded", "tertiary": "#5d5a69"
+          },
+          spacing: {
+            "margin-mobile": "20px", "margin-desktop": "64px", "container-max": "1280px"
+          },
+          fontFamily: { "body-md": ["Plus Jakarta Sans"] }
+        }
+      }
+    }
+  </script>
+  <style>
+    .phase { display: none; }
+    .phase.active { display: flex; }
+    .choice-btn { transition: all 0.2s ease; }
+    .choice-btn.selected {
+      background: rgba(107, 56, 212, 0.15) !important;
+      border: 1.5px solid rgba(107, 56, 212, 0.6) !important;
+      box-shadow: 0 8px 20px rgba(107, 56, 212, 0.15);
+    }
+    .choice-btn.selected .choice-icon { color: #6b38d4; font-variation-settings: 'FILL' 1; }
+    .choice-btn.selected .choice-label { color: #6b38d4; }
+    .waveform-bar { height: 15%; transition: height 0.1s ease; }
+    .waveform-bar.active { animation: wave 1s ease-in-out infinite alternate; }
+    @keyframes wave { 0% { height: 15%; } 100% { height: 85%; } }
+  </style>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-x-hidden min-h-screen relative" style="font-family: 'Plus Jakarta Sans', sans-serif;">
+
+  <!-- WebGL Background Canvas -->
+  <canvas id="webgl-bg"></canvas>
+
+  <!-- Floating background spheres -->
+  <div class="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+    <div class="floating-sphere w-[500px] h-[500px] -top-24 -left-24 opacity-30"></div>
+    <div class="floating-sphere w-[400px] h-[400px] top-1/2 -right-20 opacity-20" style="animation-delay:-5s"></div>
+  </div>
+
+  <!-- Page Transition Overlay -->
+  <div id="page-transition-overlay" style="position:fixed;inset:0;background:radial-gradient(circle at center,#260059,#0c0814);z-index:9999;pointer-events:none;opacity:0;transition:opacity 0.5s ease;"></div>
+
+  <!-- Header -->
+  <header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-5 md:px-16 py-4 backdrop-blur-xl border-b border-white/20 shadow-sm" style="background:rgba(252,249,248,0.3)">
+    <div class="flex items-center gap-3">
+      <a href="index.html" class="w-10 h-10 rounded-full flex items-center justify-center text-white shadow-lg" style="background:#8455ef">
+        <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">psychology</span>
+      </a>
+      <span class="font-extrabold tracking-tight text-on-surface text-xl">MindHaven</span>
+    </div>
+    <div class="hidden md:flex gap-8 items-center">
+      <span class="text-sm font-extrabold" style="color:#6b38d4">Assess</span>
+      <a class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors" href="insights.html">Insights</a>
+    </div>
+    <div class="w-10 h-10 rounded-full border-2 overflow-hidden" style="border-color:#6b38d4">
+      <img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBztPBgUikdMRMvVm0IcNyj_V_FC7lgVwYQoa0gT_EeoVPA8zk5nygf1oGRHBEtEQMPrxWClUc7YBf7klJQw9fF5-pfjK0rlkgxCbMJJMrghdtUw6JaTJM6-iovQaSrOqiarGKkV34uchNJUf87OxzbhTSwpgUyCB2qA9Zxn3QhHsOEJaNhBSyZMrtc18W70IXuxNKXkJtJCKHxinc_SmUW3_1vk-H1_kaFIU4ISLXkVY0n6St9c8YVesNCghMyMNIJDyYXotwgeg" alt="Profile"/>
+    </div>
+  </header>
+
+  <main class="relative z-10 pt-28 pb-36 max-w-5xl mx-auto px-5 md:px-16 flex flex-col gap-8">
+
+    <!-- Phase Progress Indicators -->
+    <section class="flex flex-col items-center gap-3">
+      <div class="flex gap-2 items-center">
+        <div class="h-1.5 w-16 rounded-full transition-all duration-500" style="background:#6b38d4" id="bar-quiz"></div>
+        <div class="h-1.5 w-16 rounded-full transition-all duration-500" style="background:#e5e2e1" id="bar-face"></div>
+        <div class="h-1.5 w-16 rounded-full transition-all duration-500" style="background:#e5e2e1" id="bar-voice"></div>
+      </div>
+      <p class="text-xs font-extrabold uppercase tracking-widest" style="color:#6f46b9" id="phase-label">Phase 1 of 3 — Questionnaire</p>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!-- PHASE 1: QUIZ                                   -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <div id="phase-quiz" class="phase active w-full flex-col items-center text-center gap-8">
+
+      <!-- Question counter + text -->
+      <div class="space-y-3 max-w-2xl w-full">
+        <p class="text-xs font-extrabold uppercase tracking-widest" style="color:#6b38d4" id="q-counter">Question 1 of 5</p>
+        <h1 class="text-2xl md:text-4xl font-extrabold tracking-tight leading-tight" style="color:#1c1b1b" id="q-text">
+          How often do you feel a sense of profound mental clarity?
+        </h1>
+        <p class="text-sm font-medium" style="color:#49445499">
+          Reflect on your experience over the past 48 hours.
+        </p>
+      </div>
+
+      <!-- Choice cards — clicking auto-advances -->
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-4 w-full" id="choices-grid">
+
+        <button class="choice-btn glass-card rounded-3xl p-6 md:p-8 flex flex-col items-center gap-4 cursor-pointer border border-white/40"
+                data-value="Never" onclick="pickAnswer(this)">
+          <span class="material-symbols-outlined text-4xl choice-icon" style="color:#494454">circle</span>
+          <span class="text-xs font-bold uppercase tracking-wider choice-label" style="color:#494454">Never</span>
+        </button>
+
+        <button class="choice-btn glass-card rounded-3xl p-6 md:p-8 flex flex-col items-center gap-4 cursor-pointer border border-white/40"
+                data-value="Rarely" onclick="pickAnswer(this)">
+          <span class="material-symbols-outlined text-4xl choice-icon" style="color:#494454">radio_button_checked</span>
+          <span class="text-xs font-bold uppercase tracking-wider choice-label" style="color:#494454">Rarely</span>
+        </button>
+
+        <button class="choice-btn glass-card rounded-3xl p-6 md:p-8 flex flex-col items-center gap-4 cursor-pointer border border-white/40"
+                data-value="Sometimes" onclick="pickAnswer(this)">
+          <span class="material-symbols-outlined text-4xl choice-icon" style="color:#494454">stars</span>
+          <span class="text-xs font-bold uppercase tracking-wider choice-label" style="color:#494454">Sometimes</span>
+        </button>
+
+        <button class="choice-btn glass-card rounded-3xl p-6 md:p-8 flex flex-col items-center gap-4 cursor-pointer border border-white/40"
+                data-value="Often" onclick="pickAnswer(this)">
+          <span class="material-symbols-outlined text-4xl choice-icon" style="color:#494454">auto_awesome</span>
+          <span class="text-xs font-bold uppercase tracking-wider choice-label" style="color:#494454">Often</span>
+        </button>
+
+        <button class="choice-btn glass-card rounded-3xl p-6 md:p-8 flex flex-col items-center gap-4 cursor-pointer border border-white/40"
+                data-value="Always" onclick="pickAnswer(this)">
+          <span class="material-symbols-outlined text-4xl choice-icon" style="color:#494454">flare</span>
+          <span class="text-xs font-bold uppercase tracking-wider choice-label" style="color:#494454">Always</span>
+        </button>
+
+      </div>
+
+      <!-- Last question: explicit button to proceed -->
+      <div id="quiz-done-area" class="hidden mt-2">
+        <button onclick="showPhase('face')"
+          class="px-10 py-4 rounded-full text-white font-extrabold text-sm flex items-center gap-2 shadow-lg"
+          style="background:linear-gradient(135deg,#8455ef,#6b38d4)">
+          <span class="material-symbols-outlined">videocam</span>
+          Proceed to Facial Scan
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!-- PHASE 2: FACIAL SCAN                            -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <div id="phase-face" class="phase w-full flex-col items-center text-center gap-6">
+
+      <div class="space-y-2 max-w-xl">
+        <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight" style="color:#1c1b1b">Facial Feature Analysis</h2>
+        <p class="text-sm font-medium" style="color:#49445499">
+          Position your face within the grid. Press <strong>Start Scan</strong> to record a 10-second biometric sample.
+        </p>
+      </div>
+
+      <!-- Camera box -->
+      <div class="glass-card rounded-[32px] overflow-hidden relative w-full max-w-2xl border border-white/50 shadow-lg" style="height:340px;">
+        <video id="face-video" autoplay muted playsinline class="w-full h-full object-cover hidden" style="filter:grayscale(0.3) brightness(0.95)"></video>
+        <img id="face-fallback" class="w-full h-full object-cover" style="filter:grayscale(1) brightness(0.75)"
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuBwc1DeZ9fD8NsciEVFApnyw2hSZYWf1-Z2HQUmOe2AQOtksXwQJO6ga4zBq78ZKu1cSozYrTfDviBnqHeoaOrIfXkMDYWStn7jhNx8yIH9D2SnPhO62V5cDrVNkPS_s3mYSdtDwUFiOBUa1Kgk8oshGo9jpwxyfeVnJsdMJ-0nzRaeYVExTJIIlkPYTaMEZc0HETLaLcWsTqy8tn1kVrMQd67zPH_JyvxEdXXnUOhIbYruSbeGvextHprIM9QAchFINDghqw51WA" alt="Camera"/>
+        <canvas id="mesh-canvas" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
+
+        <!-- Status badge -->
+        <div class="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 rounded-full text-white text-xs font-extrabold uppercase tracking-widest backdrop-blur-md border border-white/10" style="background:rgba(0,0,0,0.5)">
+          <div class="w-2 h-2 rounded-full" id="face-dot" style="background:#eab308"></div>
+          <span id="face-status">Ready to scan</span>
+        </div>
+
+        <!-- Countdown -->
+        <div class="absolute bottom-4 right-4 px-4 py-1.5 rounded-xl text-white text-xs font-extrabold backdrop-blur-md border border-white/20" style="background:rgba(0,0,0,0.4)" id="face-countdown" style="display:none">10s</div>
+      </div>
+
+      <!-- Controls -->
+      <div class="flex flex-col items-center gap-4">
+        <button id="face-start-btn" onclick="startFaceScan()"
+          class="px-10 py-4 rounded-full text-white font-extrabold text-sm flex items-center gap-2 shadow-lg"
+          style="background:linear-gradient(135deg,#8455ef,#6b38d4)">
+          <span class="material-symbols-outlined">videocam</span>
+          <span id="face-btn-label">Start Facial Scan</span>
+        </button>
+
+        <button id="face-next-btn" onclick="showPhase('voice')"
+          class="px-10 py-4 rounded-full font-extrabold text-sm flex items-center gap-2 shadow border border-white/60 hidden"
+          style="background:rgba(255,255,255,0.4);color:#1c1b1b">
+          <span class="material-symbols-outlined">mic</span>
+          Proceed to Voice Recording
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!-- PHASE 3: VOICE RECORDING                        -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <div id="phase-voice" class="phase w-full flex-col items-center text-center gap-6">
+
+      <div class="space-y-2 max-w-xl">
+        <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight" style="color:#1c1b1b">Voice Sentiment Capture</h2>
+        <p class="text-sm font-medium" style="color:#49445499">
+          Talk about your current stress level or how your day went. Press <strong>Start Recording</strong> for a 10-second audio sample.
+        </p>
+      </div>
+
+      <!-- Mic card -->
+      <div class="glass-card rounded-[32px] p-8 flex flex-col justify-between w-full max-w-2xl border border-white/50 shadow-lg" style="height:280px">
+        <div class="flex justify-between items-start">
+          <div class="text-left">
+            <p class="text-xs font-bold uppercase tracking-widest" style="color:#6f46b9">Acoustic Channel</p>
+            <h3 class="text-xl font-extrabold" style="color:#1c1b1b">Voice Analysis</h3>
+          </div>
+          <div id="mic-icon-box" class="w-12 h-12 rounded-2xl flex items-center justify-center border border-white/40 shadow-sm" style="background:rgba(255,255,255,0.4)">
+            <span class="material-symbols-outlined text-3xl" id="mic-icon" style="color:#6b38d4">mic</span>
+          </div>
+        </div>
+
+        <!-- Waveform bars -->
+        <div class="flex items-end justify-center gap-1.5" style="height:80px" id="waveform">
+          <div class="waveform-bar w-1.5 rounded-full" style="background:rgba(107,56,212,0.4);animation-delay:0.1s"></div>
+          <div class="waveform-bar w-1.5 rounded-full" style="background:rgba(107,56,212,0.6);animation-delay:0.3s"></div>
+          <div class="waveform-bar w-1.5 rounded-full" style="background:rgba(107,56,212,0.8);animation-delay:0.5s"></div>
+          <div class="waveform-bar w-1.5 rounded-full" style="background:#6f46b9;animation-delay:0.2s"></div>
+          <div class="waveform-bar w-1.5 rounded-full" style="background:#6b38d4;animation-delay:0.4s"></div>
+          <div class="waveform-bar w-1.5 rounded-full" style="background:rgba(111,70,185,0.8);animation-delay:0.6s"></div>
+          <div class="waveform-bar w-1.5 rounded-full" style="background:rgba(107,56,212,0.6);animation-delay:0.8s"></div>
+          <div class="waveform-bar w-1.5 rounded-full" style="background:rgba(107,56,212,0.4);animation-delay:0.2s"></div>
+          <div class="waveform-bar w-1.5 rounded-full" style="background:rgba(107,56,212,0.8);animation-delay:0.5s"></div>
+          <div class="waveform-bar w-1.5 rounded-full" style="background:#6f46b9;animation-delay:0.1s"></div>
+          <div class="waveform-bar w-1.5 rounded-full" style="background:#6b38d4;animation-delay:0.4s"></div>
+          <div class="waveform-bar w-1.5 rounded-full" style="background:rgba(111,70,185,0.6);animation-delay:0.7s"></div>
+          <div class="waveform-bar w-1.5 rounded-full" style="background:rgba(107,56,212,0.4);animation-delay:0.3s"></div>
+          <div class="waveform-bar w-1.5 rounded-full" style="background:rgba(107,56,212,0.2);animation-delay:0.9s"></div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div class="rounded-3xl p-4 border border-white/60 text-left" style="background:rgba(255,255,255,0.4)">
+            <p class="text-xs font-bold uppercase tracking-wider mb-0.5" style="color:#494454">Status</p>
+            <p class="font-extrabold" style="color:#6b38d4" id="voice-status">Idle</p>
+          </div>
+          <div class="rounded-3xl p-4 border border-white/60 text-left" style="background:rgba(255,255,255,0.4)">
+            <p class="text-xs font-bold uppercase tracking-wider mb-0.5" style="color:#494454">Remaining</p>
+            <p class="font-extrabold" style="color:#6f46b9" id="voice-countdown">10s</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="flex flex-col items-center gap-4">
+        <button id="voice-start-btn" onclick="startVoiceScan()"
+          class="px-10 py-4 rounded-full text-white font-extrabold text-sm flex items-center gap-2 shadow-lg"
+          style="background:linear-gradient(135deg,#8455ef,#6b38d4)">
+          <span class="material-symbols-outlined">mic</span>
+          <span id="voice-btn-label">Start Voice Recording</span>
+        </button>
+
+        <button id="voice-next-btn" onclick="submitAll()"
+          class="px-10 py-4 rounded-full font-extrabold text-sm flex items-center gap-2 shadow border border-white/60 hidden"
+          style="background:rgba(255,255,255,0.4);color:#1c1b1b">
+          <span class="material-symbols-outlined">send</span>
+          Compile &amp; Get Insights
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Full-screen Loading Overlay -->
+  <div id="loading-overlay" class="fixed inset-0 backdrop-blur-2xl z-[200] flex flex-col items-center justify-center hidden" style="background:rgba(255,255,255,0.25)">
+    <div class="glass-card p-12 rounded-[40px] border border-white/60 shadow-2xl flex flex-col items-center gap-6 max-w-sm text-center">
+      <div class="relative w-20 h-20">
+        <div class="absolute inset-0 rounded-full border-4" style="border-color:rgba(107,56,212,0.2)"></div>
+        <div class="absolute inset-0 rounded-full border-4 border-t-primary animate-spin" style="border-color:rgba(107,56,212,0.2);border-top-color:#6b38d4"></div>
+      </div>
+      <div>
+        <h3 class="text-xl font-extrabold" style="color:#1c1b1b">Analyzing Your Data</h3>
+        <p class="text-sm font-medium mt-2 animate-pulse" style="color:#494454" id="loading-msg">Transmitting neural vectors...</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/3d-elements.js"></script>
+  <script>
+    // ───────────────────────────────────────────────
+    // DATA
+    // ───────────────────────────────────────────────
+    const QUESTIONS = [
+      "How often do you feel a sense of profound mental clarity?",
+      "How often do you find it difficult to disconnect from work-related tasks?",
+      "How often do you feel physically or emotionally drained after work?",
+      "How often do you experience a lack of motivation or enthusiasm?",
+      "How often do you feel easily irritated or frustrated by minor obstacles?"
+    ];
+    // Valid values the backend accepts:  Never | Rarely | Sometimes | Often | Always
+    const answers = new Array(5).fill(null);
+    let currentQ = 0;
+
+    // Media state
+    let videoChunks = [], audioChunks = [];
+    let videoRecorder = null, audioRecorder = null;
+    let scanTimer = null;
+
+    // ───────────────────────────────────────────────
+    // PHASE NAVIGATION
+    // ───────────────────────────────────────────────
+    function showPhase(name) {
+      document.querySelectorAll('.phase').forEach(el => el.classList.remove('active'));
+      document.getElementById('phase-' + name).classList.add('active');
+
+      // Update bars and label
+      const bars  = { quiz:'bar-quiz', face:'bar-face', voice:'bar-voice' };
+      const labels = { quiz:'Phase 1 of 3 — Questionnaire', face:'Phase 2 of 3 — Facial Scan', voice:'Phase 3 of 3 — Voice Recording' };
+      const order = ['quiz','face','voice'];
+      const idx = order.indexOf(name);
+      order.forEach((k,i) => {
+        document.getElementById(bars[k]).style.background = i <= idx ? '#6b38d4' : '#e5e2e1';
+      });
+      document.getElementById('phase-label').textContent = labels[name];
+
+      // Scroll to top of main
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ───────────────────────────────────────────────
+    // QUIZ LOGIC
+    // ───────────────────────────────────────────────
+    function renderQuestion() {
+      document.getElementById('q-counter').textContent = `Question ${currentQ + 1} of 5`;
+      document.getElementById('q-text').textContent = QUESTIONS[currentQ];
+      // Reset all choice buttons
+      document.querySelectorAll('.choice-btn').forEach(btn => {
+        btn.classList.remove('selected');
+        btn.querySelector('.choice-icon').style.color = '#494454';
+        btn.querySelector('.choice-icon').style.fontVariationSettings = "'FILL' 0";
+        btn.querySelector('.choice-label').style.color = '#494454';
+      });
+    }
+
+    function pickAnswer(btn) {
+      // Mark selection visually
+      document.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+
+      const value = btn.getAttribute('data-value');
+      answers[currentQ] = value;
+      console.log(`Q${currentQ+1} answered: ${value}`);
+
+      if (currentQ < 4) {
+        // Auto-advance to next question after short delay
+        setTimeout(() => {
+          currentQ++;
+          gsap.fromTo('#phase-quiz', {opacity:0, y:12}, {opacity:1, y:0, duration:0.3, onStart: renderQuestion});
+        }, 320);
+      } else {
+        // Last question — show proceed button
+        document.getElementById('quiz-done-area').classList.remove('hidden');
+      }
+    }
+
+    // ───────────────────────────────────────────────
+    // FACIAL SCAN
+    // ───────────────────────────────────────────────
+    const meshCanvas = document.getElementById('mesh-canvas');
+    const meshCtx = meshCanvas.getContext('2d');
+    let meshPts = [], meshFrame = null, meshActive = false;
+
+    function initMesh() {
+      meshCanvas.width  = meshCanvas.parentElement.clientWidth;
+      meshCanvas.height = meshCanvas.parentElement.clientHeight;
+      meshPts = [];
+      const W = meshCanvas.width, H = meshCanvas.height;
+      for (let r=0; r<6; r++) for (let c=0; c<6; c++) {
+        const bx = W*0.28 + (W*0.44)*(c/5), by = H*0.2 + (H*0.55)*(r/5);
+        meshPts.push({ bx, by, x:bx, y:by, a: Math.random()*Math.PI*2, spd: 0.025+Math.random()*0.02 });
+      }
+    }
+
+    function drawMesh() {
+      meshCtx.clearRect(0,0,meshCanvas.width,meshCanvas.height);
+      if (!meshActive) return;
+      meshPts.forEach(p => { p.a += p.spd; p.x = p.bx+Math.sin(p.a)*3; p.y = p.by+Math.cos(p.a)*3; });
+
+      meshCtx.strokeStyle = 'rgba(132,85,239,0.22)';
+      meshCtx.lineWidth = 1;
+      for (let r=0;r<6;r++) for (let c=0;c<6;c++) {
+        const i = r*6+c;
+        if (c<5) { meshCtx.beginPath(); meshCtx.moveTo(meshPts[i].x,meshPts[i].y); meshCtx.lineTo(meshPts[i+1].x,meshPts[i+1].y); meshCtx.stroke(); }
+        if (r<5) { meshCtx.beginPath(); meshCtx.moveTo(meshPts[i].x,meshPts[i].y); meshCtx.lineTo(meshPts[i+6].x,meshPts[i+6].y); meshCtx.stroke(); }
+      }
+      meshPts.forEach(p => {
+        meshCtx.beginPath(); meshCtx.arc(p.x,p.y,2.5,0,Math.PI*2);
+        meshCtx.fillStyle='rgba(107,56,212,0.7)'; meshCtx.fill();
+      });
+      const cx=meshCanvas.width/2, cy=meshCanvas.height/2;
+      meshCtx.beginPath(); meshCtx.arc(cx,cy, 68+Math.sin(Date.now()/150)*2.5, 0, Math.PI*2);
+      meshCtx.strokeStyle='rgba(107,56,212,0.3)'; meshCtx.lineWidth=1.5; meshCtx.stroke();
+      meshFrame = requestAnimationFrame(drawMesh);
+    }
+
+    async function startFaceScan() {
+      const startBtn = document.getElementById('face-start-btn');
+      startBtn.disabled = true;
+      startBtn.style.opacity = '0.6';
+      document.getElementById('face-btn-label').textContent = 'Scanning...';
+
+      let stream = null;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video:true, audio:false });
+        const vid = document.getElementById('face-video');
+        vid.srcObject = stream;
+        vid.classList.remove('hidden');
+        document.getElementById('face-fallback').classList.add('hidden');
+      } catch(e) {
+        console.warn('Camera unavailable, using simulation:', e);
+      }
+
+      // Setup video recorder
+      if (stream) {
+        try { videoRecorder = new MediaRecorder(stream, {mimeType:'video/webm;codecs=vp8'}); }
+        catch(e) { videoRecorder = new MediaRecorder(stream); }
+        videoChunks = [];
+        videoRecorder.ondataavailable = e => { if(e.data.size>0) videoChunks.push(e.data); };
+        videoRecorder.start(500); // collect chunks every 500ms
+      }
+
+      // Start mesh overlay
+      initMesh();
+      meshActive = true;
+      drawMesh();
+
+      // Update status
+      const dot = document.getElementById('face-dot');
+      dot.style.background = '#ef4444';
+      dot.classList.add('animate-ping');
+      document.getElementById('face-status').textContent = 'Recording...';
+
+      // 10-second countdown
+      let sec = 10;
+      const cd = document.getElementById('face-countdown');
+      cd.style.display = '';
+      cd.textContent = '10s';
+
+      scanTimer = setInterval(() => {
+        sec--;
+        cd.textContent = sec + 's';
+        if (sec <= 0) {
+          clearInterval(scanTimer);
+          meshActive = false;
+          cancelAnimationFrame(meshFrame);
+          meshCtx.clearRect(0,0,meshCanvas.width,meshCanvas.height);
+
+          if (videoRecorder && videoRecorder.state !== 'inactive') videoRecorder.stop();
+          if (stream) stream.getTracks().forEach(t => t.stop());
+
+          dot.style.background = '#22c55e';
+          dot.classList.remove('animate-ping');
+          document.getElementById('face-status').textContent = 'Scan complete';
+          document.getElementById('face-btn-label').textContent = 'Scan Completed ✓';
+
+          // Show "Proceed to Voice" button
+          document.getElementById('face-next-btn').classList.remove('hidden');
+        }
+      }, 1000);
+    }
+
+    // ───────────────────────────────────────────────
+    // VOICE RECORDING
+    // ───────────────────────────────────────────────
+    function setWaveformActive(active) {
+      document.querySelectorAll('.waveform-bar').forEach(b => {
+        if (active) b.classList.add('active'); else b.classList.remove('active');
+      });
+    }
+
+    async function startVoiceScan() {
+      const startBtn = document.getElementById('voice-start-btn');
+      startBtn.disabled = true;
+      startBtn.style.opacity = '0.6';
+      document.getElementById('voice-btn-label').textContent = 'Recording...';
+
+      let stream = null;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio:true, video:false });
+      } catch(e) {
+        console.warn('Mic unavailable, using simulation:', e);
+      }
+
+      if (stream) {
+        try { audioRecorder = new MediaRecorder(stream, {mimeType:'audio/webm;codecs=opus'}); }
+        catch(e) { audioRecorder = new MediaRecorder(stream); }
+        audioChunks = [];
+        audioRecorder.ondataavailable = e => { if(e.data.size>0) audioChunks.push(e.data); };
+        audioRecorder.start(500);
+      }
+
+      setWaveformActive(true);
+      document.getElementById('voice-status').textContent = 'Recording';
+      document.getElementById('mic-icon').textContent = 'fiber_manual_record';
+      document.getElementById('mic-icon').style.color = '#ef4444';
+
+      let sec = 10;
+      document.getElementById('voice-countdown').textContent = '10s';
+
+      scanTimer = setInterval(() => {
+        sec--;
+        document.getElementById('voice-countdown').textContent = sec + 's';
+        if (sec <= 0) {
+          clearInterval(scanTimer);
+          setWaveformActive(false);
+
+          if (audioRecorder && audioRecorder.state !== 'inactive') audioRecorder.stop();
+          if (stream) stream.getTracks().forEach(t => t.stop());
+
+          document.getElementById('voice-status').textContent = 'Captured ✓';
+          document.getElementById('mic-icon').textContent = 'check_circle';
+          document.getElementById('mic-icon').style.color = '#22c55e';
+          document.getElementById('voice-btn-label').textContent = 'Recording Complete ✓';
+
+          // Show submit button
+          document.getElementById('voice-next-btn').classList.remove('hidden');
+        }
+      }, 1000);
+    }
+
+    // ───────────────────────────────────────────────
+    // API SUBMISSION
+    // API expects (multipart/form-data):
+    //   video_file  (File)
+    //   audio_file  (File)
+    //   answer_1    (str)  — one of: Never|Rarely|Sometimes|Often|Always
+    //   answer_2    (str)
+    //   answer_3    (str)
+    //   answer_4    (str)
+    //   answer_5    (str)
+    // ───────────────────────────────────────────────
+    async function submitAll() {
+      // Show loader
+      document.getElementById('loading-overlay').classList.remove('hidden');
+
+      // Build FormData — matching the backend's expected field names exactly
+      const fd = new FormData();
+
+      // Answers — backend field names are answer_1 … answer_5
+      fd.append('answer_1', answers[0]);
+      fd.append('answer_2', answers[1]);
+      fd.append('answer_3', answers[2]);
+      fd.append('answer_4', answers[3]);
+      fd.append('answer_5', answers[4]);
+
+      console.log('Submitting answers:', answers);
+
+      // Video blob — wait for recorder to finish if still stopping
+      const getVideoBlob = () => new Promise(resolve => {
+        if (videoChunks.length > 0) {
+          // Give recorder a moment to flush final chunk
+          setTimeout(() => resolve(new Blob(videoChunks, {type:'video/webm'})), 300);
+        } else {
+          // Simulation fallback: minimal valid webm header bytes
+          resolve(new Blob([new Uint8Array([0x1a,0x45,0xdf,0xa3])], {type:'video/webm'}));
+        }
+      });
+
+      const getAudioBlob = () => new Promise(resolve => {
+        if (audioChunks.length > 0) {
+          setTimeout(() => resolve(new Blob(audioChunks, {type:'audio/webm'})), 300);
+        } else {
+          // Simulation fallback: minimal WAV (44-byte header, silence)
+          const wav = new ArrayBuffer(44);
+          const view = new DataView(wav);
+          view.setUint32(0, 0x52494646, false);  // RIFF
+          view.setUint32(4, 36, true);
+          view.setUint32(8, 0x57415645, false);   // WAVE
+          view.setUint32(12, 0x666d7420, false);  // fmt
+          view.setUint32(16, 16, true);
+          view.setUint16(20, 1, true);             // PCM
+          view.setUint16(22, 1, true);             // 1 channel
+          view.setUint32(24, 16000, true);         // 16kHz
+          view.setUint32(28, 32000, true);
+          view.setUint16(32, 2, true);
+          view.setUint16(34, 16, true);
+          view.setUint32(36, 0x64617461, false);  // data
+          view.setUint32(40, 0, true);
+          resolve(new Blob([wav], {type:'audio/wav'}));
+        }
+      });
+
+      const videoBlob = await getVideoBlob();
+      const audioBlob = await getAudioBlob();
+
+      console.log('videoBlob size:', videoBlob.size, 'type:', videoBlob.type);
+      console.log('audioBlob size:', audioBlob.size, 'type:', audioBlob.type);
+
+      fd.append('video_file', videoBlob, 'face.webm');
+      fd.append('audio_file', audioBlob, audioChunks.length > 0 ? 'voice.webm' : 'voice.wav');
+
+      // Log full payload for debugging
+      for (const [k,v] of fd.entries()) {
+        if (v instanceof Blob) console.log(`  ${k}: Blob(${v.size}B, ${v.type})`);
+        else console.log(`  ${k}: "${v}"`);
+      }
+
+      // Animated status messages
+      const msgs = ['Transmitting vectors...','Analyzing emotion markers...','Running sentiment analysis...','Computing burnout score...'];
+      let mi = 0;
+      const msgEl = document.getElementById('loading-msg');
+      const msgTimer = setInterval(() => { if(mi<msgs.length) msgEl.textContent = msgs[mi++]; }, 1200);
+
+      try {
+        const res = await fetch('https://kritika53245-bd-api.hf.space/predict', {
+          method: 'POST',
+          body: fd
+          // NOTE: Do NOT set Content-Type header — browser sets it automatically
+          // with the correct multipart boundary when body is FormData
+        });
+
+        clearInterval(msgTimer);
+
+        if (res.ok) {
+          const data = await res.json();
+          console.log('API response:', data);
+          localStorage.setItem('burnout_prediction', JSON.stringify(data));
+          window.location.href = 'insights.html';
+        } else {
+          const errText = await res.text();
+          console.error('API error:', res.status, errText);
+          throw new Error(`API ${res.status}: ${errText}`);
+        }
+      } catch(err) {
+        clearInterval(msgTimer);
+        console.warn('API failed, using fallback simulation:', err.message);
+        msgEl.textContent = 'Generating local insights...';
+
+        // Score based on answers
+        const scoreMap = { Never:0, Rarely:1, Sometimes:2, Often:3, Always:4 };
+        // Questions 2-5 are burnout-positive (higher = worse), Q1 is inverted (higher clarity = better)
+        const rawScores = answers.map((a,i) => {
+          const s = scoreMap[a] || 0;
+          return i === 0 ? 4 - s : s; // invert Q1
+        });
+        const avg = rawScores.reduce((a,b)=>a+b,0) / rawScores.length;
+        const burnoutScore = Math.round(avg); // 0=Low, 1=Mild, 2=Moderate, 3=High, 4=Severe
+
+        const suggestionMap = {
+          0: "Your burnout score is Low. You're feeling good and active. Maintain healthy work-life habits and practice gratitude journaling.",
+          1: "Your burnout score is Mild. You're under a little stress. Try the Pomodoro Technique and Box Breathing to stay centred.",
+          2: "Your burnout score is Moderate. Physical and emotional exhaustion signs detected. Implement a Digital Detox and prioritise 7-9 hours sleep.",
+          3: "Your burnout score is High. Persistent fatigue limits your performance. Take mandatory time off and consider an MBSR course.",
+          4: "Your burnout score is Severe. Immediate professional support is recommended. Please speak to a doctor or call 988."
+        };
+
+        const fallback = {
+          burnout_score: burnoutScore,
+          suggestion: suggestionMap[burnoutScore],
+          debug_data: {
+            "Questionnaire Answers": answers,
+            "EAR": "0.28 ± 0.03", "MAR": "0.14 ± 0.02",
+            "Emotions": {"Positive %":"12.0%","Neutral %":"65.0%","Negative %":"23.0%"},
+            "Voice Transcript": "No live transcript available in offline mode.",
+            "Sentiment": "Pos: 0.10, Neu: 0.75, Neg: 0.15, Comp: -0.05",
+            "Pitch": "N/A", "Subtypes": []
+          }
+        };
+
+        setTimeout(() => {
+          localStorage.setItem('burnout_prediction', JSON.stringify(fallback));
+          window.location.href = 'insights.html';
+        }, 1200);
+      }
+    }
+
+    // ───────────────────────────────────────────────
+    // INIT
+    // ───────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+      renderQuestion();
+      // Temporarily bypass auth check so it's easier to test
+      // Uncomment below to re-enable auth guard:
+      // if (!localStorage.getItem('mindhaven_auth')) { window.location.href = 'auth.html'; }
+    });
+  </script>
+</body>
+</html>

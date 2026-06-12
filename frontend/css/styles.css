@@ -1,0 +1,296 @@
+/* Core Custom Styles for MindHaven */
+
+:root {
+  --primary-glow: radial-gradient(circle, rgba(107, 56, 212, 0.15) 0%, rgba(111, 70, 185, 0) 70%);
+  --secondary-glow: radial-gradient(circle, rgba(111, 70, 185, 0.1) 0%, rgba(208, 188, 255, 0) 70%);
+  --glass-bg: rgba(255, 255, 255, 0.35);
+  --glass-bg-dark: rgba(15, 12, 25, 0.25);
+  --glass-border: rgba(255, 255, 255, 0.4);
+  --glass-border-dark: rgba(255, 255, 255, 0.1);
+  --glass-shadow: 0 8px 32px 0 rgba(111, 70, 185, 0.06);
+  --font-plus: 'Plus Jakarta Sans', sans-serif;
+  --font-inter: 'Inter', sans-serif;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(252, 249, 248, 0.5);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(107, 56, 212, 0.2);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(107, 56, 212, 0.4);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+body {
+  min-height: 100vh;
+  font-family: var(--font-plus);
+  scroll-behavior: smooth;
+}
+
+/* WebGL Canvas */
+#webgl-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -10;
+  pointer-events: none;
+}
+
+/* Glassmorphism Styles */
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  transform-style: preserve-3d;
+  transition: transform 0.1s ease-out, box-shadow 0.3s ease, background 0.3s ease, border 0.3s ease;
+}
+
+.dark .glass-card {
+  background: var(--glass-bg-dark);
+  border: 1px solid var(--glass-border-dark);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+}
+
+.glass-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,0.05) 100%);
+  pointer-events: none;
+  border-radius: inherit;
+  z-index: 1;
+}
+
+.glass-card-active {
+  background: rgba(107, 56, 212, 0.15) !important;
+  border: 1.5px solid rgba(107, 56, 212, 0.6) !important;
+  box-shadow: 
+      0 15px 30px rgba(107, 56, 212, 0.15),
+      inset 0 0 15px rgba(107, 56, 212, 0.05);
+}
+
+/* 3D Tilt Glare Overlay */
+.card-glare {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  background: radial-gradient(circle at 0% 0%, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 80%);
+  z-index: 2;
+  mix-blend-mode: overlay;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+/* Floating Spheres */
+.floating-sphere {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(107, 56, 212, 0.3), rgba(111, 70, 185, 0.05));
+  filter: blur(50px);
+  z-index: -5;
+  animation: float 20s infinite alternate ease-in-out;
+}
+
+@keyframes float {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(60px, 40px) scale(1.15); }
+}
+
+/* Choice Cards */
+.choice-card {
+  box-shadow: 
+      0 10px 20px -5px rgba(0, 0, 0, 0.03),
+      0 4px 6px -2px rgba(0, 0, 0, 0.02),
+      inset 0 1px 1px rgba(255, 255, 255, 0.6);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.choice-card:hover {
+  transform: translateY(-4px) scale(1.02);
+}
+
+/* 3D Bubble Metric styling */
+.bubble-metric {
+  position: relative;
+  background: radial-gradient(circle at 35% 35%, 
+      rgba(255, 255, 255, 0.95) 0%, 
+      rgba(255, 255, 255, 0.45) 45%, 
+      rgba(208, 188, 255, 0.2) 80%,
+      rgba(107, 56, 212, 0.08) 100%);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 
+      inset -10px -10px 30px rgba(0,0,0,0.03),
+      inset 10px 10px 20px rgba(255,255,255,0.7),
+      0 30px 60px rgba(107, 56, 212, 0.15),
+      0 0 0 1px rgba(255,255,255,0.3);
+  transform-style: preserve-3d;
+  transition: transform 0.5s ease;
+}
+
+.bubble-metric::after {
+  content: '';
+  position: absolute;
+  top: 15%;
+  left: 15%;
+  width: 25%;
+  height: 15%;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+  filter: blur(4px);
+  transform: rotate(-35deg);
+}
+
+/* Floating Animations */
+.floating-element {
+  animation: floatAnim 6s ease-in-out infinite;
+}
+
+@keyframes floatAnim {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
+  100% { transform: translateY(0px); }
+}
+
+.floating-3d {
+  animation: floating3d 7s ease-in-out infinite;
+}
+
+@keyframes floating3d {
+  0% { transform: translateY(0px) rotateX(0deg) rotateY(0deg); }
+  33% { transform: translateY(-8px) rotateX(3deg) rotateY(6deg); }
+  66% { transform: translateY(6px) rotateX(-3deg) rotateY(-6deg); }
+  100% { transform: translateY(0px) rotateX(0deg) rotateY(0deg); }
+}
+
+/* Interactive 3D Pill button */
+.pill-3d {
+  background: linear-gradient(135deg, #8455ef, #6b38d4);
+  box-shadow: 
+      0 8px 20px rgba(107, 56, 212, 0.25),
+      inset 0 3px 3px rgba(255, 255, 255, 0.35),
+      inset 0 -3px 3px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.pill-3d:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 
+      0 12px 24px rgba(107, 56, 212, 0.35),
+      inset 0 3px 3px rgba(255, 255, 255, 0.35);
+}
+
+.pill-3d:active {
+  transform: scale(0.97) translateY(1px);
+  box-shadow: 0 4px 10px rgba(107, 56, 212, 0.4);
+}
+
+/* Audio Waveform animate */
+.waveform-bar {
+  animation: wave 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes wave {
+  0% { height: 15%; }
+  100% { height: 85%; }
+}
+
+/* Breathing Circle Animation */
+.breathing-circle {
+  animation: breathe 12s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  box-shadow: 0 0 50px rgba(132, 85, 239, 0.4);
+}
+
+@keyframes breathe {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 30px rgba(132, 85, 239, 0.3);
+  }
+  33% { /* Breathe In - 4s */
+    transform: scale(1.4);
+    box-shadow: 0 0 70px rgba(132, 85, 239, 0.7), 0 0 120px rgba(107, 56, 212, 0.4);
+  }
+  66% { /* Hold - 4s */
+    transform: scale(1.4);
+    box-shadow: 0 0 80px rgba(107, 56, 212, 0.8), 0 0 140px rgba(132, 85, 239, 0.5);
+  }
+  /* Breathe Out - 4s takes it back to 100% */
+}
+
+/* Page Overlay Transition */
+#page-transition-overlay {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at center, #260059 0%, #0c0814 100%);
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+/* Input Fields styling */
+.glass-input {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #1c1b1b;
+  transition: all 0.3s ease;
+}
+
+.glass-input:focus {
+  background: rgba(255, 255, 255, 0.35);
+  border-color: #6b38d4;
+  box-shadow: 0 0 15px rgba(107, 56, 212, 0.15);
+  outline: none;
+}
+
+.dark .glass-input {
+  background: rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.dark .glass-input:focus {
+  background: rgba(0, 0, 0, 0.35);
+  border-color: #8455ef;
+}
+
+/* Custom styles for slides and scroll trigger placeholders */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.scroll-reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Camera feed and tracker grid */
+.tracker-grid {
+  background-image: 
+    linear-gradient(rgba(132, 85, 239, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(132, 85, 239, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+  background-position: center;
+}

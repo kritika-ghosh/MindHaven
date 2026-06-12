@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+numpy
+scipy
+joblib
+python-multipart
+opencv-python
+mediapipe
+deepface
+SpeechRecognition
+vaderSentiment
+tf_keras
+catboost
+scikit-learn

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>MindHaven | AI Multi-Modal Wellness Suite</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Inter:wght@600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link href="css/styles.css" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Tailwind Configuration -->
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#6b38d4",
+                        "secondary": "#6f46b9",
+                        "background": "#fcf9f8",
+                        "on-background": "#1c1b1b",
+                        "surface": "#fcf9f8",
+                        "on-surface": "#1c1b1b",
+                        "on-surface-variant": "#494454",
+                        "primary-container": "#8455ef",
+                        "on-primary": "#ffffff"
+                    },
+                    spacing: {
+                        "margin-mobile": "20px",
+                        "margin-desktop": "64px",
+                        "container-max": "1280px"
+                    },
+                    fontFamily: {
+                        "body-md": ["Plus Jakarta Sans"],
+                        "title-md": ["Plus Jakarta Sans"]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md overflow-x-hidden min-h-screen relative flex flex-col justify-between">
+    <!-- WebGL Background Canvas -->
+    <canvas id="webgl-bg"></canvas>
+
+    <!-- Global Background Elements -->
+    <div class="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+        <div class="floating-sphere w-[500px] h-[500px] -top-24 -left-24 opacity-30"></div>
+        <div class="floating-sphere w-[400px] h-[400px] top-1/2 -right-20 opacity-20" style="animation-delay: -5s;"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="w-full flex justify-between items-center px-margin-mobile md:px-margin-desktop py-5 bg-white/10 backdrop-blur-xl border-b border-white/20 shadow-sm z-50">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary shadow-lg shadow-primary/20">
+                <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">psychology</span>
+            </div>
+            <span class="font-title-md text-xl font-extrabold tracking-tight text-on-surface">MindHaven</span>
+        </div>
+        <div class="flex gap-4">
+            <a href="auth.html" class="px-6 py-2.5 bg-white/40 border border-white/60 hover:bg-white/60 text-on-surface font-semibold text-sm rounded-full transition-all active:scale-95 shadow-sm">
+                Sign In
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Hero -->
+    <main class="flex-1 flex flex-col items-center justify-center text-center px-margin-mobile pt-16 pb-20 relative z-10 max-w-4xl mx-auto">
+        <div class="space-y-6">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary font-bold text-xs uppercase tracking-wider mb-2">
+                <span class="material-symbols-outlined text-sm">auto_awesome</span>
+                AI-Powered Wellness Engine
+            </div>
+            <h1 class="text-4xl md:text-6xl font-extrabold text-on-surface tracking-tight leading-tight">
+                Unlock Total Mental Clarity with <span class="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">MindHaven</span>
+            </h1>
+            <p class="text-lg md:text-xl text-on-surface-variant max-w-2xl mx-auto font-medium leading-relaxed">
+                A multi-modal psychometric evaluation suite combining facial emotional intelligence, voice acoustics, and behavioral profiling to realign your focus and defeat burnout.
+            </p>
+        </div>
+
+        <!-- Call to Actions -->
+        <div class="mt-12 flex flex-col sm:flex-row gap-5 justify-center items-center w-full">
+            <a href="auth.html" class="w-full sm:w-auto pill-3d px-10 py-5 rounded-full text-white font-bold text-lg flex items-center justify-center gap-3">
+                <span class="material-symbols-outlined">rocket_launch</span>
+                Get Started Free
+            </a>
+            <a href="assess.html" class="w-full sm:w-auto px-10 py-5 rounded-full bg-white/40 border border-white/60 hover:bg-white/60 text-on-surface font-bold text-lg flex items-center justify-center gap-3 backdrop-blur-md transition-all shadow-lg shadow-black/5 active:scale-95">
+                <span class="material-symbols-outlined">medical_services</span>
+                Take Assessment
+            </a>
+        </div>
+
+        <!-- Feature Grid Preview -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 w-full max-w-5xl mt-20">
+            <div class="glass-card p-6 rounded-3xl flex flex-col items-center text-center space-y-3">
+                <div class="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                    <span class="material-symbols-outlined text-2xl">videocam</span>
+                </div>
+                <h3 class="font-bold text-lg text-on-surface">Facial Recognition</h3>
+                <p class="text-sm text-on-surface-variant/80">Real-time engagement analysis, heart rate estimation, and emotion expression tracking.</p>
+            </div>
+            <div class="glass-card p-6 rounded-3xl flex flex-col items-center text-center space-y-3">
+                <div class="w-12 h-12 rounded-2xl bg-secondary/10 flex items-center justify-center text-secondary">
+                    <span class="material-symbols-outlined text-2xl">mic</span>
+                </div>
+                <h3 class="font-bold text-lg text-on-surface">Voice Acoustics</h3>
+                <p class="text-sm text-on-surface-variant/80">Speech rhythm stability, tone resonance, and natural language sentiment diagnostics.</p>
+            </div>
+            <div class="glass-card p-6 rounded-3xl flex flex-col items-center text-center space-y-3">
+                <div class="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                    <span class="material-symbols-outlined text-2xl">clinical_notes</span>
+                </div>
+                <h3 class="font-bold text-lg text-on-surface">Interactive Quiz</h3>
+                <p class="text-sm text-on-surface-variant/80">Short, scientifically grounded psychometric queries to target burnout hot-spots.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full text-center py-6 border-t border-white/20 bg-white/5 backdrop-blur-md z-10">
+        <p class="text-xs text-on-surface-variant/60 font-semibold">
+            &copy; 2026 MindHaven Wellness Inc. All rights reserved. Powered by Advanced AI Diagnostics.
+        </p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/3d-elements.js"></script>
+</body>
+</html>
