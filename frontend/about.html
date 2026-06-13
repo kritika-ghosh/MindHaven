@@ -235,8 +235,8 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // Check if user is logged in to change Sign In to Dashboard / Logout
-            const isAuth = localStorage.getItem('mindhaven_auth') === 'true';
-            const isGuest = localStorage.getItem('mindhaven_guest') === 'true';
+            const isAuth = sessionStorage.getItem('mindhaven_auth') === 'true';
+            const isGuest = sessionStorage.getItem('mindhaven_guest') === 'true';
             const authBtn = document.getElementById('auth-btn');
             
             if (isAuth || isGuest) {

@@ -184,9 +184,9 @@
             await requireAuth();
             
             // Set header profile details
-            const username = localStorage.getItem('mindhaven_user') || 'User';
+            const username = sessionStorage.getItem('mindhaven_user') || 'User';
             document.getElementById('welcome-title').textContent = `${username}'s Burnout Analysis`;
-            document.getElementById('welcome-subtitle').textContent = localStorage.getItem('mindhaven_guest') === 'true' 
+            document.getElementById('welcome-subtitle').textContent = sessionStorage.getItem('mindhaven_guest') === 'true' 
                 ? 'Session Archive & Telemetry (GUEST MODE)' 
                 : 'Session Archive & Telemetry (AUTHENTICATED SUBJECT)';
 
@@ -196,7 +196,7 @@
 
         async function loadDashboardData() {
             let records = [];
-            const isGuest = localStorage.getItem('mindhaven_guest') === 'true';
+            const isGuest = sessionStorage.getItem('mindhaven_guest') === 'true';
 
             if (isGuest) {
                 // Populate mock history for presentation/judges
@@ -489,8 +489,8 @@
                     }
                 };
 
-                // Set to local storage so insights page pulls it
-                localStorage.setItem('burnout_prediction', JSON.stringify(data));
+                // Set to sessionStorage so insights page pulls it
+                sessionStorage.setItem('burnout_prediction', JSON.stringify(data));
                 navigateTo('insights.html');
             } catch(e) {
                 console.error("Failed to parse row details:", e);
@@ -499,10 +499,10 @@
 
         // Logout
         async function handleLogout() {
-            localStorage.removeItem('mindhaven_auth');
-            localStorage.removeItem('mindhaven_guest');
-            localStorage.removeItem('mindhaven_user');
-            localStorage.removeItem('burnout_prediction');
+            sessionStorage.removeItem('mindhaven_auth');
+            sessionStorage.removeItem('mindhaven_guest');
+            sessionStorage.removeItem('mindhaven_user');
+            sessionStorage.removeItem('burnout_prediction');
             
             if (sb) {
                 await sb.auth.signOut().catch(() => {});

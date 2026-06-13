@@ -4,7 +4,12 @@ const SUPABASE_ANON_KEY = "sb_publishable_camf03NTjQHIr5pK-V1DDA_fr8nzNcK";
 let sb = null;
 
 if (typeof supabase !== 'undefined') {
-  sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+      storage: window.sessionStorage,
+      persistSession: true
+    }
+  });
 } else {
   console.warn("Supabase SDK is not loaded. Please include the SDK script before utils.js.");
 }
@@ -72,10 +77,10 @@ function burnoutLabel(score) {
   return labels[Math.round(score)] || 'Moderate';
 }
 
-/* ── Load prediction from localStorage ─────────────────────── */
+/* ── Load prediction from sessionStorage ─────────────────────── */
 function loadPrediction() {
   try {
-    var raw = localStorage.getItem('burnout_prediction');
+    var raw = sessionStorage.getItem('burnout_prediction');
     return raw ? JSON.parse(raw) : null;
   } catch (e) {
     return null;
@@ -97,16 +102,16 @@ function seedGuestData() {
       'Pitch': '118 Hz avg (slightly low)',
     },
   };
-  localStorage.setItem('mindhaven_guest', 'true');
-  localStorage.setItem('mindhaven_auth', 'true');
-  localStorage.setItem('mindhaven_user', 'Judge (Demo)');
-  localStorage.setItem('burnout_prediction', JSON.stringify(fake));
+  sessionStorage.setItem('mindhaven_guest', 'true');
+  sessionStorage.setItem('mindhaven_auth', 'true');
+  sessionStorage.setItem('mindhaven_user', 'Judge (Demo)');
+  sessionStorage.setItem('burnout_prediction', JSON.stringify(fake));
 }
 
 /* ── Auth guard ─────────────────────────────────────────────── */
 async function requireAuth(redirectTo) {
   redirectTo = redirectTo || 'auth.html';
-  var isGuest = localStorage.getItem('mindhaven_guest') === 'true';
+  var isGuest = sessionStorage.getItem('mindhaven_guest') === 'true';
   if (isGuest) {
     return { user: { email: 'guest@mindhaven.demo', user_metadata: { full_name: 'Judge (Demo)' } } };
   }
@@ -115,8 +120,8 @@ async function requireAuth(redirectTo) {
     try {
       const { data: { session } } = await sb.auth.getSession();
       if (session) {
-        localStorage.setItem('mindhaven_auth', 'true');
-        localStorage.setItem('mindhaven_user', session.user.user_metadata?.full_name || session.user.email || 'User');
+        sessionStorage.setItem('mindhaven_auth', 'true');
+        sessionStorage.setItem('mindhaven_user', session.user.user_metadata?.full_name || session.user.email || 'User');
         return session;
       }
     } catch (e) {

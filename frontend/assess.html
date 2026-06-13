@@ -478,12 +478,54 @@
         console.warn('Mic unavailable, using simulation:', e);
       }
 
+      let leftSamples = [];
+      let audioContext = null;
+      let scriptProcessor = null;
+      let micSource = null;
+
       if (stream) {
-        try { audioRecorder = new MediaRecorder(stream, {mimeType:'audio/webm;codecs=opus'}); }
-        catch(e) { audioRecorder = new MediaRecorder(stream); }
-        audioChunks = [];
-        audioRecorder.ondataavailable = e => { if(e.data.size>0) audioChunks.push(e.data); };
-        audioRecorder.start(500);
+        try {
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          micSource = audioContext.createMediaStreamSource(stream);
+          scriptProcessor = audioContext.createScriptProcessor(4096, 1, 1);
+          
+          leftSamples = [];
+          scriptProcessor.onaudioprocess = function(e) {
+            let inputData = e.inputBuffer.getChannelData(0);
+            leftSamples.push(new Float32Array(inputData));
+          };
+          
+          micSource.connect(scriptProcessor);
+          scriptProcessor.connect(audioContext.destination);
+          
+          audioRecorder = {
+            stop: function() {
+              if (scriptProcessor) {
+                scriptProcessor.disconnect();
+                scriptProcessor.onaudioprocess = null;
+              }
+              if (micSource) {
+                micSource.disconnect();
+              }
+              if (audioContext) {
+                audioContext.close();
+              }
+              
+              let totalLength = leftSamples.reduce((acc, val) => acc + val.length, 0);
+              let result = new Float32Array(totalLength);
+              let offset = 0;
+              for (let i = 0; i < leftSamples.length; i++) {
+                result.set(leftSamples[i], offset);
+                offset += leftSamples[i].length;
+              }
+              
+              let audioBlob = bufferToWav(result, audioContext.sampleRate);
+              audioChunks = [audioBlob];
+            }
+          };
+        } catch(errInit) {
+          console.error('Failed to init Web Audio WAV recorder:', errInit);
+        }
       }
 
       setWaveformActive(true);
@@ -501,7 +543,7 @@
           clearInterval(scanTimer);
           setWaveformActive(false);
 
-          if (audioRecorder && audioRecorder.state !== 'inactive') audioRecorder.stop();
+          if (audioRecorder) audioRecorder.stop();
           if (stream) stream.getTracks().forEach(t => t.stop());
 
           document.getElementById('voice-status').textContent = 'Captured ✓';
@@ -555,7 +597,7 @@
 
       const getAudioBlob = () => new Promise(resolve => {
         if (audioChunks.length > 0) {
-          setTimeout(() => resolve(new Blob(audioChunks, {type:'audio/webm'})), 300);
+          resolve(audioChunks[0]);
         } else {
           // Simulation fallback: minimal WAV (44-byte header, silence)
           const wav = new ArrayBuffer(44);
@@ -584,7 +626,7 @@
       console.log('audioBlob size:', audioBlob.size, 'type:', audioBlob.type);
 
       fd.append('video_file', videoBlob, 'face.webm');
-      fd.append('audio_file', audioBlob, audioChunks.length > 0 ? 'voice.webm' : 'voice.wav');
+      fd.append('audio_file', audioBlob, 'voice.wav');
 
       // Log full payload for debugging
       for (const [k,v] of fd.entries()) {
@@ -611,7 +653,7 @@
         if (res.ok) {
           const data = await res.json();
           console.log('API response:', data);
-          localStorage.setItem('burnout_prediction', JSON.stringify(data));
+          sessionStorage.setItem('burnout_prediction', JSON.stringify(data));
           try {
             await saveAssessment(data, answers);
           } catch(se) {
@@ -660,7 +702,7 @@
         };
 
         setTimeout(async () => {
-          localStorage.setItem('burnout_prediction', JSON.stringify(fallback));
+          sessionStorage.setItem('burnout_prediction', JSON.stringify(fallback));
           try {
             await saveAssessment(fallback, answers);
           } catch(se) {
@@ -668,6 +710,40 @@
           }
           window.location.href = 'insights.html';
         }, 1200);
+      }
+    }
+
+    function bufferToWav(buffer, sampleRate) {
+      let bufferLength = buffer.length;
+      let wavBuffer = new ArrayBuffer(44 + bufferLength * 2);
+      let view = new DataView(wavBuffer);
+      writeString(view, 0, 'RIFF');
+      view.setUint32(4, 36 + bufferLength * 2, true);
+      writeString(view, 8, 'WAVE');
+      writeString(view, 12, 'fmt ');
+      view.setUint32(16, 16, true);
+      view.setUint16(20, 1, true);
+      view.setUint16(22, 1, true);
+      view.setUint32(24, sampleRate, true);
+      view.setUint32(28, sampleRate * 2, true);
+      view.setUint16(32, 2, true);
+      view.setUint16(34, 16, true);
+      writeString(view, 36, 'data');
+      view.setUint32(40, bufferLength * 2, true);
+      floatTo16BitPCM(view, 44, buffer);
+      return new Blob([view], { type: 'audio/wav' });
+    }
+
+    function floatTo16BitPCM(output, offset, input) {
+      for (let i = 0; i < input.length; i++, offset += 2) {
+        let s = Math.max(-1, Math.min(1, input[i]));
+        output.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+      }
+    }
+
+    function writeString(view, offset, string) {
+      for (let i = 0; i < string.length; i++) {
+        view.setUint8(offset + i, string.charCodeAt(i));
       }
     }
 

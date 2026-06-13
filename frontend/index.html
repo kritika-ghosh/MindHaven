@@ -61,7 +61,7 @@
         </div>
         <div class="flex gap-6 items-center">
             <a href="about.html" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors">About Us</a>
-            <a href="auth.html" class="px-6 py-2.5 bg-white/40 border border-white/60 hover:bg-white/60 text-on-surface font-semibold text-sm rounded-full transition-all active:scale-95 shadow-sm">
+            <a href="auth.html" id="auth-btn" class="px-6 py-2.5 bg-white/40 border border-white/60 hover:bg-white/60 text-on-surface font-semibold text-sm rounded-full transition-all active:scale-95 shadow-sm">
                 Sign In
             </a>
         </div>
@@ -168,6 +168,33 @@
     </footer>
 
     <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/utils.js"></script>
     <script src="js/3d-elements.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const authBtn = document.getElementById('auth-btn');
+            if (!authBtn) return;
+
+            const isGuest = sessionStorage.getItem('mindhaven_guest') === 'true';
+            if (isGuest) {
+                authBtn.textContent = 'Dashboard';
+                authBtn.setAttribute('href', 'dashboard.html');
+                return;
+            }
+
+            if (sb) {
+                try {
+                    const { data: { session } } = await sb.auth.getSession();
+                    if (session) {
+                        authBtn.textContent = 'Dashboard';
+                        authBtn.setAttribute('href', 'dashboard.html');
+                    }
+                } catch(e) {
+                    console.error("Session check on index failed:", e);
+                }
+            }
+        });
+    </script>
 </body>
 </html>

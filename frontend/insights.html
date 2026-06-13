@@ -240,7 +240,7 @@ Paragraph 3: A 7-day recovery micro-plan with 3 specific, time-bound actions.
         // Parse local storage prediction results
         async function loadAnalysisData() {
             let data = null;
-            let resultStr = localStorage.getItem('burnout_prediction');
+            let resultStr = sessionStorage.getItem('burnout_prediction');
             
             // If logged in via Supabase, fetch the latest assessment row
             if (sb) {
@@ -283,7 +283,7 @@ Paragraph 3: A 7-day recovery micro-plan with 3 specific, time-bound actions.
                                 }
                             }
                             
-                            localStorage.setItem('burnout_prediction', JSON.stringify(data));
+                            sessionStorage.setItem('burnout_prediction', JSON.stringify(data));
                         }
                     }
                 } catch(err) {

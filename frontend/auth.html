@@ -178,9 +178,9 @@
             event.preventDefault();
             
             // Clear any old flags
-            localStorage.removeItem('mindhaven_guest');
-            localStorage.removeItem('mindhaven_auth');
-            localStorage.removeItem('mindhaven_user');
+            sessionStorage.removeItem('mindhaven_guest');
+            sessionStorage.removeItem('mindhaven_auth');
+            sessionStorage.removeItem('mindhaven_user');
             
             if (!sb) {
                 alert('Supabase service is currently unavailable. Please check configurations.');
@@ -218,8 +218,8 @@
                     // Supabase auto-signs-in if email confirmation is disabled.
                     // If email confirmation is enabled, session might be null.
                     if (data.session) {
-                        localStorage.setItem('mindhaven_auth', 'true');
-                        localStorage.setItem('mindhaven_user', name || email);
+                        sessionStorage.setItem('mindhaven_auth', 'true');
+                        sessionStorage.setItem('mindhaven_user', name || email);
                         navigateTo('about.html');
                     } else {
                         alert('Account created! Please check your email for verification before signing in.');
@@ -237,8 +237,8 @@
                     
                     if (error) throw error;
                     
-                    localStorage.setItem('mindhaven_auth', 'true');
-                    localStorage.setItem('mindhaven_user', data.user.user_metadata?.full_name || email);
+                    sessionStorage.setItem('mindhaven_auth', 'true');
+                    sessionStorage.setItem('mindhaven_user', data.user.user_metadata?.full_name || email);
                     navigateTo('about.html');
                 }
             } catch (err) {
@@ -258,8 +258,27 @@
             navigateTo('about.html');
         }
 
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', async function () {
             wrapper.style.height = '270px';
+
+            const isGuest = sessionStorage.getItem('mindhaven_guest') === 'true';
+            if (isGuest) {
+                navigateTo('dashboard.html');
+                return;
+            }
+
+            if (sb) {
+                try {
+                    const { data: { session } } = await sb.auth.getSession();
+                    if (session) {
+                        sessionStorage.setItem('mindhaven_auth', 'true');
+                        sessionStorage.setItem('mindhaven_user', session.user.user_metadata?.full_name || session.user.email || 'User');
+                        navigateTo('dashboard.html');
+                    }
+                } catch(e) {
+                    console.error("Session check on auth page failed:", e);
+                }
+            }
         });
     </script>
 </body>
