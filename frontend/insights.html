@@ -263,7 +263,7 @@
     <script>
         // Pull the Groq key from js/config.js (gitignored) or define it here
         const GROQ_KEY = window.MINDHAVEN_CONFIG?.GROQ_KEY || "";
-        const GROQ_MODEL = "llama3-70b-8192";
+        const GROQ_MODEL = "llama-3.3-70b-versatile";
 
         async function generateLLMInsight(predictionData, answers) {
             if (!GROQ_KEY || GROQ_KEY.startsWith("gsk_YOUR")) {
@@ -756,7 +756,7 @@ Address their stress levels with validation, mindfulness exercises, and practica
                         'Authorization': `Bearer ${apiKey}`
                     },
                     body: JSON.stringify({
-                        model: "llama3-8b-8192",
+                        model: "llama-3.1-8b-instant",
                         messages: chatHistory,
                         max_tokens: 400,
                         temperature: 0.6
