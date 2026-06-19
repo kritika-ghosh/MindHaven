@@ -596,9 +596,9 @@ Address their stress levels with validation, mindfulness exercises, and practica
             appendMessage("assistant", welcomeText);
 
             // Configuration Warning
-            const apiKey = window.MINDHAVEN_CONFIG?.GROQ_KEY || "";
-            if (!apiKey || apiKey.startsWith("gsk_YOUR") || apiKey === "") {
-                appendMessage("assistant", "**Configuration Warning**: A valid Groq API Key was not found in `js/config.js`. You can still type messages, but the AI won't be able to reply until the key is configured.");
+            const apiKey = window.MINDHAVEN_CONFIG?.HF_KEY || window.MINDHAVEN_CONFIG?.GROQ_KEY || "";
+            if (!apiKey || apiKey.startsWith("gsk_YOUR") || apiKey.startsWith("hf_YOUR") || apiKey === "") {
+                appendMessage("assistant", "**Configuration Warning**: A valid Hugging Face Access Token or Groq API Key was not found in `js/config.js`. Please configure `HF_KEY` or `GROQ_KEY` to enable AI replies.");
             }
         }
 
@@ -744,27 +744,37 @@ Address their stress levels with validation, mindfulness exercises, and practica
             showTypingIndicator();
             
             try {
-                const apiKey = window.MINDHAVEN_CONFIG?.GROQ_KEY || "";
-                if (!apiKey || apiKey.startsWith("gsk_YOUR") || apiKey === "") {
-                    throw new Error("Missing Groq API Key! Please configure GROQ_KEY in js/config.js.");
+                const apiKey = window.MINDHAVEN_CONFIG?.HF_KEY || window.MINDHAVEN_CONFIG?.GROQ_KEY || "";
+                if (!apiKey || apiKey.startsWith("gsk_YOUR") || apiKey.startsWith("hf_YOUR") || apiKey === "") {
+                    throw new Error("Missing Access Token! Please configure HF_KEY or GROQ_KEY in js/config.js.");
                 }
                 
-                const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                // Determine if this is a Hugging Face token or Groq key
+                const isHF = apiKey.startsWith("hf_") || !apiKey.startsWith("gsk_");
+                const endpoint = isHF 
+                    ? "https://api-inference.huggingface.co/models/kritika53245/mindhaven-cbt-qwen/v1/chat/completions"
+                    : "https://api.groq.com/openai/v1/chat/completions";
+                
+                const requestBody = {
+                    messages: chatHistory,
+                    max_tokens: 400,
+                    temperature: 0.6
+                };
+                if (!isHF) {
+                    requestBody.model = "llama-3.1-8b-instant";
+                }
+                
+                const res = await fetch(endpoint, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${apiKey}`
                     },
-                    body: JSON.stringify({
-                        model: "llama-3.1-8b-instant",
-                        messages: chatHistory,
-                        max_tokens: 400,
-                        temperature: 0.6
-                    })
+                    body: JSON.stringify(requestBody)
                 });
                 
                 if (!res.ok) {
-                    throw new Error(`Groq API error (status: ${res.status})`);
+                    throw new Error(`API error (status: ${res.status}). ${res.status === 503 ? "Model is loading on Hugging Face. Please wait a moment and try again." : ""}`);
                 }
                 
                 const json = await res.json();
