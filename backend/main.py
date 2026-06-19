@@ -1,7 +1,6 @@
 import cv2
 import math
-import mediapipe.python.solutions.face_mesh as mp_face_mesh
-import mediapipe.python.solutions.drawing_utils as mp_drawing
+import mediapipe as mp
 import numpy as np
 import time
 from deepface import DeepFace
@@ -28,7 +27,7 @@ EMOTION_BUCKETS = {
 sentiment_analyzer = SentimentIntensityAnalyzer()
 
 # Lazy loading face_mesh to prevent Docker initialization crashes
-face_mesh = mp_face_mesh.FaceMesh(
+face_mesh = mp.solutions.face_mesh.FaceMesh(
     max_num_faces=1, refine_landmarks=True, min_detection_confidence=0.7, min_tracking_confidence=0.7
 )
 
@@ -243,7 +242,12 @@ class PredictionResponse(BaseModel):
     burnout_score: float
     suggestion: str
     debug_data: dict
-
+@app.get("/health")
+async def health_check():
+    """
+    Lightweight endpoint for uptime monitoring to keep the container awake.
+    """
+    return {"status": "healthy", "timestamp": time.time()}
 @app.post("/predict", response_model=PredictionResponse)
 async def get_prediction(
     video_file: UploadFile = File(..., description="Video file for facial and emotion analysis."),
