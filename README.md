@@ -113,13 +113,16 @@ MindHaven/
 │   ├── assess.html         # Multimodal capture interface
 │   ├── insights.html       # AI Coach advisor panel
 │   ├── dashboard.html      # Recovery tracking dashboard
+│   ├── breathe.html        # Interactive breathing recovery exercises
 │   └── about.html          # Scientific methodology
 ├── backend/                # Production Hugging Face Container API
-│   ├── Dockerfile          # HF Docker definition
+│   ├── Dockerfile          # HF Docker deployment definition
 │   ├── main.py             # FastAPI regression inference service
 │   ├── model.joblib        # Pre-trained CatBoostRegressor model
 │   ├── scaler.joblib       # Standard Scaler artifact
-│   └── requirements.txt    # Production dependencies
+│   ├── requirements.txt    # Production dependencies
+│   ├── README.md           # Hugging Face Space configuration metadata
+│   └── .gitattributes      # Git LFS tracking configuration
 ├── model_training/         # Notebooks and empirical data
 │   ├── data.csv            # Empirically collected VIT student burnout data
 │   ├── Model_Training_Regression.ipynb # Fully-executed training pipeline
