@@ -227,7 +227,6 @@ def predict_burnout(raw_dict):
     pred = model.predict(X_processed)
     # CatBoostRegressor returns prediction as an array/float value
     score = float(pred[0]) if isinstance(pred, np.ndarray) else float(pred)
-    # Clip the score to the valid range [0.0, 4.0]
     return max(0.0, min(4.0, score))
 
 def get_suggestion_text(burnout_score: float) -> str:
