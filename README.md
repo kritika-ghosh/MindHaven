@@ -128,7 +128,8 @@ MindHaven/
 │   ├── Model_Training_Regression.ipynb # Fully-executed training pipeline
 │   └── regression_output/  # Serialized model export directory
 └── chatbot_finetuning/     # Cognitive Behavioral Therapy Fine-Tuning
-    └── MindHaven_CBT_FineTuning.ipynb
+    ├── MindHaven_CBT_FineTuning.ipynb
+    └── COLAB_NGROK_SETUP.md # Google Colab & Ngrok serving guide
 ```
 
 ---

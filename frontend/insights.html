@@ -266,7 +266,11 @@
         const GROQ_MODEL = "llama-3.3-70b-versatile";
 
         async function generateLLMInsight(predictionData, answers) {
-            if (!GROQ_KEY || GROQ_KEY.startsWith("gsk_YOUR")) {
+            const config = window.MINDHAVEN_CONFIG || {};
+            const customEndpoint = config.NGROK_URL || "";
+            const isCustom = customEndpoint !== "";
+            
+            if (!isCustom && (!GROQ_KEY || GROQ_KEY.startsWith("gsk_YOUR"))) {
                 console.log("No valid Groq key configured. Using default model suggestions.");
                 return predictionData.suggestion;
             }
@@ -296,14 +300,18 @@ Paragraph 2: The most important immediate action they should take today.
 Paragraph 3: A 7-day recovery micro-plan with 3 specific, time-bound actions.
 `.trim();
 
-                const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                const endpoint = isCustom 
+                    ? `${customEndpoint.replace(/\/$/, "")}/v1/chat/completions`
+                    : "https://api.groq.com/openai/v1/chat/completions";
+
+                const res = await fetch(endpoint, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + GROQ_KEY
+                        'Authorization': 'Bearer ' + (isCustom ? 'dummy' : GROQ_KEY)
                     },
                     body: JSON.stringify({
-                        model: GROQ_MODEL,
+                        model: isCustom ? 'custom-qwen' : GROQ_MODEL,
                         messages: [{ role: 'user', content: prompt }],
                         max_tokens: 600,
                         temperature: 0.7

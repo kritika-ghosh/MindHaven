@@ -17,10 +17,13 @@ if (typeof supabase !== 'undefined') {
 /* ── Configuration Defaults & Overrides ───────────────────── */
 window.MINDHAVEN_CONFIG = window.MINDHAVEN_CONFIG || {};
 if (!window.MINDHAVEN_CONFIG.API_URL) {
-  window.MINDHAVEN_CONFIG.API_URL = "https://kritika53245-mindhaven.hf.space/predict";
+  window.MINDHAVEN_CONFIG.API_URL = localStorage.getItem('MINDHAVEN_API_URL') || "https://kritika53245-mindhaven.hf.space/predict";
 }
 if (!window.MINDHAVEN_CONFIG.GROQ_KEY) {
-  window.MINDHAVEN_CONFIG.GROQ_KEY = "";
+  window.MINDHAVEN_CONFIG.GROQ_KEY = localStorage.getItem('MINDHAVEN_GROQ_KEY') || "";
+}
+if (!window.MINDHAVEN_CONFIG.NGROK_URL) {
+  window.MINDHAVEN_CONFIG.NGROK_URL = localStorage.getItem('MINDHAVEN_NGROK_URL') || "";
 }
 
 /* ═══════════════════════════════════════════════════════════════
