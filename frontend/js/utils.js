@@ -14,6 +14,15 @@ if (typeof supabase !== 'undefined') {
   console.warn("Supabase SDK is not loaded. Please include the SDK script before utils.js.");
 }
 
+/* ── Configuration Defaults & Overrides ───────────────────── */
+window.MINDHAVEN_CONFIG = window.MINDHAVEN_CONFIG || {};
+if (!window.MINDHAVEN_CONFIG.API_URL) {
+  window.MINDHAVEN_CONFIG.API_URL = "https://kritika53245-mindhaven.hf.space/predict";
+}
+if (!window.MINDHAVEN_CONFIG.GROQ_KEY) {
+  window.MINDHAVEN_CONFIG.GROQ_KEY = "";
+}
+
 /* ═══════════════════════════════════════════════════════════════
    js/utils.js  —  Shared helpers used across all pages
    Customized for Supabase & Burnout Assessment

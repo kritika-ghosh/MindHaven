@@ -271,6 +271,7 @@
     </div>
   </div>
 
+  <script src="js/config.js"></script>
   <script src="js/utils.js"></script>
   <script src="js/3d-elements.js"></script>
   <script>
@@ -641,7 +642,7 @@
       const msgTimer = setInterval(() => { if(mi<msgs.length) msgEl.textContent = msgs[mi++]; }, 1200);
 
       try {
-        const res = await fetch('https://kritika53245-bd-api.hf.space/predict', {
+        const res = await fetch(window.MINDHAVEN_CONFIG.API_URL, {
           method: 'POST',
           body: fd
           // NOTE: Do NOT set Content-Type header — browser sets it automatically

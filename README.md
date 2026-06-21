@@ -2,15 +2,15 @@
 
 <div align="center">
 
-![Product Version](https://img.shields.io/badge/version-1.1.0-blueviolet?style=for-the-badge&logo=semver)
+![Product Version](https://img.shields.io/badge/version-1.2.0-blueviolet?style=for-the-badge&logo=semver)
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen?style=for-the-badge&logo=vercel)
-![Framework](https://img.shields.io/badge/architecture-hybrid_fusion-orange?style=for-the-badge)
+![Architecture](https://img.shields.io/badge/architecture-hybrid_fusion-orange?style=for-the-badge)
 ![Database](https://img.shields.io/badge/database-supabase_postgresql-3ecf8e?style=for-the-badge&logo=supabase)
-![Host](https://img.shields.io/badge/deployment-vercel-000000?style=for-the-badge&logo=vercel)
+![HF Space](https://img.shields.io/badge/api-huggingface_space-yellow?style=for-the-badge&logo=huggingface)
 
-**A scientific, multi-modal diagnostic application combining psychometric evaluation, computer vision-based fatigue aspect ratios, and acoustic speech sentiment to assess student burnout.**
+**A scientific, multi-modal diagnostic application combining psychometric evaluation, computer vision-based fatigue aspect ratios, and acoustic speech sentiment to assess student burnout on a continuous scale.**
 
-[Live Application](https://mind-haven-zeta.vercel.app) • [Research Methodology](frontend/about.html) • [Database Console](https://supabase.com)
+[Live Application](https://mind-haven-zeta.vercel.app) • [Research Methodology](frontend/about.html) • [Database Console](https://supabase.com) • [Hugging Face Space API](https://kritika53245-mindhaven.hf.space)
 
 </div>
 
@@ -30,8 +30,8 @@ graph TD
     C -->|Dynamic EAR & MAR| E
     D -->|Speech Acoustics & VADER| E
     
-    E --> F[CatBoost Severe Classification Model]
-    F -->|78% Accuracy| G[Actionable Recovery Dashboard]
+    E --> F[CatBoost Continuous Regression Model]
+    F -->|R2 Score 95.76%| G[Actionable Recovery Dashboard]
 ```
 
 ### 1. Psychometric Survey Module
@@ -54,22 +54,15 @@ Captures verbal responses using the browser's WebRTC API and AudioContext. It tr
 
 ## ─── 📊 Model Evaluation & Benchmarks ───
 
-The core classification engine uses a **CatBoost Classifier** trained on custom student datasets at VIT Bhopal University. The model implements **SMOTE (Synthetic Minority Over-sampling Technique)** to eliminate minority representation biases:
+The core diagnostic engine utilizes a **CatBoost Regressor** predicting a continuous burnout index from `0.0` (Low) to `4.0` (Severe). The model was trained directly on VIT Bhopal student survey datasets under strict 5-Fold Cross-Validation:
 
-| Metric | Random Forest | Logistic Regression | CatBoost Classifier (Ours) |
+| Metric | Support Vector Regressor (SVR) | Random Forest Regressor | CatBoost Regressor (Ours) |
 | :--- | :---: | :---: | :---: |
-| **Overall Accuracy** | 69% | 54% | **78%** |
+| **Mean R² Score** | 92.95% | 95.32% | **95.76%** |
+| **Mean RMSE** | 0.2227 | 0.1805 | **0.1727** |
+| **Mean MAE** | 0.1719 | 0.1444 | **0.1378** |
 
-### Class-wise Performance Metrics
-The system classifies burnout severity into 5 categories (`Low`, `Mild`, `Moderate`, `High`, `Severe`):
-
-| Burnout Severity Class | Precision | Recall | F1-Score |
-| :--- | :---: | :---: | :---: |
-| **0.0 (Low)** | 0.85 | 0.85 | **0.85** |
-| **1.0 (Mild)** | 0.69 | 0.75 | **0.72** |
-| **2.0 (Moderate)** | 0.73 | 0.73 | **0.73** |
-| **3.0 (High)** | 0.80 | 0.89 | **0.84** |
-| **4.0 (Severe)** | 0.86 | 0.67 | **0.75** |
+*All evaluations utilize a continuous target derived directly from participant questionnaire dimensions and facial geometry to prevent classification boundary discretization errors.*
 
 ---
 
@@ -84,7 +77,7 @@ Stores historical metrics, enabling Chart.js graphs and the trend analysis panel
 | :--- | :--- | :--- |
 | `id` | `uuid` (PK) | Unique identifier for the assessment. |
 | `user_id` | `uuid` (FK) | Maps to `auth.users` schema. |
-| `burnout_score` | `numeric` | Final calculated burnout classification score (0.0 to 4.0). |
+| `burnout_score` | `numeric` | Final calculated burnout regression score (0.0 to 4.0). |
 | `suggestion` | `text` | Recommended coping actions and therapeutic activities. |
 | `ear` | `numeric` | Average Eye Aspect Ratio tracked during scan. |
 | `mar` | `numeric` | Average Mouth Aspect Ratio / yawning index. |
@@ -97,6 +90,39 @@ Stores historical metrics, enabling Chart.js graphs and the trend analysis panel
 
 ---
 
+## ─── 📁 Project Layout & Directory Structure ───
+
+```
+MindHaven/
+├── frontend/               # Client-Side Application
+│   ├── css/                # Custom CSS styling stylesheets
+│   ├── js/                 # JavaScript scripts
+│   │   ├── 3d-elements.js  # Three.js 3D background elements
+│   │   ├── config.js       # Git-ignored local configuration overrides
+│   │   ├── theme.js        # Light/dark UI mode toggling
+│   │   └── utils.js        # Shared database hooks and default configurations
+│   ├── index.html          # Wellness home page portal
+│   ├── auth.html           # Authentication portal
+│   ├── assess.html         # Multimodal capture interface
+│   ├── insights.html       # AI Coach advisor panel
+│   ├── dashboard.html      # Recovery tracking dashboard
+│   └── about.html          # Scientific methodology
+├── backend/                # Production Hugging Face Container API
+│   ├── Dockerfile          # HF Docker definition
+│   ├── main.py             # FastAPI regression inference service
+│   ├── model.joblib        # Pre-trained CatBoostRegressor model
+│   ├── scaler.joblib       # Standard Scaler artifact
+│   └── requirements.txt    # Production dependencies
+├── model_training/         # Notebooks and empirical data
+│   ├── data.csv            # Empirically collected VIT student burnout data
+│   ├── Model_Training_Regression.ipynb # Fully-executed training pipeline
+│   └── regression_output/  # Serialized model export directory
+└── chatbot_finetuning/     # Cognitive Behavioral Therapy Fine-Tuning
+    └── MindHaven_CBT_FineTuning.ipynb
+```
+
+---
+
 ## ─── 🛠️ Local Setup & Configuration ───
 
 ### Secure Environment Setup
@@ -106,7 +132,8 @@ MindHaven prevents API keys from leaking to version control. The client keys are
    ```javascript
    // frontend/js/config.js
    window.MINDHAVEN_CONFIG = {
-     GROQ_KEY: "gsk_your_private_groq_api_key_here"
+     GROQ_KEY: "gsk_your_private_groq_api_key_here",
+     API_URL: "https://kritika53245-mindhaven.hf.space/predict" // Optional override
    };
    ```
 2. Make sure `config.js` is ignored in Git:
@@ -128,11 +155,15 @@ Open your browser at `http://localhost:8000`.
 
 ## ─── 🚀 Deployment ───
 
-Deployed globally to production on **Vercel** via serverless builds. 
-
-To deploy updates:
+### Frontend
+Deployed globally to production on **Vercel** via serverless builds. To deploy updates:
 ```bash
 cd frontend
 npx vercel --prod
 ```
 The active live distribution domain is: **[https://mind-haven-zeta.vercel.app](https://mind-haven-zeta.vercel.app)**.
+
+### Hugging Face Space (Backend API)
+The backend container runs on a Hugging Face Space built from the [backend/](backend) folder configuration. 
+
+The API endpoints are exposed at: **[https://kritika53245-mindhaven.hf.space](https://kritika53245-mindhaven.hf.space)**.

@@ -1,5 +1,5 @@
 ---
-title: BD API
+title: MindHaven API
 emoji: 🏃
 colorFrom: pink
 colorTo: blue
