@@ -179,6 +179,15 @@ def preprocess_input(raw_dict, scaler):
     q_encoded = [answer_mapping.get(ans, -1) for ans in raw_dict["Questionnaire Answers"]]
     if -1 in q_encoded: raise ValueError("Unknown answer detected in questionnaire answers.")
 
+    # Align new questionnaire answers with the pre-trained CatBoost model:
+    # Model features were trained expecting:
+    #   - Q1: clarity (higher = healthy / lower burnout) -> new Q1 is exhaustion (higher = worse), so we invert Q1.
+    #   - Q2 & Q3: disconnect & fatigue (higher = worse) -> new Q2 & Q3 are same direction, so we do not invert.
+    #   - Q4 & Q5: lack of motivation & irritation (higher = worse) -> new Q4 & Q5 are pride & meaningful outcomes (higher = healthy), so we invert Q4 and Q5.
+    q_encoded[0] = 4 - q_encoded[0]
+    q_encoded[3] = 4 - q_encoded[3]
+    q_encoded[4] = 4 - q_encoded[4]
+
     # Safely unpack average and standard deviations
     EAR_avg, EAR_std = map(float, raw_dict["EAR"].split(" ± "))
     MAR_avg, MAR_std = map(float, raw_dict["MAR"].split(" ± "))

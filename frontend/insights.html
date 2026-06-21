@@ -281,11 +281,11 @@ You are MindHaven, an empathetic AI wellness coach. Analyse the following burnou
 ASSESSMENT DATA:
 - Burnout Score: ${predictionData.burnout_score}/4.0 (${label})
 - Questionnaire Answers (5 questions on frequency of burnout symptoms):
-  Q1 (Mental clarity): ${answers[0]}
-  Q2 (Disconnecting from work): ${answers[1]}
-  Q3 (Physical/emotional drain): ${answers[2]}
-  Q4 (Lack of motivation): ${answers[3]}
-  Q5 (Irritability): ${answers[4]}
+  Q1 (Exhaustion/stress): ${answers[0]}
+  Q2 (Going through motions): ${answers[1]}
+  Q3 (Avoiding people/groups): ${answers[2]}
+  Q4 (Progress pride): ${answers[3]}
+  Q5 (Meaningful outcomes): ${answers[4]}
 - Facial Analysis: Eye tension (EAR): ${debug['EAR'] || 'N/A'}, Mouth tension (MAR): ${debug['MAR'] || 'N/A'}
 - Emotional Expression: Positive ${debug['Emotions']?.['Positive %'] || '?'}, Neutral ${debug['Emotions']?.['Neutral %'] || '?'}, Negative ${debug['Emotions']?.['Negative %'] || '?'}
 - Voice Transcript: "${debug['Voice Transcript'] || 'Not captured'}"
