@@ -67,9 +67,9 @@ During inference, a 20-second biometric capture window extracts high-accuracy st
 *   **Acoustic Sentiment (4 features):** `Sentiment_Pos`, `Sentiment_Neu`, `Sentiment_Neg`, `Sentiment_Comp` (speech transcription polarity).
 *   **Engineered Cross-Features (2 features):**
     *   `Survey_Sum`: Mapped sum reflecting raw questionnaire burnout severity:
-        $$\text{Survey}_{\text{Sum}} = (4 - \text{Q1}_{\text{inv}}) + \text{Q2} + \text{Q3} + \text{Q4}_{\text{inv}} + \text{Q5}_{\text{inv}}$$
+        $$\text{Survey\\_Sum} = (4 - \text{Q1\\_inv}) + \text{Q2} + \text{Q3} + \text{Q4\\_inv} + \text{Q5\\_inv}$$
     *   `Exhaustion_Ratio`: Physiological ratio between mouth tension and eye fatigue:
-        $$\text{Exhaustion}_{\text{Ratio}} = \frac{\text{Avg}_{\text{MAR}}}{\text{Avg}_{\text{EAR}} + 10^{-5}}$$
+        $$\text{Exhaustion\\_Ratio} = \frac{\text{Avg\\_MAR}}{\text{Avg\\_EAR} + 10^{-5}}$$
 
 ### 2. Training Protocol
 The model was trained directly on the empirical VIT student dataset (266 cleaned, drop-na records) without synthetic row generation:
