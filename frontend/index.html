@@ -134,14 +134,14 @@
                         <h3 class="font-extrabold text-lg">Predictive Performance</h3>
                     </div>
                     <p class="text-sm text-on-surface-variant/90 leading-relaxed font-medium">
-                        Our underlying system utilizes a trained <strong>CatBoost Classifier</strong>, achieving an overall accuracy of <strong>78%</strong> across five levels of severity. The training protocol implements SMOTE oversampling to eliminate dataset bias.
+                        Our underlying system utilizes a trained <strong>CatBoost Regressor</strong>, achieving a continuous validation R² score of <strong>95.76%</strong>. The model computes a precise burnout index from 0.0 to 4.0 directly from multimodal features.
                     </p>
                     <div class="pt-2 flex justify-between items-center text-xs font-bold text-on-surface-variant/70">
-                        <span>Classification Accuracy</span>
-                        <span class="text-primary text-sm font-extrabold">78%</span>
+                        <span>Regression Validation R²</span>
+                        <span class="text-primary text-sm font-extrabold">95.76%</span>
                     </div>
                     <div class="w-full bg-white/30 h-1.5 rounded-full overflow-hidden">
-                        <div class="bg-primary h-full rounded-full" style="width: 78%"></div>
+                        <div class="bg-primary h-full rounded-full" style="width: 95.76%"></div>
                     </div>
                 </div>
 

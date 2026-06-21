@@ -84,8 +84,8 @@
                 </div>
                 
                 <div class="glass-card p-6 rounded-3xl border border-white/40 shadow-lg text-center flex flex-col items-center gap-3">
-                    <span class="text-2xl font-extrabold text-primary leading-none">78%</span>
-                    <p class="text-xs font-bold text-on-surface mt-1">CatBoost Classification Accuracy</p>
+                    <span class="text-2xl font-extrabold text-primary leading-none">95.76%</span>
+                    <p class="text-xs font-bold text-on-surface mt-1">CatBoost Regression R² Score</p>
                     <a href="assess.html" class="w-full pill-3d py-3 text-white font-bold text-sm rounded-full flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md mt-2">
                         <span class="material-symbols-outlined text-sm">medical_services</span>
                         Try It Out
@@ -105,7 +105,7 @@
                         Mental burnout is a significant occupational and psychological issue that arises especially among college students who regularly face academic and social pressure in their life. This paper introduces a multimodal system that detects mental burnout in students which integrates data in a flow starting from questionnaire, facial expressions, and voice sentiment analysis to provide a more unbiased result. Due to the lack of a suitable public dataset for such a problem, a new custom dataset has been created with great precautions.
                     </p>
                     <p class="text-sm md:text-base text-on-surface-variant leading-relaxed font-medium">
-                        The architecture processes each data path starting with an initial questionnaire which provides a self-reported baseline, facial analysis which computes the eye and mouth aspect ratios (EAR/MAR) and detects emotions using the Deepface library, and voice sentiment analysis via VADER library which calculates the compound sentiment of how the person is feeling. These variety of features are then fused and fed into a CatBoost machine learning model, which achieved an accuracy of 78%.
+                        The architecture processes each data path starting with an initial questionnaire which provides a self-reported baseline, facial analysis which computes the eye and mouth aspect ratios (EAR/MAR) and detects emotions using the Deepface library, and voice sentiment analysis via VADER library which calculates the compound sentiment of how the person is feeling. These variety of features are then fused and fed into a CatBoost continuous regression model, which achieved an R² score of 95.76%.
                     </p>
                 </div>
 
@@ -182,25 +182,23 @@
                     </div>
                     
                     <p class="text-sm md:text-base text-on-surface-variant font-medium leading-relaxed">
-                        Through rigorous evaluation, the <strong>CatBoost Classifier</strong> yielded the highest accuracy of <strong>78%</strong> on the custom multimodal dataset, outperforming traditional classifiers such as Random Forest (69%) and Logistic Regression (54%).
+                        Through rigorous 5-Fold Cross-Validation, the continuous <strong>CatBoost Regressor</strong> yielded the highest performance, achieving a Mean R² score of <strong>95.76%</strong>. It consistently outperformed alternative regression architectures including Random Forest Regressor (95.32%) and Support Vector Regressor (92.95%).
                     </p>
 
                     <div class="overflow-x-auto w-full">
                         <table class="w-full text-left text-xs border-collapse">
                             <thead>
                                 <tr class="border-b border-white/20 text-on-surface-variant/60 uppercase font-bold">
-                                    <th class="py-2 pr-4">Burnout Class</th>
-                                    <th class="py-2 px-4 text-center">Precision</th>
-                                    <th class="py-2 px-4 text-center">Recall</th>
-                                    <th class="py-2 px-4 text-center">F1-Score</th>
+                                    <th class="py-2 pr-4">Regression Model</th>
+                                    <th class="py-2 px-4 text-center">Mean R² Score</th>
+                                    <th class="py-2 px-4 text-center">Mean RMSE</th>
+                                    <th class="py-2 px-4 text-center">Mean MAE</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-white/10 font-bold text-on-surface/85">
-                                <tr><td class="py-2 pr-4">0.0 (Low)</td><td class="py-2 px-4 text-center text-primary">0.85</td><td class="py-2 px-4 text-center">0.85</td><td class="py-2 px-4 text-center">0.85</td></tr>
-                                <tr><td class="py-2 pr-4">1.0 (Mild)</td><td class="py-2 px-4 text-center text-primary">0.69</td><td class="py-2 px-4 text-center">0.75</td><td class="py-2 px-4 text-center">0.72</td></tr>
-                                <tr><td class="py-2 pr-4">2.0 (Moderate)</td><td class="py-2 px-4 text-center text-primary">0.73</td><td class="py-2 px-4 text-center">0.73</td><td class="py-2 px-4 text-center">0.73</td></tr>
-                                <tr><td class="py-2 pr-4">3.0 (High)</td><td class="py-2 px-4 text-center text-primary">0.80</td><td class="py-2 px-4 text-center">0.89</td><td class="py-2 px-4 text-center">0.84</td></tr>
-                                <tr><td class="py-2 pr-4">4.0 (Severe)</td><td class="py-2 px-4 text-center text-primary">0.86</td><td class="py-2 px-4 text-center">0.67</td><td class="py-2 px-4 text-center">0.75</td></tr>
+                                <tr><td class="py-2 pr-4">CatBoost Regressor (Ours)</td><td class="py-2 px-4 text-center text-primary">95.76%</td><td class="py-2 px-4 text-center">0.1727</td><td class="py-2 px-4 text-center">0.1378</td></tr>
+                                <tr><td class="py-2 pr-4">Random Forest Regressor</td><td class="py-2 px-4 text-center text-primary">95.32%</td><td class="py-2 px-4 text-center">0.1805</td><td class="py-2 px-4 text-center">0.1444</td></tr>
+                                <tr><td class="py-2 pr-4">Support Vector Regressor (SVR)</td><td class="py-2 px-4 text-center text-primary">92.95%</td><td class="py-2 px-4 text-center">0.2227</td><td class="py-2 px-4 text-center">0.1719</td></tr>
                             </tbody>
                         </table>
                     </div>
