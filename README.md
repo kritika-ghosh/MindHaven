@@ -1,60 +1,93 @@
-# MindHaven — AI-Powered Multi-Modal Burnout Detection Suite
-
 <div align="center">
 
-![Product Version](https://img.shields.io/badge/version-1.2.0-blueviolet?style=for-the-badge&logo=semver)
-![Build Status](https://img.shields.io/badge/build-passing-brightgreen?style=for-the-badge&logo=vercel)
-![Architecture](https://img.shields.io/badge/architecture-hybrid_fusion-orange?style=for-the-badge)
-![Database](https://img.shields.io/badge/database-supabase_postgresql-3ecf8e?style=for-the-badge&logo=supabase)
-![HF Space](https://img.shields.io/badge/api-huggingface_space-yellow?style=for-the-badge&logo=huggingface)
+# 🧠 MindHaven
 
-**A scientific, multi-modal diagnostic application combining psychometric evaluation, computer vision-based fatigue aspect ratios, and acoustic speech sentiment to assess student burnout on a continuous scale.**
+### *Objective continuous student burnout diagnostics powered by psychometric, computer vision, and acoustic AI multi-modal late-fusion.*
 
-[Live Application](https://mind-haven-zeta.vercel.app) • [Research Methodology](frontend/about.html) • [Database Console](https://supabase.com) • [Hugging Face Space API](https://kritika53245-mindhaven.hf.space)
+<br/>
+
+[![Python](https://img.shields.io/badge/Python-3.10-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.109+-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![HTML5](https://img.shields.io/badge/HTML5-supported-E34F26?style=flat-square&logo=html5&logoColor=white)](https://html.spec.whatwg.org/)
+[![Three.js](https://img.shields.io/badge/Three.js-r128-black?style=flat-square&logo=three.js&logoColor=white)](https://threejs.org/)
+[![Supabase](https://img.shields.io/badge/Supabase-database-3ecf8e?style=flat-square&logo=supabase&logoColor=white)](https://supabase.com/)
+[![Docker](https://img.shields.io/badge/Docker-ready-2496ED?style=flat-square&logo=docker&logoColor=white)](https://www.docker.com/)
+[![Vercel](https://img.shields.io/badge/Vercel-deployed-000000?style=flat-square&logo=vercel&logoColor=white)](https://vercel.com/)
+[![Hugging Face](https://img.shields.io/badge/Hugging%20Face-Spaces-FFD21E?style=flat-square&logo=huggingface&logoColor=black)](https://huggingface.co/spaces)
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 
 </div>
 
 ---
 
-## ─── 🧬 Technical Architecture & Multi-Modal Fusion ───
+## 📸 Demo & Interfaces
 
-MindHaven operates on a **Late-Fusion Hybrid Model** combining three primary input streams to achieve objective, unbiased burnout scores. It replaces subjective, self-reporting biases with real-time biometric indicators:
+<div align="center">
 
-```mermaid
-graph TD
-    A[User Node Initialization] --> B[1. Psychometric Survey]
-    A --> C[2. Computer Vision Tracker]
-    A --> D[3. Vocal Sentiment Analyser]
-    
-    B -->|MBI Subscales| E[Fusion Layer]
-    C -->|Dynamic EAR & MAR| E
-    D -->|Speech Acoustics & VADER| E
-    
-    E --> F[CatBoost Continuous Regression Model]
-    F -->|R2 Score 95.76%| G[Actionable Recovery Dashboard]
-```
+[![MindHaven Technical Demo UI Mockup](https://img.youtube.com/vi/gg7GkVSvf-w/maxresdefault.jpg)](https://mind-haven-zeta.vercel.app)
 
-### 1. Psychometric Survey Module
-Evaluates mental clarity, exhaustion, and motivation using a 5-question baseline mapped closely to the **Maslach Burnout Inventory (MBI)**.
+*(Click to open the active live deployment: **[mind-haven-zeta.vercel.app](https://mind-haven-zeta.vercel.app)**)*
 
-### 2. Computer Vision Pipeline (Facial Geometry & Emotion Recognition)
-Uses a camera capture feed (utilizing MediaPipe landmark tracking and DeepFace classifier models) to extract biometric physical fatigue markers and real-time emotional state signatures:
-*   **Facial Emotion Classifier (DeepFace)**: Evaluates dynamic micro-expressions and categorizes facial signals into positive, neutral, or negative emotion matrices.
-*   **Eye Aspect Ratio (EAR)**: Computes eye fatigue and blink duration based on vertical and horizontal eye landmark distances. An EAR drop below `0.2` indicates micro-napping/exhaustion.
-*   **Mouth Aspect Ratio (MAR)**: Measures jaw tension and yawning frequencies.
-
-$$\text{EAR} = \frac{||P_2 - P_6|| + ||P_3 - P_5||}{2 ||P_1 - P_4||}$$
-
-$$\text{MAR} = \frac{\text{INNER\_MOUTH\_HEIGHT}}{\text{INNER\_MOUTH\_WIDTH}}$$
-
-### 3. Vocal & Sentiment Channel
-Captures verbal responses using the browser's WebRTC API and AudioContext. It transcribes natural speech and executes sentiment analysis via the **VADER (Valence Aware Dictionary and sEntiment Reasoner)** library, extracting a normalized compound sentiment score ranging from `-1.0` (highly stressed) to `1.0` (optimal stability).
+</div>
 
 ---
 
-## ─── 📊 Model Evaluation & Benchmarks ───
+## 🌟 Features
 
-The core diagnostic engine utilizes a **CatBoost Regressor** predicting a continuous burnout index from `0.0` (Low) to `4.0` (Severe). The model was trained directly on VIT Bhopal student survey datasets under strict 5-Fold Cross-Validation:
+- 📝 **Student-Centric Psychometrics** — Mapped closely to the Maslach Burnout Inventory (MBI) to establish a baseline.
+- 👁️ **Computer Vision Aspect Ratios** — Measures physiological fatigue indicators including **Eye Aspect Ratio (EAR)** and **Mouth Aspect Ratio (MAR)** via MediaPipe.
+- 🎭 **Micro-Expression Emotion Proportions** — Utilizes DeepFace to track positive, neutral, and negative facial expressions.
+- 🗣️ **Vocal Sentiment Channel** — Transcribes vocal responses using browser WebRTC and computes sentiment polarity compound scores via VADER.
+- 🧠 **Continuous Regression ML** — Leverages a pre-trained **CatBoost Regressor** (tuned to $95.76\%$ $R^2$) to output a highly precise burnout index between `0.0` (Low) and `4.0` (Severe).
+- 💬 **Interactive AI Wellness Coach** — Integrates Groq (Llama-3.3-70b-versatile) to provide personalized, warm, and highly actionable recovery plans.
+- 📊 **Telemetry Trends Dashboard** — Chart.js integration visualizes historical assessments, vitality metrics, and expression trends over time.
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technologies |
+|---|---|
+| **Frontend** | Vanilla HTML5, CSS3, JavaScript (ES6+), GSAP (Animations), Three.js (3D background), Chart.js |
+| **Backend API** | FastAPI, Python 3.10, OpenCV, MediaPipe, DeepFace, SpeechRecognition, VADER Sentiment, Joblib |
+| **Database** | Supabase (PostgreSQL) client authentication & telemetry storage |
+| **AI / LLMs** | CatBoost Regressor, Random Forest Regressor, SVR, Groq / Llama-3.3-70b-versatile (Wellness Coach) |
+| **Infrastructure** | Docker, Hugging Face Spaces (port 7860), Vercel |
+
+---
+
+## 🚀 Pipeline & Methodology
+
+The late-fusion diagnostic pipeline executes five sequential phases, resolving objective biological state markers:
+
+```
+📝  Phase 1 · Psychometric Baseline
+      ↓  User submits responses to 5 student-centric questionnaire statements
+👁️  Phase 2 · Biometric Tracking
+      ↓  Camera capture maps facial landmarks (EAR/MAR) and records emotion proportions
+🗣️  Phase 3 · Sentiment Acoustics
+      ↓  Audio capture transcribes user response and computes compound sentiment polarity
+🧠  Phase 4 · Diagnostics & Inference
+      ↓  FastAPI feeds 18 features into scaled CatBoost Regressor to predict burnout score
+💬  Phase 5 · Recovery Plan
+         Llama-3.3 generates empathetic wellness reports and recovery micro-plans
+```
+
+### 🤖 Mathematical Modeling
+
+*   **Eye Aspect Ratio (EAR)**: Computes eye fatigue and blink duration:
+
+$$\text{EAR} = \frac{||\text{P}_2 - \text{P}_6|| + ||\text{P}_3 - \text{P}_5||}{2 ||\text{P}_1 - \text{P}_4||}$$
+
+*   **Mouth Aspect Ratio (MAR)**: Computes mouth openness and yawning frequencies:
+
+$$\text{MAR} = \frac{\text{Inner Mouth Height}}{\text{Inner Mouth Width}}$$
+
+---
+
+## 📊 Model Evaluation & Benchmarks
+
+All models were evaluated under strict 5-Fold Cross-Validation on the empirical VIT student dataset, predicting a continuous target to capture fine-grained transitions in fatigue:
 
 | Metric | Support Vector Regressor (SVR) | Random Forest Regressor | CatBoost Regressor (Ours) |
 | :--- | :---: | :---: | :---: |
@@ -62,35 +95,9 @@ The core diagnostic engine utilizes a **CatBoost Regressor** predicting a contin
 | **Mean RMSE** | 0.2227 | 0.1805 | **0.1727** |
 | **Mean MAE** | 0.1719 | 0.1444 | **0.1378** |
 
-*All evaluations utilize a continuous target derived directly from participant questionnaire dimensions and facial geometry to prevent classification boundary discretization errors.*
-
 ---
 
-## ─── 💾 Database Schema (Supabase) ───
-
-MindHaven connects directly to a secure PostgreSQL database on Supabase to store authentication profiles and persistent assessment telemetry.
-
-### Table: `assessments`
-Stores historical metrics, enabling Chart.js graphs and the trend analysis panel:
-
-| Column Name | Type | Description |
-| :--- | :--- | :--- |
-| `id` | `uuid` (PK) | Unique identifier for the assessment. |
-| `user_id` | `uuid` (FK) | Maps to `auth.users` schema. |
-| `burnout_score` | `numeric` | Final calculated burnout regression score (0.0 to 4.0). |
-| `suggestion` | `text` | Recommended coping actions and therapeutic activities. |
-| `ear` | `numeric` | Average Eye Aspect Ratio tracked during scan. |
-| `mar` | `numeric` | Average Mouth Aspect Ratio / yawning index. |
-| `emo_pos` | `numeric` | Cumulative positive facial expression percentage. |
-| `emo_neu` | `numeric` | Cumulative neutral facial expression percentage. |
-| `emo_neg` | `numeric` | Cumulative negative facial expression percentage. |
-| `sentiment_compound` | `numeric` | Speech transcript sentiment polarity compound score (-1 to 1). |
-| `voice_transcript` | `text` | Speech-to-text transcript of user voice query. |
-| `created_at` | `timestamptz` | Generation timestamp. |
-
----
-
-## ─── 📁 Project Layout & Directory Structure ───
+## 📁 Project Structure
 
 ```
 MindHaven/
@@ -123,47 +130,128 @@ MindHaven/
 
 ---
 
-## ─── 🛠️ Local Setup & Configuration ───
+## 🔌 API Reference
 
-### Secure Environment Setup
-MindHaven prevents API keys from leaking to version control. The client keys are resolved from the git-ignored configuration:
+Base URL: `https://kritika53245-mindhaven.hf.space` (production) or `http://localhost:7860` (local)
 
-1. Create a `config.js` file inside `frontend/js/`:
-   ```javascript
-   // frontend/js/config.js
-   window.MINDHAVEN_CONFIG = {
-     GROQ_KEY: "gsk_your_private_groq_api_key_here",
-     API_URL: "https://kritika53245-mindhaven.hf.space/predict" // Optional override
-   };
-   ```
-2. Make sure `config.js` is ignored in Git:
-   ```bash
-   # .gitignore
-   frontend/js/config.js
-   ```
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/predict` | Accept video, audio, and questionnaire responses; returns burnout score and details |
+| `GET` | `/health` | Lightweight status check for keep-alive monitoring |
 
-### Running the Application
-Serve the files locally using any simple HTTP server:
-```bash
-# Serve via Python
-cd frontend
-python -m http.server 8000
+### `POST /predict`
+
+**Form data (multipart/form-data)**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `video_file` | `file` | ✅ | MP4 camera video clip (15-20 seconds) |
+| `audio_file` | `file` | ✅ | WAV audio clip with vocal response |
+| `answer_1` to `answer_5` | `string` | ✅ | Survey response options (`Never` to `Always`) |
+
+**Response**
+
+```json
+{
+  "burnout_score": 2.5412,
+  "suggestion": "Your burnout score is Moderate (40-60). You're starting to feel physical and emotional exhaustion...",
+  "debug_data": {
+    "Questionnaire Answers": ["Sometimes", "Often", "Sometimes", "Often", "Sometimes"],
+    "EAR": "0.24 ± 0.03",
+    "MAR": "0.16 ± 0.02",
+    "Emotions": { "Positive %": "10.5%", "Neutral %": "62.4%", "Negative %": "27.1%" },
+    "Voice Transcript": "I am feeling quite tired lately...",
+    "Sentiment": "Pos: 0.12, Neu: 0.65, Neg: 0.23, Comp: -0.21"
+  }
+}
 ```
-Open your browser at `http://localhost:8000`.
 
 ---
 
-## ─── 🚀 Deployment ───
+## 🛠️ Local Setup & Configuration
 
-### Frontend
-Deployed globally to production on **Vercel** via serverless builds. To deploy updates:
+### Prerequisites
+- Python 3.10+
+- Node.js (or simple HTTP server launcher)
+- Custom keys for Supabase database access (configured in `js/utils.js`)
+
+### 🐍 Python Backend (FastAPI)
+
+```bash
+cd backend
+
+# Create and activate environment
+python -m venv .venv
+# Windows
+.venv\Scripts\activate
+# macOS/Linux
+source .venv/bin/activate
+
+# Install requirements
+pip install -r requirements.txt
+
+# Start local server
+uvicorn main:app --host 0.0.0.0 --port 7860 --reload
+```
+
+---
+
+### ⚛️ Frontend UI (Vercel Ready)
+
+```bash
+cd frontend
+
+# Run local server
+python -m http.server 8000
+```
+Open [http://localhost:8000](http://localhost:8000) in your browser.
+
+To customize your API endpoint or add Groq wellness coach keys, create a `js/config.js` file:
+```javascript
+// frontend/js/config.js
+window.MINDHAVEN_CONFIG = {
+  GROQ_KEY: "gsk_your_private_groq_key_here",
+  API_URL: "http://localhost:7860/predict" // Override to local backend
+};
+```
+
+---
+
+## 🚢 Deployment
+
+### Backend (Hugging Face Spaces)
+The backend folder is optimized for Dockerized Space deployments:
+- Space builds automatically using the production multi-stage [`backend/Dockerfile`](backend/Dockerfile).
+- Exposed on standard Hugging Face port `7860`.
+
+### Frontend (Vercel)
+The static web application is deployed via:
 ```bash
 cd frontend
 npx vercel --prod
 ```
-The active live distribution domain is: **[https://mind-haven-zeta.vercel.app](https://mind-haven-zeta.vercel.app)**.
 
-### Hugging Face Space (Backend API)
-The backend container runs on a Hugging Face Space built from the [backend/](backend) folder configuration. 
+---
 
-The API endpoints are exposed at: **[https://kritika53245-mindhaven.hf.space](https://kritika53245-mindhaven.hf.space)**.
+## 🤝 Contributing
+
+Contributions, issues, and feature requests are welcome!
+
+1. Fork the repository.
+2. Create your feature branch (`git checkout -b feat/amazing-feature`).
+3. Commit your changes using [Conventional Commits](https://www.conventionalcommits.org/).
+4. Push to the branch and open a Pull Request.
+
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
+
+---
+
+<div align="center">
+
+Made with ❤️ by **[Kritika Ghosh](https://github.com/kritika-ghosh)**
+
+</div>
