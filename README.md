@@ -39,7 +39,7 @@
 - 🎭 **Micro-Expression Emotion Proportions** — Utilizes DeepFace to track positive, neutral, and negative facial expressions.
 - 🗣️ **Vocal Sentiment Channel** — Transcribes vocal responses using browser WebRTC and computes sentiment polarity compound scores via VADER.
 - 🧠 **Continuous Regression ML** — Leverages a pre-trained **CatBoost Regressor** (tuned to $95.76\%$ $R^2$) to output a highly precise burnout index between `0.0` (Low) and `4.0` (Severe).
-- 💬 **Interactive AI Wellness Coach** — Integrates Groq (Llama-3.3-70b-versatile) to provide personalized, warm, and highly actionable recovery plans.
+- 💬 **Interactive AI CBT Wellness Coach** — Connects to a custom fine-tuned Qwen model ([`mindhaven-cbt-qwen`](https://huggingface.co/kritika53245/mindhaven-cbt-qwen)) optimized for Cognitive Behavioral Therapy to provide empathetic, non-clinical supportive dialogue.
 - 📊 **Telemetry Trends Dashboard** — Chart.js integration visualizes historical assessments, vitality metrics, and expression trends over time.
 
 ---
@@ -51,49 +51,102 @@
 | **Frontend** | Vanilla HTML5, CSS3, JavaScript (ES6+), GSAP (Animations), Three.js (3D background), Chart.js |
 | **Backend API** | FastAPI, Python 3.10, OpenCV, MediaPipe, DeepFace, SpeechRecognition, VADER Sentiment, Joblib |
 | **Database** | Supabase (PostgreSQL) client authentication & telemetry storage |
-| **AI / LLMs** | CatBoost Regressor, Random Forest Regressor, SVR, Groq / Llama-3.3-70b-versatile (Wellness Coach) |
+| **AI / LLMs** | CatBoost Regressor, Random Forest Regressor, SVR, Groq / Llama-3.3-70b-versatile, Qwen-CBT-Fine-Tuned |
 | **Infrastructure** | Docker, Hugging Face Spaces (port 7860), Vercel |
 
 ---
 
-## 🚀 Pipeline & Methodology
+## 🧠 Diagnostic Machine Learning Model
 
-The late-fusion diagnostic pipeline executes five sequential phases, resolving objective biological state markers:
+MindHaven replaces subjective self-reporting biases with an objective, continuous late-fusion machine learning model.
 
-```
-📝  Phase 1 · Psychometric Baseline
-      ↓  User submits responses to 5 student-centric questionnaire statements
-👁️  Phase 2 · Biometric Tracking
-      ↓  Camera capture maps facial landmarks (EAR/MAR) and records emotion proportions
-🗣️  Phase 3 · Sentiment Acoustics
-      ↓  Audio capture transcribes user response and computes compound sentiment polarity
-🧠  Phase 4 · Diagnostics & Inference
-      ↓  FastAPI feeds 18 features into scaled CatBoost Regressor to predict burnout score
-💬  Phase 5 · Recovery Plan
-         Llama-3.3 generates empathetic wellness reports and recovery micro-plans
-```
+### 1. Preprocessing & Feature Engineering
+During inference, a 20-second biometric capture window extracts high-accuracy statistical parameters across **18 distinct features**:
+*   **Psychometrics (5 features):** `Q1_inv` (exhaustion/stress inverted), `Q2`, `Q3`, `Q4_inv` (pride in progress inverted), `Q5_inv` (meaningful outcomes inverted).
+*   **Computer Vision (7 features):** `Avg_EAR`, `Std_EAR` (blinking dynamics), `Avg_MAR`, `Std_MAR` (jaw tension/yawning), `Positive_Percent`, `Neutral_Percent`, `Negative_Percent` (facial expression proportions).
+*   **Acoustic Sentiment (4 features):** `Sentiment_Pos`, `Sentiment_Neu`, `Sentiment_Neg`, `Sentiment_Comp` (speech transcription polarity).
+*   **Engineered Cross-Features (2 features):**
+    *   `Survey_Sum`: Mapped sum reflecting raw questionnaire burnout severity:
+        $$\text{Survey\_Sum} = (4 - \text{Q1\_inv}) + \text{Q2} + \text{Q3} + \text{Q4\_inv} + \text{Q5\_inv}$$
+    *   `Exhaustion_Ratio`: Physiological ratio between mouth tension and eye fatigue:
+        $$\text{Exhaustion\_Ratio} = \frac{\text{Avg\_MAR}}{\text{Avg\_EAR} + 10^{-5}}$$
 
-### 🤖 Mathematical Modeling
+### 2. Training Protocol
+The model was trained directly on the empirical VIT student dataset (266 cleaned, drop-na records) without synthetic row generation:
+- **Target Indexing:** Designed a continuous target `Burnout_Score` (range `[0.0, 4.0]`) from survey baselines modified by biometric outliers.
+- **Noise Injection:** Applied a normal noise perturbation ($\text{std} = 0.16$) during training to simulate real-world sensor variance.
+- **Winning Model:** A **CatBoost Regressor** configured with hyperparameters: `iterations=150`, `learning_rate=0.07`, `depth=4`, `l2_leaf_reg=6`, and `random_seed=42`.
 
-*   **Eye Aspect Ratio (EAR)**: Computes eye fatigue and blink duration:
+### 3. Model Benchmarks (5-Fold CV)
 
-$$\text{EAR} = \frac{||\text{P}_2 - \text{P}_6|| + ||\text{P}_3 - \text{P}_5||}{2 ||\text{P}_1 - \text{P}_4||}$$
-
-*   **Mouth Aspect Ratio (MAR)**: Computes mouth openness and yawning frequencies:
-
-$$\text{MAR} = \frac{\text{Inner Mouth Height}}{\text{Inner Mouth Width}}$$
+| Model Architecture | Mean R² Score | Mean RMSE | Mean MAE |
+| :--- | :---: | :---: | :---: |
+| **CatBoost Regressor (Ours)** | **95.76%** | **0.1727** | **0.1378** |
+| Random Forest Regressor | 95.32% | 0.1805 | 0.1444 |
+| Support Vector Regressor (SVR) | 92.95% | 0.2227 | 0.1719 |
 
 ---
 
-## 📊 Model Evaluation & Benchmarks
+## 💬 CBT Fine-Tuned Chatbot
 
-All models were evaluated under strict 5-Fold Cross-Validation on the empirical VIT student dataset, predicting a continuous target to capture fine-grained transitions in fatigue:
+MindHaven integrates a custom fine-tuned large language model, **`kritika53245/mindhaven-cbt-qwen`**, trained on Cognitive Behavioral Therapy (CBT) dialogue datasets.
 
-| Metric | Support Vector Regressor (SVR) | Random Forest Regressor | CatBoost Regressor (Ours) |
-| :--- | :---: | :---: | :---: |
-| **Mean R² Score** | 92.95% | 95.32% | **95.76%** |
-| **Mean RMSE** | 0.2227 | 0.1805 | **0.1727** |
-| **Mean MAE** | 0.1719 | 0.1444 | **0.1378** |
+### 1. Design & Objectives
+Unlike general-purpose conversational LLMs, the CBT Chatbot is aligned to act as an empathetic wellness coach:
+*   Reflects user stress patterns and biological metrics back in a supportive, non-clinical manner.
+*   Guides users through cognitive restructuring (identifying automatic negative thoughts).
+*   Recommends actionable recovery micro-plans tailored to their diagnostic score.
+
+### 2. Architecture & Inference Setup
+*   **Base Architecture:** Qwen-based causal language model.
+*   **Inference Precision:** Loaded in `float16` half-precision to fit within a standard T4 GPU VRAM footprint (under 16GB VRAM).
+*   **OpenAI Compatibility:** Served via a FastAPI gateway exposing `/v1/chat/completions`, formatting prompts dynamically using the Qwen chat template (`tokenizer.apply_chat_template`).
+
+---
+
+## 🚀 Deployment Architecture
+
+MindHaven utilizes a hybrid cloud architecture designed to load models securely, keep configurations modular, and execute tasks asynchronously.
+
+```
+                  ┌───────────────────────────────┐
+                  │      Vercel (Static Web)      │
+                  │   - Loaded on HTTPS           │
+                  │   - LocalStorage Overrides    │
+                  └───────────────┬───────────────┘
+                                  │
+                  ┌───────────────┴───────────────┐
+                  │                               │
+                  ▼                               ▼
+       ┌────────────────────┐           ┌────────────────────┐
+       │ Hugging Face Space │           │    Google Colab    │
+       │   (Docker API)     │           │   (T4 GPU Server)  │
+       │  - predict_burnout │           │   - Qwen CBT LLM   │
+       │  - Model LFS files │           │   - Ngrok Tunnel   │
+       └────────────────────┘           └────────────────────┘
+```
+
+### 1. Frontend (Vercel)
+The client-side interface is deployed as static assets to Vercel. 
+- **Security & Config:** To prevent API keys from leaking to version control, client keys are resolved from the git-ignored `js/config.js`.
+- **Dynamic Config Overrides:** In production on Vercel, the app implements a `localStorage` override system. Running the following command in the browser console connects your live Vercel frontend directly to your active Colab model server:
+  ```javascript
+  localStorage.setItem('MINDHAVEN_NGROK_URL', 'https://your-ngrok-subdomain.ngrok-free.dev');
+  ```
+
+### 2. Diagnostic Backend (Hugging Face Docker Space)
+The FastAPI backend runs inside a multi-stage Docker container on Hugging Face Spaces:
+- **Large File Storage (LFS):** Pre-trained models (`model.joblib` and `scaler.joblib`) are tracked via LFS configured in `.gitattributes`.
+- **Docker Environment:** Runs on `python:3.10-slim`, installing essential libraries (`libgl1`, `libtbbmalloc2`) for OpenCV/MediaPipe frame analysis.
+- **Deployment Endpoint:** Deployed to **[https://kritika53245-mindhaven.hf.space](https://kritika53245-mindhaven.hf.space)**.
+
+### 3. Chatbot Server (Google Colab + Ngrok Tunnel)
+To run GPU-accelerated LLM inference for free:
+- The Qwen model is loaded inside a Google Colab notebook running on a **T4 GPU**.
+- A FastAPI server acts as the API gateway on port `8000`.
+- An HTTP tunnel is established via **Pyngrok**, exposing the notebook's port to a public URL.
+- The server is run inside the Colab active notebook event loop natively using `uvicorn.Server(config).serve()`.
+- Complete instructions are documented in [COLAB_NGROK_SETUP.md](chatbot_finetuning/COLAB_NGROK_SETUP.md).
 
 ---
 
