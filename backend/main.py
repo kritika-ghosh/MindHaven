@@ -11,11 +11,11 @@ import joblib
 import re
 import os
 import io
+import tempfile
 
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-import tempfile
 
 # --- Global Configuration ---
 RUN_DURATION = 20  # Max duration for video analysis
@@ -49,7 +49,7 @@ try:
     scaler = joblib.load('scaler.joblib')
     model = joblib.load('model.joblib')
 except FileNotFoundError:
-    print("WARNING: Model files (scaler.joblib, model.joblib) not found. Prediction will fail.")
+    print("WARNING: Model files (scaler.joblib, model.joblib) not found in current directory. Prediction will fail.")
     scaler = None
     model = None
 except Exception as e:
@@ -182,8 +182,8 @@ def preprocess_input(raw_dict, scaler):
     # Align new questionnaire answers with the pre-trained CatBoost model:
     # Model features were trained expecting:
     #   - Q1: clarity (higher = healthy / lower burnout) -> new Q1 is exhaustion (higher = worse), so we invert Q1.
-    #   - Q2 & Q3: disconnect & fatigue (higher = worse) -> new Q2 & Q3 are same direction, so we do not invert.
-    #   - Q4 & Q5: lack of motivation & irritation (higher = worse) -> new Q4 & Q5 are pride & meaningful outcomes (higher = healthy), so we invert Q4 and Q5.
+    #   - Q2 & Q3: disconnect & fatigue (higher = worse) -> same direction, no inversion.
+    #   - Q4 & Q5: lack of motivation & irritation (higher = worse) -> new Q4 & Q5 are pride & outcomes (higher = healthy), so we invert Q4 and Q5.
     q_encoded[0] = 4 - q_encoded[0]
     q_encoded[3] = 4 - q_encoded[3]
     q_encoded[4] = 4 - q_encoded[4]
@@ -203,12 +203,17 @@ def preprocess_input(raw_dict, scaler):
     if len(sentiment_vals) != 4: raise ValueError("Sentiment string format unexpected.")
     sent_pos, sent_neu, sent_neg, sent_comp = sentiment_vals
 
-    # Construct the array with full high-accuracy statistical parameters
+    # Compute engineered features Survey_Sum and Exhaustion_Ratio
+    survey_sum = (4 - q_encoded[0]) + q_encoded[1] + q_encoded[2] + q_encoded[3] + q_encoded[4]
+    exhaustion_ratio = MAR_avg / (EAR_avg + 1e-5)
+
+    # Construct the array with full high-accuracy statistical parameters (18 features total)
     features = q_encoded + [
         EAR_avg, EAR_std,  
         MAR_avg, MAR_std,  
         pos_emotion, neu_emotion, neg_emotion,
-        sent_pos, sent_neu, sent_neg, sent_comp
+        sent_pos, sent_neu, sent_neg, sent_comp,
+        survey_sum, exhaustion_ratio
     ]
 
     X = np.array(features).reshape(1, -1)
@@ -220,25 +225,29 @@ def predict_burnout(raw_dict):
         raise RuntimeError("Model files not loaded. Cannot predict.")
     X_processed = preprocess_input(raw_dict, scaler)
     pred = model.predict(X_processed)
-    return float(pred[0])
+    # CatBoostRegressor returns prediction as an array/float value
+    score = float(pred[0]) if isinstance(pred, np.ndarray) else float(pred)
+    # Clip the score to the valid range [0.0, 4.0]
+    return max(0.0, min(4.0, score))
 
 def get_suggestion_text(burnout_score: float) -> str:
-    if burnout_score == 0.0:
+    rounded_score = round(burnout_score)
+    if rounded_score <= 0:
         return "Your burnout score is Low (0-20). You're feeling good and active. Maintain healthy work-life habits, practice gratitude journaling, and promote regular physical activity."
-    elif burnout_score == 1.0:
+    elif rounded_score == 1:
         return "Your burnout score is Mild (20-40). You're under a little stress. Use the Pomodoro Technique, try Box Breathing, and schedule 'disconnect' periods."
-    elif burnout_score == 2.0:
+    elif rounded_score == 2:
         return "Your burnout score is Moderate (40-60). You're starting to feel physical and emotional exhaustion. Implement a Digital Detox and focus on good sleep hygiene."
-    elif burnout_score == 3.0:
+    elif rounded_score == 3:
         return "Your burnout score is High (60-80). Your burnout symptoms are persistent. Take mandatory time off and consider seeking professional advice."
     else:
         return "Your burnout score is Severe (80-100). You feel completely burned out. Immediate professional help is needed. Prioritize your health over work. Work can wait."
 
 
 # --- FastAPI Implementation ---
-app = FastAPI(title="Burnout Prediction API")
+app = FastAPI(title="Burnout Regression API")
 
-# CRITICAL SECURITY CORRECTION: Enable Cross-Origin requests so your Vercel site can call it
+# Enable Cross-Origin requests so your Vercel site can call it
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], 
@@ -251,12 +260,14 @@ class PredictionResponse(BaseModel):
     burnout_score: float
     suggestion: str
     debug_data: dict
+
 @app.get("/health")
 async def health_check():
     """
     Lightweight endpoint for uptime monitoring to keep the container awake.
     """
     return {"status": "healthy", "timestamp": time.time()}
+
 @app.post("/predict", response_model=PredictionResponse)
 async def get_prediction(
     video_file: UploadFile = File(..., description="Video file for facial and emotion analysis."),

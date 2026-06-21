@@ -417,20 +417,21 @@ Paragraph 3: A 7-day recovery micro-plan with 3 specific, time-bound actions.
                 let vitality = 84;
                 let label = "Optimal Focus";
                 let desc = "Your current cognitive balance is in a recovery phase.";
+                const roundedScore = Math.round(score);
                 
-                if (score === 0.0) {
+                if (roundedScore <= 0) {
                     vitality = 92;
                     label = "Optimal Focus";
                     desc = "Your neuro-efficiency metrics reflect total clarity and balanced stress response thresholds.";
-                } else if (score === 1.0) {
+                } else if (roundedScore === 1) {
                     vitality = 78;
                     label = "Mild Tension";
                     desc = "Slight levels of stress detected. Neural channels indicate cognitive performance is high, but rest is recommended.";
-                } else if (score === 2.0) {
+                } else if (roundedScore === 2) {
                     vitality = 54;
                     label = "Moderate Fatigue";
                     desc = "Physical and emotional reserves are running thin. Clear indications of attention exhaustion. Action required.";
-                } else if (score === 3.0) {
+                } else if (roundedScore === 3) {
                     vitality = 32;
                     label = "High Burnout";
                     desc = "Persistent fatigue limits processing capability. Digital dark-blocks and work boundaries should be enforced immediately.";
