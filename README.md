@@ -24,7 +24,7 @@
 
 <div align="center">
 
-[![MindHaven Technical Demo UI Mockup](https://img.youtube.com/vi/gg7GkVSvf-w/maxresdefault.jpg)](https://mind-haven-zeta.vercel.app)
+[![MindHaven Technical Demo UI Mockup][(https://img.youtube.com/vi/gg7GkVSvf-w/maxresdefault.jpg)](https://mind-haven-zeta.vercel.app)](https://www.youtube.com/watch?v=6wFkLPPiBBk)
 
 *(Click to open the active live deployment: **[mind-haven-zeta.vercel.app](https://mind-haven-zeta.vercel.app)**)*
 
