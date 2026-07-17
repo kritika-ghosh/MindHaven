@@ -131,6 +131,10 @@
                 <div class="bubble-metric w-[85%] h-[85%] rounded-full flex flex-col items-center justify-center text-center p-8 z-10 pointer-events-none">
                     <span class="font-extrabold text-primary leading-none text-7xl md:text-8xl drop-shadow-sm transition-all" id="vitality-score">84</span>
                     <span class="text-sm md:text-lg font-bold text-secondary mt-2" id="vitality-label">Optimal Focus</span>
+                    <div id="trajectory-bubble-badge" class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wide bg-gray-100/50 text-gray-700 mt-3">
+                        <span class="material-symbols-outlined text-[12px]" id="trajectory-bubble-icon">trending_flat</span>
+                        <span id="trajectory-bubble-label">Stable Trend</span>
+                    </div>
                     <p class="text-xs text-on-surface-variant font-semibold max-w-[200px] mt-6 leading-relaxed" id="vitality-desc">Your current cognitive balance is in a recovery phase.</p>
                 </div>
                 
@@ -499,11 +503,29 @@ Paragraph 3: A 7-day recovery micro-plan with 3 specific, time-bound actions.
             });
         });
 
+        function getMockHistoryForInsights() {
+            const now = new Date();
+            const daysAgo = (n) => new Date(now.getTime() - n * 24 * 60 * 60 * 1000);
+            return [
+                { created_at: now.toISOString(), burnout_score: 2.0 },
+                { created_at: daysAgo(2).toISOString(), burnout_score: 3.2 },
+                { created_at: daysAgo(4).toISOString(), burnout_score: 2.1 },
+                { created_at: daysAgo(7).toISOString(), burnout_score: 3.8 },
+                { created_at: daysAgo(10).toISOString(), burnout_score: 1.2 },
+                { created_at: daysAgo(14).toISOString(), burnout_score: 0.4 }
+            ];
+        }
+
         // Parse local storage prediction results
         async function loadAnalysisData() {
             let data = null;
             let resultStr = sessionStorage.getItem('burnout_prediction');
             
+            // If guest mode, populate mock history
+            if (sessionStorage.getItem('mindhaven_guest') === 'true') {
+                window.activeHistoryRecords = getMockHistoryForInsights();
+            }
+
             // If logged in via Supabase, fetch the latest assessment row
             if (sb) {
                 try {
@@ -514,8 +536,9 @@ Paragraph 3: A 7-day recovery micro-plan with 3 specific, time-bound actions.
                             .select('*')
                             .eq('user_id', session.user.id)
                             .order('created_at', { ascending: false })
-                            .limit(1);
+                            .limit(10);
                         if (!error && dbData && dbData.length > 0) {
+                            window.activeHistoryRecords = dbData;
                             const dbRow = dbData[0];
                             data = {
                                 id: dbRow.id,
@@ -610,6 +633,16 @@ Paragraph 3: A 7-day recovery micro-plan with 3 specific, time-bound actions.
                     document.getElementById('emo-neg').textContent = debug["Emotions"]["Negative %"] || "0%";
                 }
                 
+                // Render trajectory badge
+                const trajectoryRecords = window.activeHistoryRecords || (data ? [data] : []);
+                const trajectory = calculateRiskTrajectory(trajectoryRecords);
+                const trajBadge = document.getElementById('trajectory-bubble-badge');
+                if (trajBadge) {
+                    trajBadge.className = "inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wide mt-3 " + trajectory.colorClass;
+                    document.getElementById('trajectory-bubble-icon').textContent = trajectory.icon;
+                    document.getElementById('trajectory-bubble-label').textContent = trajectory.label;
+                }
+
                 // Ensure and render SHAP data
                 data = ensureShapData(data);
                 window.activeShapData = data;
@@ -645,6 +678,16 @@ Paragraph 3: A 7-day recovery micro-plan with 3 specific, time-bound actions.
             simData = ensureShapData(simData);
             window.activeShapData = simData;
             renderShapChart(simData.shap_base_value, simData.shap_contributions);
+
+            // Seed mock history for trajectory in simulation mode
+            window.activeHistoryRecords = getMockHistoryForInsights();
+            const trajectory = calculateRiskTrajectory(window.activeHistoryRecords);
+            const trajBadge = document.getElementById('trajectory-bubble-badge');
+            if (trajBadge) {
+                trajBadge.className = "inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wide mt-3 " + trajectory.colorClass;
+                document.getElementById('trajectory-bubble-icon').textContent = trajectory.icon;
+                document.getElementById('trajectory-bubble-label').textContent = trajectory.label;
+            }
         }
 
         // Breathing exercise modal cycle
@@ -747,10 +790,16 @@ Paragraph 3: A 7-day recovery micro-plan with 3 specific, time-bound actions.
             
             const voiceTranscript = debug['Voice Transcript'] || "No voice transcript recorded.";
             const sentiment = debug['Sentiment'] || "N/A";
+
+            // Calculate Risk Trajectory for Chat Context
+            const trajectoryRecords = window.activeHistoryRecords || (predictionData ? [predictionData] : []);
+            const trajectory = calculateRiskTrajectory(trajectoryRecords);
+            const trendText = trajectory.signal === 'Rising' ? 'rising stress ↗' : trajectory.signal === 'Declining' ? 'declining stress ↘' : 'stable composure →';
             
             // Construct System Prompt for Groq
             const systemPrompt = `You are MindHaven-CBT, an empathetic AI therapist trained in Cognitive Behavioral Therapy (CBT). You have access to the user's latest biometric and assessment data:
 - Burnout Score: ${score}/4.0 (${label})
+- Longitudinal Risk Trajectory: ${trajectory.label} (${trendText} - ${trajectory.description})
 - Questionnaire Answers: ${answersJoin}
 - Facial Tension (EAR): ${ear}
 - Mouth Tension (MAR): ${mar}
@@ -766,7 +815,7 @@ Address their stress levels with validation, mindfulness exercises, and practica
             ];
 
             // Seed welcoming message in UI
-            const welcomeText = `Hello! I'm MindHaven-CBT, your wellness assistant. I've reviewed your biometric overview, which indicates a **${label}** burnout state (Score: ${score}/4.0). I noticed some details like your facial neutral state of ${neu} and negative tension at ${neg}. How are you feeling right now? We can discuss your results or walk through some coping strategies together.`;
+            const welcomeText = `Hello! I'm MindHaven-CBT, your wellness assistant. I've reviewed your biometric overview, which indicates a **${label}** burnout state (Score: ${score}/4.0) with a **${trendText}** trajectory. I noticed some details like your facial neutral state of ${neu} and negative tension at ${neg}. How are you feeling right now? We can discuss your results or walk through some coping strategies together.`;
             
             appendMessage("assistant", welcomeText);
 

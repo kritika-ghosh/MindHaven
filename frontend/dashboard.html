@@ -69,15 +69,18 @@
 
         <!-- Stat Cards -->
         <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <!-- Card 1: Burnout Avg -->
-            <div class="glass-card p-6 rounded-3xl border border-white/50 shadow flex items-center gap-4">
+            <!-- Card 1: Burnout Trajectory -->
+            <div class="glass-card p-6 rounded-3xl border border-white/50 shadow flex items-center gap-4 hover:scale-[1.02] transition-all duration-300">
                 <div class="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
-                    <span class="material-symbols-outlined text-2xl" style="font-variation-settings:'FILL' 1">heart_broken</span>
+                    <span class="material-symbols-outlined text-2xl" id="trajectory-icon" style="font-variation-settings:'FILL' 1">trending_flat</span>
                 </div>
-                <div>
-                    <span class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant/60">Average Burnout</span>
-                    <p class="text-2xl font-extrabold text-on-surface mt-0.5" id="avg-burnout">-</p>
-                    <span id="avg-burnout-badge" class="inline-block px-2 py-0.5 mt-1 rounded text-[10px] font-extrabold uppercase tracking-wide bg-gray-100 text-gray-700">Checking</span>
+                <div class="flex-1 min-w-0">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant/60">Burnout Trajectory</span>
+                    <div class="flex items-baseline gap-2 mt-0.5">
+                        <p class="text-2xl font-extrabold text-on-surface" id="latest-burnout-val">-</p>
+                        <span id="trajectory-badge" class="px-2 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-wide bg-gray-100 text-gray-700 truncate">Checking</span>
+                    </div>
+                    <span class="text-[10px] font-semibold text-on-surface-variant/75 block truncate mt-1" id="trajectory-desc">Calculating risk trend...</span>
                 </div>
             </div>
 
@@ -120,11 +123,11 @@
 
         <!-- Charts Section -->
         <section class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <!-- Line Chart: Vitality Trend -->
-            <div class="glass-card p-6 md:p-8 rounded-[2rem] border border-white/50 shadow lg:col-span-8 flex flex-col justify-between">
+            <!-- Line Chart: Burnout Trajectory -->
+            <div class="glass-card p-6 md:p-8 rounded-[2rem] border border-white/50 shadow lg:col-span-8 flex flex-col justify-between hover:scale-[1.01] transition-transform duration-300">
                 <div class="mb-4">
-                    <h3 class="font-extrabold text-lg text-on-surface">Cognitive Vitality Trend</h3>
-                    <p class="text-xs text-on-surface-variant/80">Neuro-vitality score calculated over subsequent sessions (higher is better)</p>
+                    <h3 class="font-extrabold text-lg text-on-surface">Burnout Risk Trajectory</h3>
+                    <p class="text-xs text-on-surface-variant/80">Burnout progression index over subsequent sessions (lower is better; colored bands indicate clinical risk levels)</p>
                 </div>
                 <div class="w-full relative h-[300px]">
                     <canvas id="vitality-chart"></canvas>
@@ -266,30 +269,28 @@
                 }
             });
 
-            const avgBurnout = totalBurnout / rows.length;
             const avgVitality = totalVitality / rows.length;
-
-            document.getElementById('avg-burnout').textContent = avgBurnout.toFixed(1) + ' / 4.0';
             document.getElementById('avg-vitality').textContent = Math.round(avgVitality) + '%';
             document.getElementById('total-sessions').textContent = rows.length;
 
-            const badge = document.getElementById('avg-burnout-badge');
-            const roundedScore = Math.round(avgBurnout);
-            const scoreLabels = ['Low', 'Mild', 'Moderate', 'High', 'Severe'];
-            const label = scoreLabels[roundedScore] || 'Moderate';
-            badge.textContent = label;
-
-            if (roundedScore === 0) {
-                badge.className = "inline-block px-2.5 py-0.5 mt-1 rounded-full text-[10px] font-extrabold uppercase tracking-wide bg-green-100 text-green-700";
-            } else if (roundedScore === 1) {
-                badge.className = "inline-block px-2.5 py-0.5 mt-1 rounded-full text-[10px] font-extrabold uppercase tracking-wide bg-blue-100 text-blue-700";
-            } else if (roundedScore === 2) {
-                badge.className = "inline-block px-2.5 py-0.5 mt-1 rounded-full text-[10px] font-extrabold uppercase tracking-wide bg-yellow-100 text-yellow-700";
-            } else if (roundedScore === 3) {
-                badge.className = "inline-block px-2.5 py-0.5 mt-1 rounded-full text-[10px] font-extrabold uppercase tracking-wide bg-orange-100 text-orange-700";
-            } else {
-                badge.className = "inline-block px-2.5 py-0.5 mt-1 rounded-full text-[10px] font-extrabold uppercase tracking-wide bg-red-100 text-red-700";
+            // Calculate trajectory
+            const trajectory = calculateRiskTrajectory(rows);
+            
+            var latestScore = 0.0;
+            if (rows.length > 0) {
+                latestScore = parseFloat(rows[0].burnout_score) || 0.0;
             }
+            
+            document.getElementById('latest-burnout-val').textContent = latestScore.toFixed(1) + ' / 4.0';
+            
+            const badge = document.getElementById('trajectory-badge');
+            badge.textContent = trajectory.label;
+            badge.className = "px-2 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-wide " + trajectory.colorClass;
+            
+            const iconEl = document.getElementById('trajectory-icon');
+            iconEl.textContent = trajectory.icon;
+            
+            document.getElementById('trajectory-desc').textContent = trajectory.description;
 
             // Dominant emotion
             if (validEmotionsCount > 0) {
@@ -307,6 +308,30 @@
             }
         }
 
+        const drawBandsPlugin = {
+            id: 'drawBands',
+            beforeDraw: (chart) => {
+                const { ctx, chartArea: { left, right, top, bottom }, scales: { y } } = chart;
+                if (!y) return;
+                
+                // Draw Low risk band (y: 0.0 to 1.5)
+                const y0 = y.getPixelForValue(0.0);
+                const y1_5 = y.getPixelForValue(1.5);
+                ctx.fillStyle = 'rgba(74, 222, 128, 0.08)'; // Green tint
+                ctx.fillRect(left, y1_5, right - left, y0 - y1_5);
+
+                // Draw Moderate risk band (y: 1.5 to 3.0)
+                const y3_0 = y.getPixelForValue(3.0);
+                ctx.fillStyle = 'rgba(253, 224, 71, 0.08)'; // Yellow tint
+                ctx.fillRect(left, y3_0, right - left, y1_5 - y3_0);
+
+                // Draw Severe risk band (y: 3.0 to 4.0)
+                const y4_0 = y.getPixelForValue(4.0);
+                ctx.fillStyle = 'rgba(248, 113, 113, 0.08)'; // Red tint
+                ctx.fillRect(left, y4_0, right - left, y3_0 - y4_0);
+            }
+        };
+
         function renderDashboardCharts(rows) {
             // Sort ascending for chronological trend
             const chronRows = [...rows].reverse();
@@ -315,10 +340,9 @@
                 const date = new Date(r.created_at);
                 return date.toLocaleDateString(undefined, {month: 'short', day: 'numeric'}) + ` (N-${chronRows.length - i})`;
             });
-            const vitalityScores = chronRows.map(r => r.vitality_score);
             const burnoutScores = chronRows.map(r => r.burnout_score);
-
-            // 1. Vitality trend line chart
+ 
+            // 1. Burnout risk trend line chart
             const ctxLine = document.getElementById('vitality-chart').getContext('2d');
             if (vitalityChartInstance) vitalityChartInstance.destroy();
             
@@ -328,15 +352,16 @@
                     labels: labels,
                     datasets: [
                         {
-                            label: 'Vitality Score %',
-                            data: vitalityScores,
+                            label: 'Burnout Score',
+                            data: burnoutScores,
                             borderColor: '#8455ef',
-                            backgroundColor: 'rgba(132, 85, 239, 0.08)',
-                            fill: true,
-                            tension: 0.35,
-                            borderWidth: 3,
+                            backgroundColor: 'rgba(132, 85, 239, 0.1)',
+                            fill: false,
+                            tension: 0.3,
+                            borderWidth: 3.5,
                             pointBackgroundColor: '#6b38d4',
-                            pointHoverRadius: 6
+                            pointHoverRadius: 7,
+                            pointRadius: 4
                         }
                     ]
                 },
@@ -349,14 +374,18 @@
                     scales: {
                         y: {
                             min: 0,
-                            max: 100,
-                            ticks: { font: { family: 'Plus Jakarta Sans', weight: 'bold' } }
+                            max: 4,
+                            ticks: { 
+                                stepSize: 1,
+                                font: { family: 'Plus Jakarta Sans', weight: 'bold' } 
+                            }
                         },
                         x: {
                             ticks: { font: { family: 'Plus Jakarta Sans', weight: 'bold' } }
                         }
                     }
-                }
+                },
+                plugins: [drawBandsPlugin]
             });
 
             // 2. Emotion Radar Chart (Average pos/neu/neg expression)

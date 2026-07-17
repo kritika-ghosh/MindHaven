@@ -338,3 +338,76 @@ function ensureShapData(pred) {
   pred.shap_contributions = contributions;
   return pred;
 }
+
+/* ── Longitudinal Risk Trajectory trend calculator ────────── */
+function calculateRiskTrajectory(records) {
+  if (!records || records.length === 0) {
+    return {
+      signal: "Stable",
+      delta: 0,
+      label: "No Telemetry",
+      icon: "trending_flat",
+      colorClass: "bg-gray-100 text-gray-700",
+      description: "Establish baseline with more assessments."
+    };
+  }
+  
+  if (records.length < 2) {
+    var r = records[0];
+    var score = parseFloat(r.burnout_score) || 0.0;
+    return {
+      signal: "Stable",
+      delta: 0,
+      label: "Baseline Created",
+      icon: "trending_flat",
+      colorClass: "bg-gray-100 text-gray-700",
+      description: "Initial score registered: " + score.toFixed(1) + ". Next session determines trend."
+    };
+  }
+
+  var chronRecords = [...records].sort(function(a, b) {
+    return new Date(a.created_at) - new Date(b.created_at);
+  });
+
+  var N = chronRecords.length;
+  var latest = parseFloat(chronRecords[N - 1].burnout_score) || 0.0;
+  var previous = parseFloat(chronRecords[N - 2].burnout_score) || 0.0;
+  var delta = latest - previous;
+  
+  var signal = "Stable";
+  var label = "Stable Composure";
+  var icon = "trending_flat";
+  var colorClass = "bg-yellow-100 text-yellow-700 font-extrabold uppercase tracking-wide";
+  var description = "Your stress levels are holding stable. Continue focusing on work-life boundaries.";
+  
+  if (delta > 0.15) {
+    signal = "Rising";
+    label = "Rising Stress";
+    icon = "trending_up";
+    colorClass = "bg-red-100 text-red-700 font-extrabold uppercase tracking-wide";
+    description = "Your burnout risk has increased by " + Math.round(delta * 25) + "% since your last session. Rest recommended.";
+  } else if (delta < -0.15) {
+    signal = "Declining";
+    label = "Improving Wellness";
+    icon = "trending_down";
+    colorClass = "bg-green-100 text-green-700 font-extrabold uppercase tracking-wide";
+    description = "Your burnout risk has decreased by " + Math.round(Math.abs(delta) * 25) + "% since your last session. Excellent progress!";
+  } else {
+    if (latest <= 1.5) {
+      colorClass = "bg-green-100 text-green-700 font-extrabold uppercase tracking-wide";
+      description = "Your wellness indicators remain consistently positive and stable.";
+    } else if (latest >= 3.0) {
+      colorClass = "bg-red-100 text-red-700 font-extrabold uppercase tracking-wide";
+      description = "Stress indicators remain high and stable. Urgent rest or digital detox is suggested.";
+    }
+  }
+
+  return {
+    signal: signal,
+    delta: delta,
+    label: label,
+    icon: icon,
+    colorClass: colorClass,
+    description: description
+  };
+}
