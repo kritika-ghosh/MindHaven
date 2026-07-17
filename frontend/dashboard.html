@@ -707,6 +707,7 @@
                 };
 
                 // Set to sessionStorage so insights page pulls it
+                sessionStorage.setItem('viewing_historical', 'true');
                 sessionStorage.setItem('burnout_prediction', JSON.stringify(data));
                 navigateTo('insights.html');
             } catch(e) {

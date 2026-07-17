@@ -520,13 +520,20 @@ Paragraph 3: A 7-day recovery micro-plan with 3 specific, time-bound actions.
         async function loadAnalysisData() {
             let data = null;
             let resultStr = sessionStorage.getItem('burnout_prediction');
+            const viewingHistorical = sessionStorage.getItem('viewing_historical') === 'true';
+
+            if (viewingHistorical && resultStr) {
+                try {
+                    data = JSON.parse(resultStr);
+                } catch(e) {}
+            }
             
             // If guest mode, populate mock history
             if (sessionStorage.getItem('mindhaven_guest') === 'true') {
                 window.activeHistoryRecords = getMockHistoryForInsights();
             }
 
-            // If logged in via Supabase, fetch the latest assessment row
+            // If logged in via Supabase, fetch the latest assessment rows
             if (sb) {
                 try {
                     const { data: { session } } = await sb.auth.getSession();
@@ -539,36 +546,40 @@ Paragraph 3: A 7-day recovery micro-plan with 3 specific, time-bound actions.
                             .limit(10);
                         if (!error && dbData && dbData.length > 0) {
                             window.activeHistoryRecords = dbData;
-                            const dbRow = dbData[0];
-                            data = {
-                                id: dbRow.id,
-                                answers: dbRow.answers,
-                                burnout_score: dbRow.burnout_score,
-                                suggestion: dbRow.llm_insight || dbRow.suggestion,
-                                debug_data: {
-                                    "Questionnaire Answers": dbRow.answers,
-                                    "EAR": dbRow.ear,
-                                    "MAR": dbRow.mar,
-                                    "Emotions": {
-                                        "Positive %": dbRow.emo_pos ? dbRow.emo_pos + '%' : '0%',
-                                        "Neutral %": dbRow.emo_neu ? dbRow.emo_neu + '%' : '0%',
-                                        "Negative %": dbRow.emo_neg ? dbRow.emo_neg + '%' : '0%'
-                                    },
-                                    "Voice Transcript": dbRow.voice_transcript,
-                                    "Sentiment": dbRow.sentiment_compound ? "Comp: " + dbRow.sentiment_compound : "N/A"
-                                }
-                            };
                             
-                            // If llm_insight is null in database, try generating it via Groq
-                            if (!dbRow.llm_insight && GROQ_KEY && !GROQ_KEY.startsWith("gsk_YOUR")) {
-                                const newInsight = await generateLLMInsight(data, dbRow.answers);
-                                if (newInsight && newInsight !== dbRow.suggestion) {
-                                    data.suggestion = newInsight;
-                                    await sb.from('assessments').update({ llm_insight: newInsight }).eq('id', dbRow.id);
+                            // Only override with latest if we are NOT viewing a historical record
+                            if (!viewingHistorical) {
+                                const dbRow = dbData[0];
+                                data = {
+                                    id: dbRow.id,
+                                    answers: dbRow.answers,
+                                    burnout_score: dbRow.burnout_score,
+                                    suggestion: dbRow.llm_insight || dbRow.suggestion,
+                                    debug_data: {
+                                        "Questionnaire Answers": dbRow.answers,
+                                        "EAR": dbRow.ear,
+                                        "MAR": dbRow.mar,
+                                        "Emotions": {
+                                            "Positive %": dbRow.emo_pos ? dbRow.emo_pos + '%' : '0%',
+                                            "Neutral %": dbRow.emo_neu ? dbRow.emo_neu + '%' : '0%',
+                                            "Negative %": dbRow.emo_neg ? dbRow.emo_neg + '%' : '0%'
+                                        },
+                                        "Voice Transcript": dbRow.voice_transcript,
+                                        "Sentiment": dbRow.sentiment_compound ? "Comp: " + dbRow.sentiment_compound : "N/A"
+                                    }
+                                };
+                                
+                                // If llm_insight is null in database, try generating it via Groq
+                                if (!dbRow.llm_insight && GROQ_KEY && !GROQ_KEY.startsWith("gsk_YOUR")) {
+                                    const newInsight = await generateLLMInsight(data, dbRow.answers);
+                                    if (newInsight && newInsight !== dbRow.suggestion) {
+                                        data.suggestion = newInsight;
+                                        await sb.from('assessments').update({ llm_insight: newInsight }).eq('id', dbRow.id);
+                                    }
                                 }
+                                
+                                sessionStorage.setItem('burnout_prediction', JSON.stringify(data));
                             }
-                            
-                            sessionStorage.setItem('burnout_prediction', JSON.stringify(data));
                         }
                     }
                 } catch(err) {
@@ -652,6 +663,9 @@ Paragraph 3: A 7-day recovery micro-plan with 3 specific, time-bound actions.
                 console.error("Error parsing results", e);
                 setSimulatedDetails();
             }
+            
+            // Clean up flag
+            sessionStorage.removeItem('viewing_historical');
         }
         
         function setSimulatedDetails() {
