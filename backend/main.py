@@ -9,6 +9,7 @@ from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from collections import defaultdict
 import joblib
 import re
+from catboost import Pool
 import os
 import io
 import tempfile
@@ -243,6 +244,135 @@ def get_suggestion_text(burnout_score: float) -> str:
         return "Your burnout score is Severe (80-100). You feel completely burned out. Immediate professional help is needed. Prioritize your health over work. Work can wait."
 
 
+FEATURE_METADATA = [
+    {
+        "name": "Q1_inv",
+        "display_name": "Energy Levels & Vitality",
+        "category": "Self-Reported",
+        "desc_worsening": "Lower self-reported energy levels contributed to a higher stress rating.",
+        "desc_protective": "High self-reported energy levels helped keep your stress rating lower."
+    },
+    {
+        "name": "Q2",
+        "display_name": "Cognitive Disconnect",
+        "category": "Self-Reported",
+        "desc_worsening": "Feeling like you are going through the motions increased your stress score.",
+        "desc_protective": "Feeling engaged and connected in your daily activities helped lower your stress score."
+    },
+    {
+        "name": "Q3",
+        "display_name": "Physical & Emotional Fatigue",
+        "category": "Self-Reported",
+        "desc_worsening": "Self-reported physical and emotional exhaustion increased your stress score.",
+        "desc_protective": "Minimal self-reported fatigue acted as a buffer to keep your stress score low."
+    },
+    {
+        "name": "Q4_inv",
+        "display_name": "Satisfaction with Progress",
+        "category": "Self-Reported",
+        "desc_worsening": "Lower satisfaction with daily progress increased your burnout risk.",
+        "desc_protective": "A strong sense of pride in your progress helped lower your burnout risk."
+    },
+    {
+        "name": "Q5_inv",
+        "display_name": "Sense of Accomplishment",
+        "category": "Self-Reported",
+        "desc_worsening": "A reduced sense of achieving meaningful outcomes contributed to your stress level.",
+        "desc_protective": "A strong sense of accomplishment helped reduce your overall stress level."
+    },
+    {
+        "name": "Avg_EAR",
+        "display_name": "Eye Openness (Focus/Tension)",
+        "category": "Biometrics",
+        "desc_worsening": "Narrowed eye openness (low EAR) indicated physiological fatigue, increasing your score.",
+        "desc_protective": "Open, relaxed eyes (high EAR) indicated alertness, keeping your score lower."
+    },
+    {
+        "name": "Std_EAR",
+        "display_name": "Blink Variation (Alertness)",
+        "category": "Biometrics",
+        "desc_worsening": "Higher variation in eye blinks suggested irregular focus or fatigue.",
+        "desc_protective": "Stable eye blink patterns indicated consistent focus and calm alertness."
+    },
+    {
+        "name": "Avg_MAR",
+        "display_name": "Mouth Tension (Expressiveness)",
+        "category": "Biometrics",
+        "desc_worsening": "Elevated mouth tension or movement suggested high physiological strain.",
+        "desc_protective": "Relaxed mouth tension indicated positive composure, lowering your score."
+    },
+    {
+        "name": "Std_MAR",
+        "display_name": "Mouth Dynamics (Strain)",
+        "category": "Biometrics",
+        "desc_worsening": "Irregular mouth movements or tension spikes suggested stress response expression.",
+        "desc_protective": "Stable mouth movement dynamics suggested emotional stability and ease."
+    },
+    {
+        "name": "Positive_Percent",
+        "display_name": "Positive Facial Expression",
+        "category": "Biometrics",
+        "desc_worsening": "Low frequency of positive facial expressions contributed to a higher stress index.",
+        "desc_protective": "Frequent smiles and positive expressions acted as a strong protective wellness factor."
+    },
+    {
+        "name": "Neutral_Percent",
+        "display_name": "Facial Composure & Calm",
+        "category": "Biometrics",
+        "desc_worsening": "A low percentage of calm/neutral facial states increased your stress index.",
+        "desc_protective": "A high percentage of calm, neutral facial composure helped lower your score."
+    },
+    {
+        "name": "Negative_Percent",
+        "display_name": "Negative Facial Tension",
+        "category": "Biometrics",
+        "desc_worsening": "Frequent micro-expressions of negative tension or worry increased your score.",
+        "desc_protective": "Minimal facial indicators of negative tension helped keep your score low."
+    },
+    {
+        "name": "Sentiment_Pos",
+        "display_name": "Vocal Optimism",
+        "category": "Voice & Tone",
+        "desc_worsening": "Lower levels of positive sentiment in your speech increased your score.",
+        "desc_protective": "Higher levels of positive sentiment in your speech helped lower your score."
+    },
+    {
+        "name": "Sentiment_Neu",
+        "display_name": "Vocal Composure",
+        "category": "Voice & Tone",
+        "desc_worsening": "Lower vocal neutrality suggested heightened emotional strain in your tone.",
+        "desc_protective": "Balanced, neutral vocal delivery indicated composure, reducing your score."
+    },
+    {
+        "name": "Sentiment_Neg",
+        "display_name": "Vocal Frustration",
+        "category": "Voice & Tone",
+        "desc_worsening": "Underlying negative sentiment in your voice tone increased your score.",
+        "desc_protective": "Absent vocal frustration or negative tone helped lower your score."
+    },
+    {
+        "name": "Sentiment_Comp",
+        "display_name": "Overall Tone Positivity",
+        "category": "Voice & Tone",
+        "desc_worsening": "Negative compound sentiment in your speech tone increased your score.",
+        "desc_protective": "Positive compound sentiment in your speech tone helped keep your score low."
+    },
+    {
+        "name": "Survey_Sum",
+        "display_name": "Self-Reported Stress Sum",
+        "category": "Self-Reported",
+        "desc_worsening": "Your high self-reported stress sum is the primary driver of this score.",
+        "desc_protective": "Your low self-reported stress sum is a key contributor to your low score."
+    },
+    {
+        "name": "Exhaustion_Ratio",
+        "display_name": "Mouth-to-Eye Tension Ratio",
+        "category": "Biometrics",
+        "desc_worsening": "An elevated mouth-to-eye tension ratio indicated physiological fatigue.",
+        "desc_protective": "A low mouth-to-eye tension ratio suggested good physical energy and relaxation."
+    }
+]
+
 # --- FastAPI Implementation ---
 app = FastAPI(title="Burnout Regression API")
 
@@ -255,10 +385,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+class ShapContribution(BaseModel):
+    name: str
+    display_name: str
+    category: str
+    shap_value: float
+    effect: str
+    description: str
+
 class PredictionResponse(BaseModel):
     burnout_score: float
     suggestion: str
     debug_data: dict
+    shap_base_value: float
+    shap_contributions: list[ShapContribution]
 
 @app.get("/health")
 async def health_check():
@@ -316,10 +456,39 @@ async def get_prediction(
         burnout_score = predict_burnout(raw_dict)
         suggestion_text = get_suggestion_text(burnout_score)
 
+        # Compute SHAP values
+        shap_base_value = 0.0
+        contributions = []
+        if scaler and model:
+            try:
+                X_processed = preprocess_input(raw_dict, scaler)
+                pool = Pool(data=X_processed)
+                shap_vals = model.get_feature_importance(data=pool, type="ShapValues")[0]
+                
+                # The first 18 elements are the features, the last (19th) element is the base value
+                shap_base_value = float(shap_vals[-1])
+                for idx, meta in enumerate(FEATURE_METADATA):
+                    if idx < len(shap_vals) - 1:
+                        shap_val = float(shap_vals[idx])
+                        effect = "worsening" if shap_val > 0 else "protective"
+                        desc = meta["desc_worsening"] if shap_val > 0 else meta["desc_protective"]
+                        contributions.append(ShapContribution(
+                            name=meta["name"],
+                            display_name=meta["display_name"],
+                            category=meta["category"],
+                            shap_value=shap_val,
+                            effect=effect,
+                            description=desc
+                        ))
+            except Exception as shap_err:
+                print(f"SHAP calculation failed in predict endpoint: {shap_err}")
+
         return PredictionResponse(
             burnout_score=burnout_score,
             suggestion=suggestion_text,
-            debug_data=raw_dict
+            debug_data=raw_dict,
+            shap_base_value=shap_base_value,
+            shap_contributions=contributions
         )
 
     except Exception as e:

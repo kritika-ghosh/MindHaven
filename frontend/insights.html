@@ -191,7 +191,57 @@
             </div>
         </section>
 
+        <!-- Section 3: Feature Explanations (SHAP) -->
+        <section class="glass-card p-8 md:p-12 rounded-[2.5rem] space-y-8 scroll-section relative z-10">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div class="space-y-2">
+                    <div class="flex items-center gap-3 text-primary">
+                        <span class="material-symbols-outlined text-3xl">insights</span>
+                        <h3 class="text-2xl font-extrabold text-on-surface tracking-tight">Wellness &amp; Stress Drivers</h3>
+                    </div>
+                    <p class="text-sm text-on-surface-variant/80 font-medium max-w-xl">
+                        This interactive analysis reveals how different elements of your biometric tracking and self-reported answers shifted your final score relative to a healthy baseline.
+                    </p>
+                </div>
+                
+                <!-- Category Tabs -->
+                <div class="flex flex-wrap gap-2 bg-white/20 p-1.5 rounded-full border border-white/30 backdrop-blur-md">
+                    <button onclick="filterShap('all')" id="tab-all" class="px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-primary text-white">All</button>
+                    <button onclick="filterShap('Self-Reported')" id="tab-Self-Reported" class="px-4 py-1.5 rounded-full text-xs font-bold transition-all text-on-surface hover:bg-white/30">Survey</button>
+                    <button onclick="filterShap('Biometrics')" id="tab-Biometrics" class="px-4 py-1.5 rounded-full text-xs font-bold transition-all text-on-surface hover:bg-white/30">Biometrics</button>
+                    <button onclick="filterShap('Voice & Tone')" id="tab-Voice" class="px-4 py-1.5 rounded-full text-xs font-bold transition-all text-on-surface hover:bg-white/30">Voice &amp; Tone</button>
+                </div>
+            </div>
 
+            <!-- Baseline / Current Score summary banner -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-white/20 p-5 rounded-3xl border border-white/40 text-center font-bold text-sm">
+                <div>
+                    <span class="text-[10px] text-on-surface-variant/60 uppercase tracking-wider block">Expected Baseline</span>
+                    <span class="text-lg font-extrabold text-on-surface" id="shap-baseline-val">1.89 / 4.00</span>
+                </div>
+                <div class="border-y md:border-y-0 md:border-x border-white/30 py-3 md:py-0">
+                    <span class="text-[10px] text-on-surface-variant/60 uppercase tracking-wider block">Total Shift</span>
+                    <span class="text-lg font-extrabold text-[#6b38d4]" id="shap-shift-val">+0.00</span>
+                </div>
+                <div>
+                    <span class="text-[10px] text-on-surface-variant/60 uppercase tracking-wider block">Final Burnout Score</span>
+                    <span class="text-lg font-extrabold text-on-surface" id="shap-final-val">2.00 / 4.00</span>
+                </div>
+            </div>
+
+            <!-- Chart Container -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2" id="shap-bars-container">
+                <!-- Injected dynamically -->
+            </div>
+            
+            <!-- Explanatory note -->
+            <div class="flex items-start gap-2.5 p-4 bg-white/30 rounded-2xl border border-white/30 text-xs font-semibold text-on-surface-variant/80">
+                <span class="material-symbols-outlined text-primary text-[18px]">info</span>
+                <p>
+                    <strong>How to read this chart:</strong> Factors pulling to the right (<span class="text-red-500 font-extrabold">Coral Red</span>) indicate symptoms or biometrics that increased your stress/burnout rating. Factors pulling to the left (<span class="text-green-600 font-extrabold">Sage Green</span>) indicate wellness or protective indicators that helped keep your rating lower.
+                </p>
+            </div>
+        </section>
 
         <!-- Image Interaction Section -->
         <section class="relative h-[450px] rounded-[3rem] overflow-hidden group shadow-2xl scroll-section">
@@ -264,6 +314,103 @@
         // Pull the Groq key from js/config.js (gitignored) or define it here
         const GROQ_KEY = window.MINDHAVEN_CONFIG?.GROQ_KEY || "";
         const GROQ_MODEL = "llama-3.3-70b-versatile";
+
+        let activeFilter = 'all';
+
+        function filterShap(category) {
+            activeFilter = category;
+            
+            // Highlight active tab
+            ['all', 'Self-Reported', 'Biometrics', 'Voice & Tone'].forEach(c => {
+                const id = c === 'Voice & Tone' ? 'tab-Voice' : 'tab-' + c;
+                const tab = document.getElementById(id);
+                if (tab) {
+                    if (c === category) {
+                        tab.className = "px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-primary text-white";
+                    } else {
+                        tab.className = "px-4 py-1.5 rounded-full text-xs font-bold transition-all text-on-surface hover:bg-white/30";
+                    }
+                }
+            });
+
+            if (window.activeShapData) {
+                renderShapChart(window.activeShapData.shap_base_value, window.activeShapData.shap_contributions);
+            }
+        }
+
+        function renderShapChart(baseValue, contributions) {
+            const container = document.getElementById('shap-bars-container');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const finalScore = window.activeShapData.burnout_score;
+            const diff = finalScore - baseValue;
+            const sign = diff >= 0 ? '+' : '';
+            
+            document.getElementById('shap-baseline-val').textContent = baseValue.toFixed(2) + ' / 4.00';
+            document.getElementById('shap-shift-val').textContent = sign + diff.toFixed(2);
+            document.getElementById('shap-final-val').textContent = finalScore.toFixed(2) + ' / 4.00';
+
+            let filtered = contributions;
+            if (activeFilter !== 'all') {
+                filtered = contributions.filter(c => c.category === activeFilter);
+            }
+
+            filtered = [...filtered].sort((a, b) => Math.abs(b.shap_value) - Math.abs(a.shap_value));
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="col-span-full text-center py-6 text-xs text-on-surface-variant/60 font-bold">No indicators found in this category.</div>`;
+                return;
+            }
+
+            const maxVal = Math.max(...contributions.map(c => Math.abs(c.shap_value)), 0.1);
+
+            filtered.forEach(c => {
+                const val = c.shap_value;
+                const percentage = Math.min(100, (Math.abs(val) / maxVal) * 100);
+                const isWorsening = val > 0;
+                const barColor = isWorsening ? 'bg-gradient-to-r from-red-400 to-red-500' : 'bg-gradient-to-l from-green-400 to-green-500';
+                
+                let barHtml = '';
+                if (isWorsening) {
+                    barHtml = `
+                        <div class="w-full flex items-center h-7 relative bg-white/10 rounded-full border border-white/20 overflow-hidden group">
+                            <div class="w-1/2 h-full border-r border-white/30"></div>
+                            <div class="w-1/2 h-full relative">
+                                <div class="${barColor} h-full rounded-r transition-all duration-500" style="width: ${percentage}%"></div>
+                                <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] font-mono font-extrabold text-red-700">+${val.toFixed(3)}</span>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    barHtml = `
+                        <div class="w-full flex items-center h-7 relative bg-white/10 rounded-full border border-white/20 overflow-hidden group">
+                            <div class="w-1/2 h-full flex justify-end relative border-r border-white/30">
+                                <div class="${barColor} h-full rounded-l transition-all duration-500" style="width: ${percentage}%"></div>
+                                <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-mono font-extrabold text-green-800">${val.toFixed(3)}</span>
+                            </div>
+                            <div class="w-1/2 h-full"></div>
+                        </div>
+                    `;
+                }
+
+                const cardHtml = `
+                    <div class="glass-card p-4 rounded-2xl border border-white/40 hover:scale-[1.01] hover:border-primary/30 transition-all duration-300 space-y-2">
+                        <div class="flex justify-between items-center text-xs font-bold">
+                            <span class="text-on-surface font-extrabold">${c.display_name}</span>
+                            <span class="px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider ${isWorsening ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}">
+                                ${isWorsening ? 'Stress Driver' : 'Wellness Buffer'}
+                            </span>
+                        </div>
+                        ${barHtml}
+                        <p class="text-[11px] text-on-surface-variant/80 leading-relaxed font-semibold">
+                            ${c.description}
+                        </p>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', cardHtml);
+            });
+        }
 
         async function generateLLMInsight(predictionData, answers) {
             const config = window.MINDHAVEN_CONFIG || {};
@@ -463,6 +610,11 @@ Paragraph 3: A 7-day recovery micro-plan with 3 specific, time-bound actions.
                     document.getElementById('emo-neg').textContent = debug["Emotions"]["Negative %"] || "0%";
                 }
                 
+                // Ensure and render SHAP data
+                data = ensureShapData(data);
+                window.activeShapData = data;
+                renderShapChart(data.shap_base_value, data.shap_contributions);
+                
             } catch(e) {
                 console.error("Error parsing results", e);
                 setSimulatedDetails();
@@ -479,6 +631,20 @@ Paragraph 3: A 7-day recovery micro-plan with 3 specific, time-bound actions.
             document.getElementById('emo-pos').textContent = "12%";
             document.getElementById('emo-neu').textContent = "68%";
             document.getElementById('emo-neg').textContent = "20%";
+
+            var simData = {
+                burnout_score: 2.0,
+                debug_data: {
+                    "Questionnaire Answers": ["Rarely", "Often", "Sometimes", "Often", "Sometimes"],
+                    "EAR": "0.24 ± 0.04",
+                    "MAR": "0.18 ± 0.03",
+                    "Emotions": { "Positive %": "12%", "Neutral %": "68%", "Negative %": "20%" },
+                    "Sentiment": "Pos: 0.15, Neu: 0.70, Neg: 0.15, Comp: 0.1"
+                }
+            };
+            simData = ensureShapData(simData);
+            window.activeShapData = simData;
+            renderShapChart(simData.shap_base_value, simData.shap_contributions);
         }
 
         // Breathing exercise modal cycle

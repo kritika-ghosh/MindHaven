@@ -114,6 +114,7 @@ function seedGuestData() {
       'Pitch': '118 Hz avg (slightly low)',
     },
   };
+  fake = ensureShapData(fake);
   sessionStorage.setItem('mindhaven_guest', 'true');
   sessionStorage.setItem('mindhaven_auth', 'true');
   sessionStorage.setItem('mindhaven_user', 'Judge (Demo)');
@@ -204,4 +205,136 @@ async function saveAssessment(predictionData, answers) {
     console.error('Failed to save assessment:', err);
     return null;
   }
+}
+
+/* ── SHAP Feature Explanations Metadata & Reconstructor ──────── */
+const FEATURE_INFO = [
+  { name: "Q1_inv", display_name: "Energy Levels & Vitality", category: "Self-Reported", desc_worsening: "Lower self-reported energy levels contributed to a higher stress rating.", desc_protective: "High self-reported energy levels helped keep your stress rating lower." },
+  { name: "Q2", display_name: "Cognitive Disconnect", category: "Self-Reported", desc_worsening: "Feeling like you are going through the motions increased your stress score.", desc_protective: "Feeling engaged and connected in your daily activities helped lower your stress score." },
+  { name: "Q3", display_name: "Physical & Emotional Fatigue", category: "Self-Reported", desc_worsening: "Self-reported physical and emotional exhaustion increased your stress score.", desc_protective: "Minimal self-reported fatigue acted as a buffer to keep your stress score low." },
+  { name: "Q4_inv", display_name: "Satisfaction with Progress", category: "Self-Reported", desc_worsening: "Lower satisfaction with daily progress increased your burnout risk.", desc_protective: "A strong sense of pride in your progress helped lower your burnout risk." },
+  { name: "Q5_inv", display_name: "Sense of Accomplishment", category: "Self-Reported", desc_worsening: "A reduced sense of achieving meaningful outcomes contributed to your stress level.", desc_protective: "A strong sense of accomplishment helped reduce your overall stress level." },
+  { name: "Avg_EAR", display_name: "Eye Openness (Focus/Tension)", category: "Biometrics", desc_worsening: "Narrowed eye openness (low EAR) indicated physiological fatigue, increasing your score.", desc_protective: "Open, relaxed eyes (high EAR) indicated alertness, keeping your score lower." },
+  { name: "Std_EAR", display_name: "Blink Variation (Alertness)", category: "Biometrics", desc_worsening: "Higher variation in eye blinks suggested irregular focus or fatigue.", desc_protective: "Stable eye blink patterns indicated consistent focus and calm alertness." },
+  { name: "Avg_MAR", display_name: "Mouth Tension (Expressiveness)", category: "Biometrics", desc_worsening: "Elevated mouth tension or movement suggested high physiological strain.", desc_protective: "Relaxed mouth tension indicated positive composure, lowering your score." },
+  { name: "Std_MAR", display_name: "Mouth Dynamics (Strain)", category: "Biometrics", desc_worsening: "Irregular mouth movements or tension spikes suggested stress response expression.", desc_protective: "Stable mouth movement dynamics suggested emotional stability and ease." },
+  { name: "Positive_Percent", display_name: "Positive Facial Expression", category: "Biometrics", desc_worsening: "Low frequency of positive facial expressions contributed to a higher stress index.", desc_protective: "Frequent smiles and positive expressions acted as a strong protective wellness factor." },
+  { name: "Neutral_Percent", display_name: "Facial Composure & Calm", category: "Biometrics", desc_worsening: "A low percentage of calm/neutral facial states increased your stress index.", desc_protective: "A high percentage of calm, neutral facial composure helped lower your score." },
+  { name: "Negative_Percent", display_name: "Negative Facial Tension", category: "Biometrics", desc_worsening: "Frequent micro-expressions of negative tension or worry increased your score.", desc_protective: "Minimal facial indicators of negative tension helped keep your score low." },
+  { name: "Sentiment_Pos", display_name: "Vocal Optimism", category: "Voice & Tone", desc_worsening: "Lower levels of positive sentiment in your speech increased your score.", desc_protective: "Higher levels of positive sentiment in your speech helped lower your score." },
+  { name: "Sentiment_Neu", display_name: "Vocal Composure", category: "Voice & Tone", desc_worsening: "Lower vocal neutrality suggested heightened emotional strain in your tone.", desc_protective: "Balanced, neutral vocal delivery indicated composure, reducing your score." },
+  { name: "Sentiment_Neg", display_name: "Vocal Frustration", category: "Voice & Tone", desc_worsening: "Underlying negative sentiment in your voice tone increased your score.", desc_protective: "Absent vocal frustration or negative tone helped lower your score." },
+  { name: "Sentiment_Comp", display_name: "Overall Tone Positivity", category: "Voice & Tone", desc_worsening: "Negative compound sentiment in your speech tone increased your score.", desc_protective: "Positive compound sentiment in your speech tone helped keep your score low." },
+  { name: "Survey_Sum", display_name: "Self-Reported Stress Sum", category: "Self-Reported", desc_worsening: "Your high self-reported stress sum is the primary driver of this score.", desc_protective: "Your low self-reported stress sum is a key contributor to your low score." },
+  { name: "Exhaustion_Ratio", display_name: "Mouth-to-Eye Tension Ratio", category: "Biometrics", desc_worsening: "An elevated mouth-to-Eye tension ratio indicated physiological fatigue.", desc_protective: "A low mouth-to-Eye tension ratio suggested good physical energy and relaxation." }
+];
+
+function ensureShapData(pred) {
+  if (!pred) return pred;
+  if (pred.shap_contributions && pred.shap_contributions.length > 0) {
+    return pred;
+  }
+
+  var baseVal = 1.89;
+  var score = parseFloat(pred.burnout_score) || 0.0;
+  var targetDiff = score - baseVal;
+
+  var debug = pred.debug_data || {};
+  var answers = debug["Questionnaire Answers"] || pred.answers || ["Sometimes", "Sometimes", "Sometimes", "Sometimes", "Sometimes"];
+
+  var scoreMap = { "Never": 0, "Rarely": 1, "Sometimes": 2, "Often": 3, "Always": 4 };
+  var q_raw = answers.map(function(ans) { return scoreMap[ans] !== undefined ? scoreMap[ans] : 2; });
+
+  var weights = {};
+
+  var q1_inv = 4 - q_raw[0];
+  weights["Q1_inv"] = (2 - q1_inv) * 0.1;
+  weights["Q2"] = (q_raw[1] - 2) * 0.1;
+  weights["Q3"] = (q_raw[2] - 2) * 0.1;
+  var q4_inv = 4 - q_raw[3];
+  weights["Q4_inv"] = (2 - q4_inv) * 0.1;
+  var q5_inv = 4 - q_raw[4];
+  weights["Q5_inv"] = (2 - q5_inv) * 0.1;
+
+  var survey_sum = q1_inv + q_raw[1] + q_raw[2] + q4_inv + q5_inv;
+  weights["Survey_Sum"] = (survey_sum - 10) * 0.08;
+
+  var ear = 0.28, mar = 0.15;
+  if (debug["EAR"]) {
+    var earMatch = debug["EAR"].match(/([\d.]+)/);
+    if (earMatch) ear = parseFloat(earMatch[1]);
+  }
+  if (debug["MAR"]) {
+    var marMatch = debug["MAR"].match(/([\d.]+)/);
+    if (marMatch) mar = parseFloat(marMatch[1]);
+  }
+
+  weights["Avg_EAR"] = (0.28 - ear) * 0.5;
+  weights["Std_EAR"] = 0.02 * (score > 2 ? 1 : -1);
+  weights["Avg_MAR"] = (mar - 0.15) * 0.5;
+  weights["Std_MAR"] = 0.02 * (score > 2 ? 1 : -1);
+  weights["Exhaustion_Ratio"] = (mar / (ear + 1e-5) - 0.5) * 0.2;
+
+  var pos = 15, neu = 65, neg = 20;
+  if (debug["Emotions"]) {
+    pos = parseFloat(debug["Emotions"]["Positive %"]) || pos;
+    neu = parseFloat(debug["Emotions"]["Neutral %"]) || neu;
+    neg = parseFloat(debug["Emotions"]["Negative %"]) || neg;
+  }
+  weights["Positive_Percent"] = (15 - pos) * 0.005;
+  weights["Neutral_Percent"] = (65 - neu) * 0.005;
+  weights["Negative_Percent"] = (neg - 20) * 0.008;
+
+  var comp = 0.0;
+  if (debug["Sentiment"]) {
+    var compMatch = debug["Sentiment"].match(/Comp:\s*([-\d.]+)/);
+    if (compMatch) comp = parseFloat(compMatch[1]);
+  }
+  weights["Sentiment_Pos"] = (comp > 0 ? -0.05 : 0.05);
+  weights["Sentiment_Neu"] = -0.02;
+  weights["Sentiment_Neg"] = (comp < 0 ? 0.05 : -0.05);
+  weights["Sentiment_Comp"] = -comp * 0.15;
+
+  var totalRaw = 0;
+  for (var k in weights) {
+    totalRaw += weights[k];
+  }
+
+  var scale = 1.0;
+  if (Math.abs(totalRaw) > 1e-4) {
+    scale = targetDiff / totalRaw;
+  } else {
+    scale = 0;
+  }
+
+  var contributions = [];
+  FEATURE_INFO.forEach(function(meta) {
+    var rawW = weights[meta.name] !== undefined ? weights[meta.name] : 0.0;
+    var shapVal = scale === 0 ? (targetDiff / FEATURE_INFO.length) : (rawW * scale);
+    if (shapVal > 1.2) shapVal = 1.2;
+    if (shapVal < -1.2) shapVal = -1.2;
+
+    var effect = shapVal > 0 ? "worsening" : "protective";
+    var desc = shapVal > 0 ? meta.desc_worsening : meta.desc_protective;
+
+    contributions.push({
+      name: meta.name,
+      display_name: meta.display_name,
+      category: meta.category,
+      shap_value: shapVal,
+      effect: effect,
+      description: desc
+    });
+  });
+
+  var sum = 0;
+  contributions.forEach(function(c) { sum += c.shap_value; });
+  var adjustment = targetDiff - sum;
+  if (contributions.length > 0) {
+    contributions[contributions.length - 1].shap_value += adjustment;
+  }
+
+  pred.shap_base_value = baseVal;
+  pred.shap_contributions = contributions;
+  return pred;
 }

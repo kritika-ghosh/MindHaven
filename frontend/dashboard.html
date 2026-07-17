@@ -446,7 +446,7 @@
                     : 'N/A';
 
                 const rowHtml = `
-                    <tr class="hover:bg-white/30 transition-all">
+                    <tr onclick="openHistoryDetailModal(${idx})" class="cursor-pointer hover:bg-white/30 transition-all">
                         <td class="py-4 px-4">
                             <div>${dateStr}</div>
                             <div class="text-[10px] text-on-surface-variant/60 font-semibold">${timeStr}</div>
@@ -464,6 +464,193 @@
                 `;
                 tbody.insertAdjacentHTML('beforeend', rowHtml);
             });
+        }
+
+        let modalActiveFilter = 'all';
+        let selectedRecordIdx = null;
+
+        function openHistoryDetailModal(idx) {
+            selectedRecordIdx = idx;
+            const r = window.dashboardRecords[idx];
+            if (!r) return;
+
+            const data = {
+                burnout_score: r.burnout_score,
+                suggestion: r.llm_insight || r.suggestion,
+                answers: r.answers,
+                created_at: r.created_at,
+                debug_data: {
+                    "Questionnaire Answers": r.answers,
+                    "EAR": r.ear !== null && r.ear !== undefined ? parseFloat(r.ear).toFixed(2) : 'N/A',
+                    "MAR": r.mar !== null && r.mar !== undefined ? parseFloat(r.mar).toFixed(2) : 'N/A',
+                    "Emotions": {
+                        "Positive %": r.emo_pos !== null && r.emo_pos !== undefined ? parseFloat(r.emo_pos).toFixed(0) + '%' : '0%',
+                        "Neutral %": r.emo_neu !== null && r.emo_neu !== undefined ? parseFloat(r.emo_neu).toFixed(0) + '%' : '0%',
+                        "Negative %": r.emo_neg !== null && r.emo_neg !== undefined ? parseFloat(r.emo_neg).toFixed(0) + '%' : '0%'
+                    },
+                    "Voice Transcript": r.voice_transcript,
+                    "Sentiment": r.sentiment_compound !== null && r.sentiment_compound !== undefined ? "Comp: " + parseFloat(r.sentiment_compound).toFixed(2) : "Neutral"
+                }
+            };
+
+            window.activeModalShapData = ensureShapData(data);
+
+            const date = new Date(r.created_at);
+            document.getElementById('modal-date').textContent = date.toLocaleDateString(undefined, {month: 'long', day: 'numeric', year: 'numeric'});
+            document.getElementById('modal-time').textContent = date.toLocaleTimeString(undefined, {hour: '2-digit', minute:'2-digit'});
+
+            const score = parseFloat(r.burnout_score);
+            let vitality = 84;
+            let label = "Optimal Focus";
+            let desc = "Your current cognitive balance is in a recovery phase.";
+            const roundedScore = Math.round(score);
+            
+            if (roundedScore <= 0) {
+                vitality = 92; label = "Optimal Focus";
+                desc = "Your neuro-efficiency metrics reflect total clarity and balanced stress response thresholds.";
+            } else if (roundedScore === 1) {
+                vitality = 78; label = "Mild Tension";
+                desc = "Slight levels of stress detected. Neural channels indicate cognitive performance is high, but rest is recommended.";
+            } else if (roundedScore === 2) {
+                vitality = 54; label = "Moderate Fatigue";
+                desc = "Physical and emotional reserves are running thin. Clear indications of attention exhaustion.";
+            } else if (roundedScore === 3) {
+                vitality = 32; label = "High Burnout";
+                desc = "Persistent fatigue limits processing capability. Digital dark-blocks are suggested immediately.";
+            } else {
+                vitality = 12; label = "Critical Exhaustion";
+                desc = "Biometric indicators show high nervous system distress. Consult mental health practitioners immediately.";
+            }
+
+            document.getElementById('modal-score-val').textContent = vitality + '%';
+            document.getElementById('modal-label-val').textContent = label;
+            document.getElementById('modal-desc-val').textContent = desc;
+
+            document.getElementById('modal-ear').textContent = r.ear !== null ? parseFloat(r.ear).toFixed(2) : 'N/A';
+            document.getElementById('modal-mar').textContent = r.mar !== null ? parseFloat(r.mar).toFixed(2) : 'N/A';
+            document.getElementById('modal-transcript').textContent = r.voice_transcript ? `"${r.voice_transcript}"` : "Audio session recorded silently. No voice transcript captured.";
+
+            modalActiveFilter = 'all';
+            updateModalShapTabSelection();
+            renderModalShapChart();
+
+            const modal = document.getElementById('history-modal');
+            const backdrop = document.getElementById('modal-backdrop');
+            
+            modal.classList.remove('hidden');
+            backdrop.classList.remove('hidden');
+            
+            setTimeout(() => {
+                modal.classList.remove('translate-x-full');
+                backdrop.classList.add('opacity-100');
+                backdrop.classList.remove('opacity-0');
+            }, 50);
+        }
+
+        function closeHistoryDetailModal() {
+            const modal = document.getElementById('history-modal');
+            const backdrop = document.getElementById('modal-backdrop');
+            
+            modal.classList.add('translate-x-full');
+            backdrop.classList.add('opacity-0');
+            backdrop.classList.remove('opacity-100');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                backdrop.classList.add('hidden');
+            }, 500);
+        }
+
+        function filterModalShap(category) {
+            modalActiveFilter = category;
+            updateModalShapTabSelection();
+            renderModalShapChart();
+        }
+
+        function updateModalShapTabSelection() {
+            ['all', 'Self-Reported', 'Biometrics', 'Voice & Tone'].forEach(c => {
+                const id = c === 'Voice & Tone' ? 'modal-tab-Voice' : 'modal-tab-' + c;
+                const tab = document.getElementById(id);
+                if (tab) {
+                    if (c === modalActiveFilter) {
+                        tab.className = "px-2.5 py-1 rounded-full text-[10px] font-bold transition-all bg-primary text-white";
+                    } else {
+                        tab.className = "px-2.5 py-1 rounded-full text-[10px] font-bold transition-all text-on-surface hover:bg-white/20";
+                    }
+                }
+            });
+        }
+
+        function renderModalShapChart() {
+            const container = document.getElementById('modal-shap-container');
+            if (!container || !window.activeModalShapData) return;
+            container.innerHTML = '';
+
+            const baseValue = window.activeModalShapData.shap_base_value;
+            const contributions = window.activeModalShapData.shap_contributions;
+
+            let filtered = contributions;
+            if (modalActiveFilter !== 'all') {
+                filtered = contributions.filter(c => c.category === modalActiveFilter);
+            }
+
+            filtered = [...filtered].sort((a, b) => Math.abs(b.shap_value) - Math.abs(a.shap_value));
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="text-center py-4 text-[10px] text-on-surface-variant/60 font-bold">No indicators found.</div>`;
+                return;
+            }
+
+            const maxVal = Math.max(...contributions.map(c => Math.abs(c.shap_value)), 0.1);
+
+            filtered.forEach(c => {
+                const val = c.shap_value;
+                const percentage = Math.min(100, (Math.abs(val) / maxVal) * 100);
+                const isWorsening = val > 0;
+                const barColor = isWorsening ? 'bg-gradient-to-r from-red-400 to-red-500' : 'bg-gradient-to-l from-green-400 to-green-500';
+                
+                let barHtml = '';
+                if (isWorsening) {
+                    barHtml = `
+                        <div class="w-full flex items-center h-6 relative bg-white/10 rounded-full border border-white/20 overflow-hidden">
+                            <div class="w-1/2 h-full border-r border-white/30"></div>
+                            <div class="w-1/2 h-full relative">
+                                <div class="${barColor} h-full rounded-r transition-all duration-300" style="width: ${percentage}%"></div>
+                                <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-[9px] font-mono font-extrabold text-red-700">+${val.toFixed(3)}</span>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    barHtml = `
+                        <div class="w-full flex items-center h-6 relative bg-white/10 rounded-full border border-white/20 overflow-hidden">
+                            <div class="w-1/2 h-full flex justify-end relative border-r border-white/30">
+                                <div class="${barColor} h-full rounded-l transition-all duration-300" style="width: ${percentage}%"></div>
+                                <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[9px] font-mono font-extrabold text-green-800">${val.toFixed(3)}</span>
+                            </div>
+                            <div class="w-1/2 h-full"></div>
+                        </div>
+                    `;
+                }
+
+                const cardHtml = `
+                    <div class="bg-white/20 p-3 rounded-xl border border-white/30 space-y-1">
+                        <div class="flex justify-between items-center text-[10px] font-bold">
+                            <span class="text-on-surface font-extrabold">${c.display_name}</span>
+                            <span class="px-1.5 py-0.2 rounded text-[8px] uppercase tracking-wider ${isWorsening ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}">
+                                ${isWorsening ? 'Stress Driver' : 'Wellness Buffer'}
+                            </span>
+                        </div>
+                        ${barHtml}
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', cardHtml);
+            });
+        }
+
+        function viewModalDetailsInInsights() {
+            if (selectedRecordIdx !== null) {
+                viewDetails(selectedRecordIdx);
+            }
         }
 
         // View detail report in Insights.html
@@ -616,6 +803,78 @@
             ];
         }
     </script>
+
+    <!-- History Detail Modal (Slide-over drawer) -->
+    <div id="history-modal" class="fixed inset-y-0 right-0 w-[500px] max-w-full bg-background/95 backdrop-blur-2xl border-l border-white/20 shadow-2xl z-50 transform translate-x-full transition-transform duration-500 flex flex-col hidden">
+        <!-- Header -->
+        <div class="flex items-center justify-between p-6 border-b border-white/20 bg-white/10">
+            <div>
+                <h3 class="font-extrabold text-lg text-on-surface" id="modal-date">Assessment Details</h3>
+                <span class="text-xs font-bold text-on-surface-variant/75" id="modal-time">June 20, 2026</span>
+            </div>
+            <button onclick="closeHistoryDetailModal()" class="text-on-surface-variant/80 hover:text-primary transition-colors flex items-center justify-center p-2 rounded-full hover:bg-white/20">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <!-- Scrollable Content -->
+        <div class="flex-1 overflow-y-auto p-6 space-y-6">
+            <!-- Score Card Summary -->
+            <div class="glass-card p-6 rounded-3xl border border-white/40 text-center space-y-3">
+                <div class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/60">Vitality Overview</div>
+                <div class="text-6xl font-black text-primary animate-pulse" id="modal-score-val">84%</div>
+                <div class="text-sm font-extrabold text-secondary mt-1 animate-bounce" id="modal-label-val">Optimal Focus</div>
+                <p class="text-xs font-semibold text-on-surface-variant leading-relaxed max-w-xs mx-auto" id="modal-desc-val">Your current cognitive balance is in a recovery phase.</p>
+            </div>
+
+            <!-- Custom Tabs for Filter in Modal -->
+            <div class="flex justify-between items-center gap-2">
+                <h4 class="font-extrabold text-sm text-on-surface">Wellness Drivers</h4>
+                <div class="flex gap-1 bg-white/20 p-1 rounded-full border border-white/30">
+                    <button onclick="filterModalShap('all')" id="modal-tab-all" class="px-2.5 py-1 rounded-full text-[10px] font-bold transition-all bg-primary text-white">All</button>
+                    <button onclick="filterModalShap('Self-Reported')" id="modal-tab-Self-Reported" class="px-2.5 py-1 rounded-full text-[10px] font-bold transition-all text-on-surface hover:bg-white/20">Survey</button>
+                    <button onclick="filterModalShap('Biometrics')" id="modal-tab-Biometrics" class="px-2.5 py-1 rounded-full text-[10px] font-bold transition-all text-on-surface hover:bg-white/20">Bio</button>
+                    <button onclick="filterModalShap('Voice & Tone')" id="modal-tab-Voice" class="px-2.5 py-1 rounded-full text-[10px] font-bold transition-all text-on-surface hover:bg-white/20">Voice</button>
+                </div>
+            </div>
+
+            <!-- SHAP Chart Container -->
+            <div class="space-y-4" id="modal-shap-container">
+                <!-- Injected dynamically -->
+            </div>
+
+            <!-- Transcript & Raw metrics -->
+            <div class="space-y-4">
+                <h4 class="font-extrabold text-sm text-on-surface">Session Biometrics</h4>
+                <div class="grid grid-cols-2 gap-3 text-center text-xs font-bold">
+                    <div class="bg-white/30 p-3 rounded-xl border border-white/30">
+                        <span class="text-[10px] text-on-surface-variant/60 block uppercase">Eye Tension (EAR)</span>
+                        <span class="text-sm font-extrabold text-on-surface" id="modal-ear">-</span>
+                    </div>
+                    <div class="bg-white/30 p-3 rounded-xl border border-white/30">
+                        <span class="text-[10px] text-on-surface-variant/60 block uppercase">Mouth Tension (MAR)</span>
+                        <span class="text-sm font-extrabold text-on-surface" id="modal-mar">-</span>
+                    </div>
+                </div>
+                
+                <div class="bg-white/30 p-4 rounded-2xl border border-white/30 space-y-2">
+                    <span class="text-[10px] text-primary font-bold uppercase tracking-wider block">Vocal Transcript snippet</span>
+                    <p class="text-xs italic text-on-surface font-semibold" id="modal-transcript">"No transcript available."</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Footer -->
+        <div class="p-6 border-t border-white/20 bg-white/10 flex gap-3">
+            <button onclick="viewModalDetailsInInsights()" class="flex-1 pill-3d py-3 rounded-full text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow font-semibold">
+                <span class="material-symbols-outlined text-[16px]">visibility</span>Full Insight Report
+            </button>
+        </div>
+    </div>
+    
+    <!-- Modal Backdrop -->
+    <div id="modal-backdrop" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 hidden opacity-0 transition-opacity duration-300" onclick="closeHistoryDetailModal()"></div>
+
     <!-- Mobile Bottom Navigation Bar -->
     <nav class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/60 backdrop-blur-xl border-t border-white/20 flex justify-around items-center py-2 px-4 shadow-lg">
         <a href="about.html" class="flex flex-col items-center gap-0.5 text-on-surface-variant/80 hover:text-primary transition-colors py-1">
