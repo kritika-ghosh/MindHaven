@@ -13,6 +13,10 @@ from catboost import Pool
 import os
 import io
 import tempfile
+import warnings
+
+# Ignore user warnings for scaler inputs
+warnings.filterwarnings('ignore', category=UserWarning)
 
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -47,16 +51,25 @@ answer_mapping = {
 
 # --- Model Loading ---
 try:
-    scaler = joblib.load('scaler.joblib')
-    model = joblib.load('model.joblib')
+    scaler_q = joblib.load('scaler_q.joblib')
+    scaler_b = joblib.load('scaler_b.joblib')
+    model_q = joblib.load('model_q.joblib')
+    model_b = joblib.load('model_b.joblib')
+    model_meta = joblib.load('model_meta.joblib')
 except FileNotFoundError:
-    print("WARNING: Model files (scaler.joblib, model.joblib) not found in current directory. Prediction will fail.")
-    scaler = None
-    model = None
+    print("WARNING: Model files (scaler_q, scaler_b, model_q, model_b, model_meta) not found in current directory. Prediction will fail.")
+    scaler_q = None
+    scaler_b = None
+    model_q = None
+    model_b = None
+    model_meta = None
 except Exception as e:
-    print(f"Error loading model files: {e}")
-    scaler = None
-    model = None
+    print(f"Error loading late fusion model files: {e}")
+    scaler_q = None
+    scaler_b = None
+    model_q = None
+    model_b = None
+    model_meta = None
 
 # --- Core Functions ---
 
@@ -176,7 +189,7 @@ def analyze_audio_file(audio_path: str):
     except Exception:
         return "", "Pos: 0.00, Neu: 1.00, Neg: 0.00, Comp: 0.00", "N/A"
 
-def preprocess_input(raw_dict, scaler):
+def preprocess_input(raw_dict):
     q_encoded = [answer_mapping.get(ans, -1) for ans in raw_dict["Questionnaire Answers"]]
     if -1 in q_encoded: raise ValueError("Unknown answer detected in questionnaire answers.")
 
@@ -208,26 +221,43 @@ def preprocess_input(raw_dict, scaler):
     survey_sum = (4 - q_encoded[0]) + q_encoded[1] + q_encoded[2] + q_encoded[3] + q_encoded[4]
     exhaustion_ratio = MAR_avg / (EAR_avg + 1e-5)
 
-    # Construct the array with full high-accuracy statistical parameters (18 features total)
-    features = q_encoded + [
+    # Q features: 'Q1_inv', 'Q2', 'Q3', 'Q4_inv', 'Q5_inv', 'Survey_Sum'
+    q_features = q_encoded + [survey_sum]
+
+    # Bio features: 'Avg_EAR', 'Std_EAR', 'Avg_MAR', 'Std_MAR', 'Exhaustion_Ratio',
+    #               'Positive_Percent', 'Neutral_Percent', 'Negative_Percent',
+    #               'Sentiment_Pos', 'Sentiment_Neu', 'Sentiment_Neg', 'Sentiment_Comp'
+    bio_features = [
         EAR_avg, EAR_std,  
         MAR_avg, MAR_std,  
+        exhaustion_ratio,
         pos_emotion, neu_emotion, neg_emotion,
-        sent_pos, sent_neu, sent_neg, sent_comp,
-        survey_sum, exhaustion_ratio
+        sent_pos, sent_neu, sent_neg, sent_comp
     ]
 
-    X = np.array(features).reshape(1, -1)
-    X_scaled = scaler.transform(X)
-    return X_scaled
+    return q_features, bio_features
 
 def predict_burnout(raw_dict):
-    if not scaler or not model:
+    if not scaler_q or not scaler_b or not model_q or not model_b or not model_meta:
         raise RuntimeError("Model files not loaded. Cannot predict.")
-    X_processed = preprocess_input(raw_dict, scaler)
-    pred = model.predict(X_processed)
-    # CatBoostRegressor returns prediction as an array/float value
-    score = float(pred[0]) if isinstance(pred, np.ndarray) else float(pred)
+    q_features, bio_features = preprocess_input(raw_dict)
+    
+    X_q = np.array(q_features).reshape(1, -1)
+    X_b = np.array(bio_features).reshape(1, -1)
+
+    X_q_scaled = scaler_q.transform(X_q)
+    X_b_scaled = scaler_b.transform(X_b)
+
+    pred_q = model_q.predict(X_q_scaled)
+    pred_b = model_b.predict(X_b_scaled)
+
+    val_q = float(pred_q[0]) if isinstance(pred_q, np.ndarray) else float(pred_q)
+    val_b = float(pred_b[0]) if isinstance(pred_b, np.ndarray) else float(pred_b)
+
+    X_meta = np.column_stack((val_q, val_b))
+    pred_fused = model_meta.predict(X_meta)
+    
+    score = float(pred_fused[0]) if isinstance(pred_fused, np.ndarray) else float(pred_fused)
     return max(0.0, min(4.0, score))
 
 def get_suggestion_text(burnout_score: float) -> str:
@@ -376,6 +406,17 @@ FEATURE_METADATA = [
 # --- FastAPI Implementation ---
 app = FastAPI(title="Burnout Regression API")
 
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request, exc):
+    print(f"FastAPI Validation Error: {exc.errors()} | Body: {exc.body}")
+    return JSONResponse(
+        status_code=422,
+        content={"detail": exc.errors(), "body": str(exc.body)},
+    )
+
 # Enable Cross-Origin requests so your Vercel site can call it
 app.add_middleware(
     CORSMiddleware,
@@ -459,27 +500,61 @@ async def get_prediction(
         # Compute SHAP values
         shap_base_value = 0.0
         contributions = []
-        if scaler and model:
+        if scaler_q and scaler_b and model_q and model_b and model_meta:
             try:
-                X_processed = preprocess_input(raw_dict, scaler)
-                pool = Pool(data=X_processed)
-                shap_vals = model.get_feature_importance(data=pool, type="ShapValues")[0]
+                q_features, bio_features = preprocess_input(raw_dict)
+                X_q = np.array(q_features).reshape(1, -1)
+                X_b = np.array(bio_features).reshape(1, -1)
+                X_q_scaled = scaler_q.transform(X_q)
+                X_b_scaled = scaler_b.transform(X_b)
+
+                # Compute shap values for both submodels
+                pool_q = Pool(data=X_q_scaled)
+                shap_vals_q = model_q.get_feature_importance(data=pool_q, type="ShapValues")[0]
                 
-                # The first 18 elements are the features, the last (19th) element is the base value
-                shap_base_value = float(shap_vals[-1])
-                for idx, meta in enumerate(FEATURE_METADATA):
-                    if idx < len(shap_vals) - 1:
-                        shap_val = float(shap_vals[idx])
-                        effect = "worsening" if shap_val > 0 else "protective"
-                        desc = meta["desc_worsening"] if shap_val > 0 else meta["desc_protective"]
-                        contributions.append(ShapContribution(
-                            name=meta["name"],
-                            display_name=meta["display_name"],
-                            category=meta["category"],
-                            shap_value=shap_val,
-                            effect=effect,
-                            description=desc
-                        ))
+                pool_b = Pool(data=X_b_scaled)
+                shap_vals_b = model_b.get_feature_importance(data=pool_b, type="ShapValues")[0]
+
+                # Extract meta weights and intercept
+                w_q = float(model_meta.coef_[0])
+                w_b = float(model_meta.coef_[1])
+                intercept = float(model_meta.intercept_)
+
+                base_q = float(shap_vals_q[-1])
+                base_b = float(shap_vals_b[-1])
+                shap_base_value = w_q * base_q + w_b * base_b + intercept
+
+                # Feature mappings to indices in the sub-models
+                q_map = {
+                    "Q1_inv": 0, "Q2": 1, "Q3": 2, "Q4_inv": 3, "Q5_inv": 4, "Survey_Sum": 5
+                }
+                b_map = {
+                    "Avg_EAR": 0, "Std_EAR": 1, "Avg_MAR": 2, "Std_MAR": 3, "Exhaustion_Ratio": 4,
+                    "Positive_Percent": 5, "Neutral_Percent": 6, "Negative_Percent": 7,
+                    "Sentiment_Pos": 8, "Sentiment_Neu": 9, "Sentiment_Neg": 10, "Sentiment_Comp": 11
+                }
+
+                for meta in FEATURE_METADATA:
+                    name = meta["name"]
+                    if name in q_map:
+                        idx = q_map[name]
+                        shap_val = w_q * float(shap_vals_q[idx])
+                    elif name in b_map:
+                        idx = b_map[name]
+                        shap_val = w_b * float(shap_vals_b[idx])
+                    else:
+                        shap_val = 0.0
+
+                    effect = "worsening" if shap_val > 0 else "protective"
+                    desc = meta["desc_worsening"] if shap_val > 0 else meta["desc_protective"]
+                    contributions.append(ShapContribution(
+                        name=name,
+                        display_name=meta["display_name"],
+                        category=meta["category"],
+                        shap_value=shap_val,
+                        effect=effect,
+                        description=desc
+                    ))
             except Exception as shap_err:
                 print(f"SHAP calculation failed in predict endpoint: {shap_err}")
 

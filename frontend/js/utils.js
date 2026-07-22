@@ -260,13 +260,21 @@ function ensureShapData(pred) {
   weights["Survey_Sum"] = (survey_sum - 10) * 0.08;
 
   var ear = 0.28, mar = 0.15;
-  if (debug["EAR"]) {
-    var earMatch = debug["EAR"].match(/([\d.]+)/);
-    if (earMatch) ear = parseFloat(earMatch[1]);
+  if (debug["EAR"] !== undefined && debug["EAR"] !== null) {
+    if (typeof debug["EAR"] === "number") {
+      ear = debug["EAR"];
+    } else {
+      var earMatch = debug["EAR"].toString().match(/([\d.]+)/);
+      if (earMatch) ear = parseFloat(earMatch[1]);
+    }
   }
-  if (debug["MAR"]) {
-    var marMatch = debug["MAR"].match(/([\d.]+)/);
-    if (marMatch) mar = parseFloat(marMatch[1]);
+  if (debug["MAR"] !== undefined && debug["MAR"] !== null) {
+    if (typeof debug["MAR"] === "number") {
+      mar = debug["MAR"];
+    } else {
+      var marMatch = debug["MAR"].toString().match(/([\d.]+)/);
+      if (marMatch) mar = parseFloat(marMatch[1]);
+    }
   }
 
   weights["Avg_EAR"] = (0.28 - ear) * 0.5;

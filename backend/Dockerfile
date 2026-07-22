@@ -34,11 +34,14 @@ RUN pip install --no-cache-dir -r requirements.txt
 # 4. Explicitly Copy and Test Models (Ensure paths are correct)
 # Explicitly copy models to the working directory.
 COPY main.py .
-COPY model.joblib .
-COPY scaler.joblib .
+COPY model_q.joblib .
+COPY model_b.joblib .
+COPY model_meta.joblib .
+COPY scaler_q.joblib .
+COPY scaler_b.joblib .
 
 # This test should now run successfully if the files are named correctly.
-RUN python -c "import joblib; joblib.load('model.joblib'); joblib.load('scaler.joblib'); print('Model integrity check passed!')"
+RUN python -c "import joblib; joblib.load('model_q.joblib'); joblib.load('model_b.joblib'); joblib.load('model_meta.joblib'); joblib.load('scaler_q.joblib'); joblib.load('scaler_b.joblib'); print('Model integrity check passed!')"
 
 # 5. Copy remaining files, transfer ownership, and switch user
 COPY . /app
