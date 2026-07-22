@@ -33,10 +33,27 @@ Every time a user completes an assessment, the system compiles a multi-modal fea
 | 18| `vocal_pitch` | Voice & Tone | Average vocal frequency in Hz (indicator of vocal cord tension) |
 
 ### Pre-processing & Normalization
-1. **Ordinal questionnaire encoding**: Answers like "Rarely" or "Often" are mapped to numeric values (`0` to `6`).
+1. **Ordinal questionnaire encoding**: Answers like "Rarely" or "Often" are mapped to numeric values (`0` to `4`).
 2. **Text sentiment extraction**: Speech transcripts are evaluated using `vaderSentiment` to extract positive/negative ratios.
-3. **Scaling**: The 18 values are scaled using `scaler.joblib` to generate the final feature vector $X$.
-4. **Scoring**: The CatBoost model uses $X$ to return a continuous burnout score $S$ ranging from **`0.0` (Low/None)** to **`4.0` (Severe/Critical)**.
+3. **Scaling**: Questionnaire and biometric values are scaled independently using `scaler_q.joblib` and `scaler_b.joblib`.
+4. **Scoring**: Predictions from the Questionnaire and Biometrics sub-models are combined using the `model_meta.joblib` blending model.
+
+### Late Fusion Architecture
+
+#### Why We Implemented Late Fusion (The Problem)
+In the initial single-model (early fusion) setup, all features (subjective survey answers and objective biometrics) were fed into a single regressor. Because the synthetic training target score was mathematically dominated by the questionnaire sum, the machine learning model suffered from **feature dominance**. The model learned to almost entirely ignore the facial and vocal biometrics when survey answers were present, sometimes even leading to inverted logic (e.g. predicting a higher burnout score for positive biometrics than negative ones). To restore the objective validation power of biometrics and prevent surveys from completely overriding them, we moved to a Late Fusion architecture.
+
+#### What Late Fusion Is (The Solution)
+**Late Fusion (Decision-Level Fusion)** is an architectural pattern in multimodal machine learning where separate independent models are trained on each individual input modality first, and their individual predictions are subsequently combined (fused) by a meta-model. 
+
+In MindHaven, the prediction pipeline consists of:
+1. **Survey Sub-model ($P_Q$)**: A CatBoost model (`model_q.joblib`) trained solely on the 6 questionnaire-based features to predict a baseline burnout score.
+2. **Biometrics Sub-model ($P_B$)**: A CatBoost model (`model_b.joblib`) trained solely on the 12 facial and vocal biometrics to predict a physical/affective burnout indicator.
+3. **Blending Meta-model ($P_{\text{final}}$)**: A Linear Regression meta-model (`model_meta.joblib`) that blends the two sub-model predictions using optimized weights:
+   $$P_{\text{final}} = w_Q \cdot P_Q + w_B \cdot P_B + \text{intercept}$$
+   *(Currently, $w_Q = 0.865$, $w_B = 0.237$, and $\text{intercept} = -0.193$)*
+
+This ensures that shifts in a user's physical and vocal state directly and reliably affect the final burnout score (adjusting it by up to $\pm 10\%$), even if their self-reported survey answers remain identical.
 
 ---
 
@@ -63,12 +80,23 @@ Where:
   * *Example*: High positive emotions (`pos_pct`) subtracts `-0.18` from the score.
 
 ### Zero-Dependency Tree SHAP
-To deploy in zero-cost, lightweight environments (like Hugging Face Spaces or slim Docker images), we bypass heavy C++ libraries like the Python `shap` package. Instead, we call **CatBoost's native Tree SHAP** method:
+To deploy in zero-cost, lightweight environments (like Hugging Face Spaces or slim Docker images), we bypass heavy C++ libraries like the Python `shap` package. Instead, we call **CatBoost's native Tree SHAP** method on both sub-models independently, and scale their relative contributions using the meta-model's coefficients.
+
+For each sub-model, we get the feature contributions and base values:
 ```python
-# Native fast SHAP calculation in Python
-shap_vals = model.get_feature_importance(data=Pool(X_scaled), type="ShapValues")[0]
+# Native fast SHAP calculation for Questionnaire Sub-model
+shap_vals_q = model_q.get_feature_importance(data=Pool(X_q_scaled), type="ShapValues")[0]
+
+# Native fast SHAP calculation for Biometrics Sub-model
+shap_vals_b = model_b.get_feature_importance(data=Pool(X_b_scaled), type="ShapValues")[0]
 ```
-This returns an array where the first 18 values are the contributions ($\phi_1$ to $\phi_{18}$) and the last value is the expected base value ($\phi_0$).
+
+We then blend their contributions linearly using the meta-model weights ($w_Q$ and $w_B$):
+* **Final Base Value**: $\phi_{0,\text{final}} = w_Q \cdot \phi_{0,Q} + w_B \cdot \phi_{0,B} + \text{intercept}$
+* **Questionnaire Feature $i$ Contribution**: $\phi_{i,\text{final}} = w_Q \cdot \phi_{i,Q}$
+* **Biometrics Feature $j$ Contribution**: $\phi_{j,\text{final}} = w_B \cdot \phi_{j,B}$
+
+This returns the final contributions mapped directly to `FEATURE_METADATA` for the frontend.
 
 ---
 
