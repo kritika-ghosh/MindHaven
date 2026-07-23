@@ -71,6 +71,26 @@ except Exception as e:
     model_b = None
     model_meta = None
 
+# --- Chatbot GGUF Loading ---
+GGUF_REPO = os.getenv("GGUF_REPO", "kritika53245/mindhaven-cbt-qwen-gguf")
+GGUF_FILE = os.getenv("GGUF_FILE", "mindhaven-cbt-qwen-Q4_K_M.gguf")
+
+try:
+    from huggingface_hub import hf_hub_download
+    from llama_cpp import Llama
+    print("Downloading and initializing GGUF chatbot model...")
+    model_path = hf_hub_download(repo_id=GGUF_REPO, filename=GGUF_FILE)
+    llm = Llama(
+        model_path=model_path,
+        n_ctx=2048,
+        n_threads=2,
+        verbose=False
+    )
+    print("Model loaded successfully into RAM!")
+except Exception as e:
+    print(f"Error loading GGUF chatbot model: {e}")
+    llm = None
+
 # --- Core Functions ---
 
 def calculate_ear(eye_points, landmarks):
@@ -441,12 +461,53 @@ class PredictionResponse(BaseModel):
     shap_base_value: float
     shap_contributions: list[ShapContribution]
 
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
+class ChatRequest(BaseModel):
+    messages: list[ChatMessage]
+    temperature: float = 0.7
+    max_tokens: int = 512
+    stream: bool = False
+
 @app.get("/health")
 async def health_check():
     """
     Lightweight endpoint for uptime monitoring to keep the container awake.
     """
-    return {"status": "healthy", "timestamp": time.time()}
+    return {"status": "healthy", "timestamp": time.time(), "model": GGUF_FILE}
+
+@app.post("/v1/chat/completions")
+def chat_completions(req: ChatRequest):
+    if llm is None:
+        raise HTTPException(status_code=503, detail="Chatbot model not loaded")
+
+    formatted_messages = [m.model_dump() for m in req.messages]
+
+    if req.stream:
+        from fastapi.responses import StreamingResponse
+        def stream_generator():
+            response_stream = llm.create_chat_completion(
+                messages=formatted_messages,
+                temperature=req.temperature,
+                max_tokens=req.max_tokens,
+                stream=True
+            )
+            for chunk in response_stream:
+                yield f"data: {json.dumps(chunk)}\n\n"
+            yield "data: [DONE]\n\n"
+
+        return StreamingResponse(stream_generator(), media_type="text/event-stream")
+
+    # Non-streaming response
+    response = llm.create_chat_completion(
+        messages=formatted_messages,
+        temperature=req.temperature,
+        max_tokens=req.max_tokens,
+        stream=False
+    )
+    return response
 
 @app.post("/predict", response_model=PredictionResponse)
 async def get_prediction(

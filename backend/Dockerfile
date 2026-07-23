@@ -6,6 +6,8 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     build-essential \
     cmake \
+    git \
+    libopenblas-dev \
     libgtk2.0-dev \
     libavcodec-dev \
     libavformat-dev \
@@ -30,6 +32,10 @@ ENV DEEPFACE_HOME /app
 # 3. Copy requirements and install Python packages
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Install llama-cpp-python compiled with OpenBLAS support for fast GGUF inference on CPU
+ENV CMAKE_ARGS="-DGGML_BLAS=ON -DGGML_BLAS_VENDOR=OpenBLAS"
+RUN pip install --no-cache-dir llama-cpp-python
 
 # 4. Explicitly Copy and Test Models (Ensure paths are correct)
 # Explicitly copy models to the working directory.

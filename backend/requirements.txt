@@ -12,3 +12,5 @@ vaderSentiment
 tf_keras
 catboost
 scikit-learn
+huggingface_hub==0.23.4
+sse-starlette==2.1.2
