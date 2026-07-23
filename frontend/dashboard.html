@@ -529,25 +529,25 @@
             document.getElementById('modal-time').textContent = date.toLocaleTimeString(undefined, {hour: '2-digit', minute:'2-digit'});
 
             const score = parseFloat(r.burnout_score);
-            let vitality = 84;
+            let vitality = burnoutToVitality(score);
             let label = "Optimal Focus";
             let desc = "Your current cognitive balance is in a recovery phase.";
             const roundedScore = Math.round(score);
             
             if (roundedScore <= 0) {
-                vitality = 92; label = "Optimal Focus";
+                label = "Optimal Focus";
                 desc = "Your neuro-efficiency metrics reflect total clarity and balanced stress response thresholds.";
             } else if (roundedScore === 1) {
-                vitality = 78; label = "Mild Tension";
+                label = "Mild Tension";
                 desc = "Slight levels of stress detected. Neural channels indicate cognitive performance is high, but rest is recommended.";
             } else if (roundedScore === 2) {
-                vitality = 54; label = "Moderate Fatigue";
+                label = "Moderate Fatigue";
                 desc = "Physical and emotional reserves are running thin. Clear indications of attention exhaustion.";
             } else if (roundedScore === 3) {
-                vitality = 32; label = "High Burnout";
+                label = "High Burnout";
                 desc = "Persistent fatigue limits processing capability. Digital dark-blocks are suggested immediately.";
             } else {
-                vitality = 12; label = "Critical Exhaustion";
+                label = "Critical Exhaustion";
                 desc = "Biometric indicators show high nervous system distress. Consult mental health practitioners immediately.";
             }
 

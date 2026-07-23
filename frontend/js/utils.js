@@ -79,8 +79,31 @@ function staggerEntrance(parentSelector, childSelector, delay) {
 
 /* ── Vitality score from burnout score ──────────────────────── */
 function burnoutToVitality(score) {
-  var map = { 0: 92, 1: 78, 2: 54, 3: 32, 4: 12 };
-  return map[Math.round(score)] || 54;
+  var val = parseFloat(score);
+  if (isNaN(val)) return 54;
+  
+  // Bound to [0.0, 4.0]
+  val = Math.max(0.0, Math.min(4.0, val));
+  
+  // Define anchors
+  var anchors = [
+    { x: 0.0, y: 92 },
+    { x: 1.0, y: 78 },
+    { x: 2.0, y: 54 },
+    { x: 3.0, y: 32 },
+    { x: 4.0, y: 12 }
+  ];
+  
+  // Find segment
+  for (var i = 0; i < anchors.length - 1; i++) {
+    var a = anchors[i];
+    var b = anchors[i+1];
+    if (val >= a.x && val <= b.x) {
+      var pct = (val - a.x) / (b.x - a.x);
+      return Math.round(a.y + pct * (b.y - a.y));
+    }
+  }
+  return 54;
 }
 
 /* ── Burnout label from score ───────────────────────────────── */
