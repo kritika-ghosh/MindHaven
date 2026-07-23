@@ -471,9 +471,13 @@ class ChatMessage(BaseModel):
 
 class ChatRequest(BaseModel):
     messages: list[ChatMessage]
+    model: str = None
     temperature: float = 0.7
     max_tokens: int = 512
     stream: bool = False
+
+    class Config:
+        extra = "ignore"
 
 @app.get("/health")
 async def health_check():
