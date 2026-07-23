@@ -72,7 +72,7 @@ except Exception as e:
     model_meta = None
 
 # --- Chatbot GGUF Loading ---
-GGUF_REPO = os.getenv("GGUF_REPO", "kritika53245/mindhaven-cbt-qwen")
+GGUF_REPO = os.getenv("GGUF_REPO", "kritika53245/mindhaven-cbt-qwen-gguf")
 GGUF_FILE = os.getenv("GGUF_FILE", "mindhaven-cbt-qwen-Q4_K_M.gguf")
 llm_error = None
 
