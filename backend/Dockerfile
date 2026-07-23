@@ -35,6 +35,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Install llama-cpp-python compiled with OpenBLAS support for fast GGUF inference on CPU
 ENV CMAKE_ARGS="-DGGML_BLAS=ON -DGGML_BLAS_VENDOR=OpenBLAS"
+ENV CMAKE_BUILD_PARALLEL_LEVEL=1
+ENV MAKEFLAGS="-j 1"
 RUN pip install --no-cache-dir llama-cpp-python
 
 # 4. Explicitly Copy and Test Models (Ensure paths are correct)
