@@ -7,7 +7,7 @@ RUN apt-get update && \
     build-essential \
     cmake \
     git \
-    libopenblas-dev \
+
     libgtk2.0-dev \
     libavcodec-dev \
     libavformat-dev \
@@ -33,8 +33,7 @@ ENV DEEPFACE_HOME /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install llama-cpp-python compiled with OpenBLAS support for fast GGUF inference on CPU
-ENV CMAKE_ARGS="-DGGML_BLAS=ON -DGGML_BLAS_VENDOR=OpenBLAS"
+# Install llama-cpp-python with native GGML CPU support (safe and highly optimized)
 ENV CMAKE_BUILD_PARALLEL_LEVEL=1
 ENV MAKEFLAGS="-j 1"
 RUN pip install --no-cache-dir llama-cpp-python
