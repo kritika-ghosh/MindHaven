@@ -74,6 +74,7 @@ except Exception as e:
 # --- Chatbot GGUF Loading ---
 GGUF_REPO = os.getenv("GGUF_REPO", "kritika53245/mindhaven-cbt-qwen-gguf")
 GGUF_FILE = os.getenv("GGUF_FILE", "mindhaven-cbt-qwen-Q4_K_M.gguf")
+llm_error = None
 
 try:
     from huggingface_hub import hf_hub_download
@@ -88,8 +89,11 @@ try:
     )
     print("Model loaded successfully into RAM!")
 except Exception as e:
-    print(f"Error loading GGUF chatbot model: {e}")
+    import traceback
+    err_msg = f"{e}\n{traceback.format_exc()}"
+    print(f"Error loading GGUF chatbot model: {err_msg}")
     llm = None
+    llm_error = err_msg
 
 # --- Core Functions ---
 
@@ -476,7 +480,13 @@ async def health_check():
     """
     Lightweight endpoint for uptime monitoring to keep the container awake.
     """
-    return {"status": "healthy", "timestamp": time.time(), "model": GGUF_FILE}
+    return {
+        "status": "healthy" if llm is not None else "degraded",
+        "timestamp": time.time(),
+        "model": GGUF_FILE,
+        "llm_loaded": llm is not None,
+        "error": llm_error
+    }
 
 @app.post("/v1/chat/completions")
 def chat_completions(req: ChatRequest):
