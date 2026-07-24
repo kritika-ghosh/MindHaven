@@ -448,23 +448,51 @@ Paragraph 3: A 7-day recovery micro-plan with 3 specific, time-bound actions.
 `.trim();
 
                 const backendBase = (window.MINDHAVEN_CONFIG?.API_URL || "https://kritika53245-mindhaven.hf.space/predict").replace(/\/predict$/, "");
-                const endpoint = isCustom 
+                let endpoint = isCustom 
                     ? `${customEndpoint.replace(/\/$/, "")}/v1/chat/completions`
-                    : `${backendBase}/v1/chat/completions`;
+                    : "/api/chat";
 
-                const res = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + (isCustom ? 'dummy' : GROQ_KEY)
-                    },
-                    body: JSON.stringify({
-                        model: isCustom ? 'custom-qwen' : GROQ_MODEL,
-                        messages: [{ role: 'user', content: prompt }],
-                        max_tokens: 600,
-                        temperature: 0.7
-                    })
-                });
+                const requestPayload = {
+                    model: isCustom ? 'custom-qwen' : GROQ_MODEL,
+                    messages: [{ role: 'user', content: prompt }],
+                    max_tokens: 600,
+                    temperature: 0.7
+                };
+                const headers = {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + (isCustom ? 'dummy' : GROQ_KEY)
+                };
+
+                let res;
+                try {
+                    res = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: headers,
+                        body: JSON.stringify(requestPayload)
+                    });
+                    
+                    if (!isCustom && res.status === 404) {
+                        console.log("Vercel Serverless Function not found. Falling back to Hugging Face Space proxy...");
+                        endpoint = `${backendBase}/v1/chat/completions`;
+                        res = await fetch(endpoint, {
+                            method: 'POST',
+                            headers: headers,
+                            body: JSON.stringify(requestPayload)
+                        });
+                    }
+                } catch (fetchErr) {
+                    if (!isCustom && endpoint === "/api/chat") {
+                        console.log("Failed to contact Vercel Serverless Function. Falling back to Hugging Face Space proxy...", fetchErr);
+                        endpoint = `${backendBase}/v1/chat/completions`;
+                        res = await fetch(endpoint, {
+                            method: 'POST',
+                            headers: headers,
+                            body: JSON.stringify(requestPayload)
+                        });
+                    } else {
+                        throw fetchErr;
+                    }
+                }
 
                 if (!res.ok) throw new Error(`Groq API returned ${res.status}`);
                 const json = await res.json();
@@ -1014,9 +1042,9 @@ Once your breathing settles, we can look at the presentation. Anxiety is telling
                 const isCustom = customEndpoint !== "" && (!customEndpoint.includes("ngrok") || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
                 
                 const backendBase = (window.MINDHAVEN_CONFIG?.API_URL || "https://kritika53245-mindhaven.hf.space/predict").replace(/\/predict$/, "");
-                const endpoint = isCustom 
+                let endpoint = isCustom 
                     ? `${customEndpoint.replace(/\/$/, "")}/v1/chat/completions`
-                    : `${backendBase}/v1/chat/completions`;
+                    : "/api/chat";
                 
                 const requestBody = {
                     messages: chatHistory,
@@ -1034,11 +1062,36 @@ Once your breathing settles, we can look at the presentation. Anxiety is telling
                     'Authorization': 'Bearer ' + (isCustom ? 'dummy' : apiKey)
                 };
                 
-                const res = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: headers,
-                    body: JSON.stringify(requestBody)
-                });
+                let res;
+                try {
+                    res = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: headers,
+                        body: JSON.stringify(requestBody)
+                    });
+                    
+                    if (!isCustom && res.status === 404) {
+                        console.log("Vercel Serverless Function not found. Falling back to Hugging Face Space proxy...");
+                        endpoint = `${backendBase}/v1/chat/completions`;
+                        res = await fetch(endpoint, {
+                            method: 'POST',
+                            headers: headers,
+                            body: JSON.stringify(requestBody)
+                        });
+                    }
+                } catch (fetchErr) {
+                    if (!isCustom && endpoint === "/api/chat") {
+                        console.log("Failed to contact Vercel Serverless Function. Falling back to Hugging Face Space proxy...", fetchErr);
+                        endpoint = `${backendBase}/v1/chat/completions`;
+                        res = await fetch(endpoint, {
+                            method: 'POST',
+                            headers: headers,
+                            body: JSON.stringify(requestBody)
+                        });
+                    } else {
+                        throw fetchErr;
+                    }
+                }
                 
                 if (!res.ok) {
                     throw new Error(`Groq API error (status: ${res.status})`);
