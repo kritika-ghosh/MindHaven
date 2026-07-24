@@ -44,7 +44,7 @@ module.exports = async (req, res) => {
             messages: body.messages,
             temperature: body.temperature !== undefined ? body.temperature : 0.6,
             max_tokens: body.max_tokens !== undefined ? body.max_tokens : 400,
-            stream: body.stream || false
+            stream: false // Forced non-streaming for maximum compatibility
         };
 
         const groqResponse = await fetch(url, {
@@ -63,25 +63,8 @@ module.exports = async (req, res) => {
             return;
         }
 
-        if (payload.stream) {
-            res.setHeader('Content-Type', 'text/event-stream');
-            res.setHeader('Cache-Control', 'no-cache');
-            res.setHeader('Connection', 'keep-alive');
-
-            // Pipe stream
-            const reader = groqResponse.body.getReader();
-            const decoder = new TextDecoder();
-            
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-                res.write(decoder.decode(value));
-            }
-            res.end();
-        } else {
-            const data = await groqResponse.json();
-            res.status(200).json(data);
-        }
+        const data = await groqResponse.json();
+        res.status(200).json(data);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
