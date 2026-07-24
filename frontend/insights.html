@@ -419,12 +419,8 @@
         async function generateLLMInsight(predictionData, answers) {
             const config = window.MINDHAVEN_CONFIG || {};
             const customEndpoint = config.NGROK_URL || "";
-            const isCustom = customEndpoint !== "";
-            
-            if (!isCustom && (!GROQ_KEY || GROQ_KEY.startsWith("gsk_YOUR"))) {
-                console.log("No valid Groq key configured. Using default model suggestions.");
-                return predictionData.suggestion;
-            }
+            // Disable local ngrok overrides in production (Vercel) to avoid CORS issues
+            const isCustom = customEndpoint !== "" && (!customEndpoint.includes("ngrok") || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
             try {
                 const debug = predictionData.debug_data || {};
                 const scoreLabels = ['Low', 'Mild', 'Moderate', 'High', 'Severe'];
@@ -859,8 +855,12 @@ Once your breathing settles, we can look at the presentation. Anxiety is telling
             // Configuration Warning
             const apiKey = window.MINDHAVEN_CONFIG?.GROQ_KEY || "";
             const customUrl = window.MINDHAVEN_CONFIG?.NGROK_URL || "";
-            if (customUrl === "" && (!apiKey || apiKey.startsWith("gsk_YOUR") || apiKey === "")) {
-                appendMessage("assistant", "**Configuration Warning**: A valid Groq API Key was not found in `js/config.js`. You can still type messages, but the AI won't be able to reply until the key is configured.");
+            const isLocalNgrok = customUrl.includes("ngrok") && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1";
+            
+            if (isLocalNgrok) {
+                appendMessage("assistant", "**Configuration Warning**: A local Ngrok config was detected on a production deployment. The system has automatically fallen back to the Hugging Face Space proxy.");
+            } else if (customUrl === "" && (!apiKey || apiKey.startsWith("gsk_YOUR") || apiKey === "")) {
+                appendMessage("assistant", "**Configuration Note**: No local Groq key was detected in the browser config. The chatbot will attempt to route via your Hugging Face Space; please ensure your Hugging Face environment variables (`GROQ_API_KEY`, `GROQ_KEY`, or `GROK_KEY`) are set.");
             }
         }
 
@@ -1010,10 +1010,8 @@ Once your breathing settles, we can look at the presentation. Anxiety is telling
                 const customEndpoint = config.NGROK_URL || "";
                 const apiKey = config.GROQ_KEY || "";
                 
-                const isCustom = customEndpoint !== "";
-                if (!isCustom && (!apiKey || apiKey.startsWith("gsk_YOUR") || apiKey === "")) {
-                    throw new Error("Missing Groq API Key! Please configure GROQ_KEY in js/config.js.");
-                }
+                // Disable local ngrok overrides in production (Vercel) to avoid CORS issues
+                const isCustom = customEndpoint !== "" && (!customEndpoint.includes("ngrok") || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
                 
                 const backendBase = (window.MINDHAVEN_CONFIG?.API_URL || "https://kritika53245-mindhaven.hf.space/predict").replace(/\/predict$/, "");
                 const endpoint = isCustom 

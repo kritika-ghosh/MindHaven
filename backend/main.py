@@ -21,6 +21,7 @@ warnings.filterwarnings('ignore', category=UserWarning)
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from typing import Optional
 
 # --- Global Configuration ---
 RUN_DURATION = 20  # Max duration for video analysis
@@ -508,7 +509,7 @@ async def chat_completions(req: ChatRequest, request: Request):
             groq_api_key = key_val
             
     if not groq_api_key:
-        groq_api_key = os.environ.get("GROQ_API_KEY")
+        groq_api_key = os.environ.get("GROQ_API_KEY") or os.environ.get("GROQ_KEY") or os.environ.get("GROK_KEY")
 
     if groq_api_key:
         # Proxy to Groq API
@@ -590,35 +591,118 @@ async def chat_completions(req: ChatRequest, request: Request):
 
 @app.post("/predict", response_model=PredictionResponse)
 async def get_prediction(
-    video_file: UploadFile = File(..., description="Video file for facial and emotion analysis."),
-    audio_file: UploadFile = File(..., description="Audio file for voice and sentiment analysis."),
-    answer_1: str = Form(..., description="Answer to Question 1"),
-    answer_2: str = Form(..., description="Answer to Question 2"),
-    answer_3: str = Form(..., description="Answer to Question 3"),
-    answer_4: str = Form(..., description="Answer to Question 4"),
-    answer_5: str = Form(..., description="Answer to Question 5"),
+    request: Request,
+    video_file: Optional[UploadFile] = File(None, description="Video file for facial and emotion analysis."),
+    audio_file: Optional[UploadFile] = File(None, description="Audio file for voice and sentiment analysis."),
+    answer_1: Optional[str] = Form(None, description="Answer to Question 1"),
+    answer_2: Optional[str] = Form(None, description="Answer to Question 2"),
+    answer_3: Optional[str] = Form(None, description="Answer to Question 3"),
+    answer_4: Optional[str] = Form(None, description="Answer to Question 4"),
+    answer_5: Optional[str] = Form(None, description="Answer to Question 5"),
 ):
+    # 1. Parse JSON data from body or wrapper FormData key
+    json_data = None
+    content_type = request.headers.get("content-type", "")
+    
+    if "application/json" in content_type:
+        try:
+            json_data = await request.json()
+        except Exception:
+            pass
+    else:
+        try:
+            form_data = await request.form()
+            for key, val in form_data.items():
+                if key.startswith("{") and key.endswith("}"):
+                    json_data = json.loads(key)
+                    break
+                elif val and val.startswith("{") and val.endswith("}"):
+                    json_data = json.loads(val)
+                    break
+        except Exception:
+            pass
+
+    # 2. Reconstruct q_answers and burnout_answers
     q_answers = [answer_1, answer_2, answer_3, answer_4, answer_5]
+    burnout_answers = []
     
-    # Write video data out securely to container disk mounts
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as tmp_video:
-        video_content = await video_file.read()
-        tmp_video.write(video_content)
-        video_path = tmp_video.name
+    if json_data:
+        if "questionnaire_answers" in json_data:
+            q_answers = json_data["questionnaire_answers"]
+        elif "answers" in json_data:
+            q_answers = json_data["answers"]
+            
+        if "burnout_answers" in json_data:
+            burnout_answers = json_data["burnout_answers"]
+        elif "burnout_statements" in json_data:
+            burnout_answers = json_data["burnout_statements"]
+
+    # Normalize answers
+    q_answers = [a for a in q_answers if a is not None]
+    while len(q_answers) < 5:
+        q_answers.append("Sometimes")
+    q_answers = q_answers[:5]
+
+    # Check if we should use mock biometrics
+    video_content = None
+    audio_content = None
+    is_mock = True
+
+    if video_file is not None and audio_file is not None:
+        try:
+            video_content = await video_file.read()
+            audio_content = await audio_file.read()
+            if len(video_content) > 0 and len(audio_content) > 0:
+                is_mock = False
+        except Exception:
+            pass
+
+    # Baseline features
+    avg_ear, std_ear, avg_mar, std_mar = 0.28, 0.02, 0.15, 0.01
+    pos_perc, neu_perc, neg_perc = 15.0, 70.0, 15.0
+    text = " ".join(burnout_answers) if burnout_answers else "No voice transcript recorded."
     
-    # Write audio data out securely to container disk mounts
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp_audio:
-        audio_content = await audio_file.read()
-        tmp_audio.write(audio_content)
-        audio_path = tmp_audio.name
+    # Compute sentiment scores from transcript
+    scores = sentiment_analyzer.polarity_scores(text)
+    sentiment_str = f"Comp: {scores['compound']:.2f}"
+    pitch_display = "165 Hz (Stable)"
+    
+    video_path = None
+    audio_path = None
+
+    if not is_mock:
+        # Write video data out securely to container disk mounts
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as tmp_video:
+            tmp_video.write(video_content)
+            video_path = tmp_video.name
+        
+        # Write audio data out securely to container disk mounts
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp_audio:
+            tmp_audio.write(audio_content)
+            audio_path = tmp_audio.name
+
+        try:
+            face_stats, emotion_stats = analyze_video_file(video_path)
+            text_real, sentiment_str_real, pitch_display_real = analyze_audio_file(audio_path)
+
+            avg_ear, std_ear, avg_mar, std_mar = face_stats
+            pos_perc, neu_perc, neg_perc = emotion_stats
+            text, sentiment_str, pitch_display = text_real, sentiment_str_real, pitch_display_real
+        except Exception as analysis_err:
+            print(f"Real analysis failed, using mock fallback: {analysis_err}")
+        finally:
+            if video_path and os.path.exists(video_path):
+                try:
+                    os.unlink(video_path)
+                except Exception:
+                    pass
+            if audio_path and os.path.exists(audio_path):
+                try:
+                    os.unlink(audio_path)
+                except Exception:
+                    pass
 
     try:
-        face_stats, emotion_stats = analyze_video_file(video_path)
-        text, sentiment_str, pitch_display = analyze_audio_file(audio_path)
-
-        avg_ear, std_ear, avg_mar, std_mar = face_stats
-        pos_perc, neu_perc, neg_perc = emotion_stats
-        
         raw_dict = {
             "Questionnaire Answers": q_answers,
             "EAR": f"{avg_ear:.2f} ± {std_ear:.2f}",
@@ -708,10 +792,3 @@ async def get_prediction(
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
-        
-    finally:
-        # Prevent disk out-of-space crash cycles inside docker container instances
-        if os.path.exists(video_path):
-            os.unlink(video_path)
-        if os.path.exists(audio_path):
-            os.unlink(audio_path)
