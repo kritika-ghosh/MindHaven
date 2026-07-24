@@ -18,7 +18,7 @@ import warnings
 # Ignore user warnings for scaler inputs
 warnings.filterwarnings('ignore', category=UserWarning)
 
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -494,35 +494,99 @@ async def health_check():
     }
 
 @app.post("/v1/chat/completions")
-def chat_completions(req: ChatRequest):
-    if llm is None:
-        raise HTTPException(status_code=503, detail="Chatbot model not loaded")
+async def chat_completions(req: ChatRequest, request: Request):
+    import urllib.request
+    import json
+    
+    # Determine the Groq API Key
+    auth_header = request.headers.get("Authorization")
+    groq_api_key = None
+    
+    if auth_header and auth_header.startswith("Bearer "):
+        key_val = auth_header.split(" ", 1)[1]
+        if key_val and not key_val.startswith("dummy") and not key_val.startswith("gsk_YOUR"):
+            groq_api_key = key_val
+            
+    if not groq_api_key:
+        groq_api_key = os.environ.get("GROQ_API_KEY")
 
-    formatted_messages = [m.model_dump() for m in req.messages]
-
-    if req.stream:
-        from fastapi.responses import StreamingResponse
-        def stream_generator():
-            response_stream = llm.create_chat_completion(
-                messages=formatted_messages,
-                temperature=req.temperature,
-                max_tokens=req.max_tokens,
-                stream=True
+    if groq_api_key:
+        # Proxy to Groq API
+        url = "https://api.groq.com/openai/v1/chat/completions"
+        headers = {
+            "Authorization": f"Bearer {groq_api_key}",
+            "Content-Type": "application/json",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)"
+        }
+        
+        # Prepare payload
+        payload = {
+            "model": req.model or "llama-3.3-70b-versatile",
+            "messages": [m.model_dump() for m in req.messages],
+            "temperature": req.temperature,
+            "max_tokens": req.max_tokens,
+            "stream": req.stream
+        }
+        
+        # Map models if needed
+        if payload["model"] == "custom-qwen" or payload["model"] == "mindhaven-cbt":
+            payload["model"] = "llama-3.3-70b-versatile"
+            
+        try:
+            req_obj = urllib.request.Request(
+                url,
+                data=json.dumps(payload).encode("utf-8"),
+                headers=headers,
+                method="POST"
             )
-            for chunk in response_stream:
-                yield f"data: {json.dumps(chunk)}\n\n"
-            yield "data: [DONE]\n\n"
-
-        return StreamingResponse(stream_generator(), media_type="text/event-stream")
-
-    # Non-streaming response
-    response = llm.create_chat_completion(
-        messages=formatted_messages,
-        temperature=req.temperature,
-        max_tokens=req.max_tokens,
-        stream=False
+            
+            if req.stream:
+                from fastapi.responses import StreamingResponse
+                def stream_generator():
+                    try:
+                        with urllib.request.urlopen(req_obj) as response:
+                            for line in response:
+                                yield line
+                    except Exception as stream_err:
+                        yield f"data: {json.dumps({'error': str(stream_err)})}\n\n".encode("utf-8")
+                        yield b"data: [DONE]\n\n"
+                return StreamingResponse(stream_generator(), media_type="text/event-stream")
+            else:
+                with urllib.request.urlopen(req_obj) as response:
+                    res_body = response.read()
+                    return json.loads(res_body.decode("utf-8"))
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Groq API Proxy error: {str(e)}")
+            
+    # Fallback to local GGUF if available
+    if llm is not None:
+        formatted_messages = [m.model_dump() for m in req.messages]
+        if req.stream:
+            from fastapi.responses import StreamingResponse
+            def stream_generator_gguf():
+                response_stream = llm.create_chat_completion(
+                    messages=formatted_messages,
+                    temperature=req.temperature,
+                    max_tokens=req.max_tokens,
+                    stream=True
+                )
+                for chunk in response_stream:
+                    yield f"data: {json.dumps(chunk)}\n\n"
+                yield "data: [DONE]\n\n"
+            return StreamingResponse(stream_generator_gguf(), media_type="text/event-stream")
+        
+        response = llm.create_chat_completion(
+            messages=formatted_messages,
+            temperature=req.temperature,
+            max_tokens=req.max_tokens,
+            stream=False
+        )
+        return response
+        
+    raise HTTPException(
+        status_code=400, 
+        detail="No valid Groq API Key provided in Authorization header or server environment, and local GGUF model is not loaded."
     )
-    return response
 
 @app.post("/predict", response_model=PredictionResponse)
 async def get_prediction(

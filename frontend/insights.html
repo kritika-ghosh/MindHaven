@@ -451,9 +451,10 @@ Paragraph 2: The most important immediate action they should take today.
 Paragraph 3: A 7-day recovery micro-plan with 3 specific, time-bound actions.
 `.trim();
 
+                const backendBase = (window.MINDHAVEN_CONFIG?.API_URL || "https://kritika53245-mindhaven.hf.space/predict").replace(/\/predict$/, "");
                 const endpoint = isCustom 
                     ? `${customEndpoint.replace(/\/$/, "")}/v1/chat/completions`
-                    : "https://api.groq.com/openai/v1/chat/completions";
+                    : `${backendBase}/v1/chat/completions`;
 
                 const res = await fetch(endpoint, {
                     method: 'POST',
@@ -1014,9 +1015,10 @@ Once your breathing settles, we can look at the presentation. Anxiety is telling
                     throw new Error("Missing Groq API Key! Please configure GROQ_KEY in js/config.js.");
                 }
                 
+                const backendBase = (window.MINDHAVEN_CONFIG?.API_URL || "https://kritika53245-mindhaven.hf.space/predict").replace(/\/predict$/, "");
                 const endpoint = isCustom 
                     ? `${customEndpoint.replace(/\/$/, "")}/v1/chat/completions`
-                    : "https://api.groq.com/openai/v1/chat/completions";
+                    : `${backendBase}/v1/chat/completions`;
                 
                 const requestBody = {
                     messages: chatHistory,
@@ -1030,11 +1032,9 @@ Once your breathing settles, we can look at the presentation. Anxiety is telling
                 }
                 
                 const headers = {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + (isCustom ? 'dummy' : apiKey)
                 };
-                if (!isCustom) {
-                    headers.Authorization = `Bearer ${apiKey}`;
-                }
                 
                 const res = await fetch(endpoint, {
                     method: 'POST',
