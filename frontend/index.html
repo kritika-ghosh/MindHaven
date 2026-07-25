@@ -25,28 +25,37 @@
         <div class="floating-sphere w-[400px] h-[400px] top-1/2 -right-20 opacity-20" style="animation-delay: -5s;"></div>
     </div>
 
-    <!-- Header -->
-    <header class="w-full flex justify-between items-center px-margin-mobile md:px-margin-desktop py-5 shadow-sm z-50" style="background:var(--col-nav-bg);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--col-border);">
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary shadow-lg shadow-primary/20">
-                <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">psychology</span>
-            </div>
-            <span class="font-title-md text-xl font-extrabold tracking-tight text-on-surface">MindHaven</span>
+    <!-- Top Navigation Bar -->
+    <header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-5 md:px-16 py-4 backdrop-blur-xl border-b border-white/20 transition-all duration-300" style="background:var(--col-nav-bg);backdrop-filter:blur(20px);">
+        <div class="flex items-center gap-2">
+            <a href="index.html" class="w-8 h-8 rounded-full flex items-center justify-center text-white flex-shrink-0" style="background:var(--col-primary-glow)">
+                <span class="material-symbols-outlined text-[20px]" style="font-variation-settings:'FILL' 1">psychology</span>
+            </a>
+            <span class="font-extrabold text-lg tracking-tight" style="color:var(--col-text-primary)">MindHaven</span>
         </div>
-        <div class="flex gap-6 items-center">
-            <a href="about.html" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors">About Us</a>
+        <nav class="hidden md:flex gap-8 items-center">
+            <a href="about.html" style="font-size:0.85rem;font-weight:700;color:var(--col-text-secondary);text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='var(--col-primary)'" onmouseout="this.style.color='var(--col-text-secondary)'">About Us</a>
+            <a href="assess.html"   style="font-size:0.85rem;font-weight:700;color:var(--col-text-secondary);text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='var(--col-primary)'" onmouseout="this.style.color='var(--col-text-secondary)'">Assess</a>
+            <a href="insights.html"  style="font-size:0.85rem;font-weight:700;color:var(--col-text-secondary);text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='var(--col-primary)'" onmouseout="this.style.color='var(--col-text-secondary)'">Insights</a>
+            <a href="dashboard.html" style="font-size:0.85rem;font-weight:700;color:var(--col-text-secondary);text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='var(--col-primary)'" onmouseout="this.style.color='var(--col-text-secondary)'">Dashboard</a>
+            <a href="breathe.html" style="font-size:0.85rem;font-weight:700;color:var(--col-text-secondary);text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='var(--col-primary)'" onmouseout="this.style.color='var(--col-text-secondary)'">Breathe</a>
+        </nav>
+        <div class="flex items-center gap-3 flex-shrink-0">
             <button onclick="toggleTheme()" class="theme-toggle" aria-label="Toggle theme">
                 <span class="material-symbols-outlined theme-icon-light">light_mode</span>
                 <span class="material-symbols-outlined theme-icon-dark">dark_mode</span>
             </button>
-            <a href="auth.html" id="auth-btn" class="px-6 py-2.5 text-on-surface font-semibold text-sm rounded-full transition-all active:scale-95 shadow-sm" style="background:var(--col-glass-bg);border:1px solid var(--col-glass-border);">
+            <a href="auth.html" id="auth-btn" class="px-5 py-2 text-on-surface font-semibold text-xs rounded-full transition-all active:scale-95 shadow-sm" style="background:var(--col-glass-bg);border:1px solid var(--col-glass-border);">
                 Sign In
             </a>
+            <div id="user-profile-avatar" class="hidden w-10 h-10 rounded-full overflow-hidden border-2" style="border-color:var(--col-border-active)">
+                <img alt="Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAc6gUeyepdAYeiT1kNrp5-bdopO8mAEmM2WIzSh9bpb2Y8TkI54s9vjF4LOjA-CNNSNpSIm2Nafm88rhjVUOlTI8-roRmdfUWKGWgE_3pEHvtFLMdpNR54iDmZ10yU7khzKni1gysp2QOiwlfBItm6VE2jqvz2_7DYcsgWy_MT8xRh26dZs3VT8biI-c1qOrW-itV65RWqBh47nVVfQNZsyeyEZK6p5YBW1aXF5mY1SvjDylraJKV-3IumaI8po6FbnGl31hDdjQ"/>
+            </div>
         </div>
     </header>
 
     <!-- Main Hero -->
-    <main class="flex-1 flex flex-col items-center justify-center text-center px-margin-mobile pt-16 pb-20 relative z-10 max-w-4xl mx-auto">
+    <main class="flex-1 flex flex-col items-center justify-center text-center px-margin-mobile pt-32 pb-20 relative z-10 max-w-4xl mx-auto">
         <div class="space-y-6">
             <div class="hero-badge inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-primary font-bold text-xs uppercase tracking-wider mb-2" style="background:rgba(124,58,237,0.08);border:1px solid var(--col-border-active);">
                 <span class="material-symbols-outlined text-sm">auto_awesome</span>
@@ -154,25 +163,29 @@
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             const authBtn = document.getElementById('auth-btn');
-            if (!authBtn) return;
+            const avatar = document.getElementById('user-profile-avatar');
 
             const isGuest = sessionStorage.getItem('mindhaven_guest') === 'true';
-            if (isGuest) {
-                authBtn.textContent = 'Dashboard';
-                authBtn.setAttribute('href', 'dashboard.html');
-                return;
-            }
+            const isAuth = sessionStorage.getItem('mindhaven_auth') === 'true';
+            let loggedIn = isGuest || isAuth;
 
-            if (sb) {
+            if (!loggedIn && sb) {
                 try {
                     const { data: { session } } = await sb.auth.getSession();
                     if (session) {
-                        authBtn.textContent = 'Dashboard';
-                        authBtn.setAttribute('href', 'dashboard.html');
+                        loggedIn = true;
                     }
                 } catch(e) {
                     console.error("Session check on index failed:", e);
                 }
+            }
+
+            if (loggedIn) {
+                if (authBtn) authBtn.classList.add('hidden');
+                if (avatar) avatar.classList.remove('hidden');
+            } else {
+                if (authBtn) authBtn.classList.remove('hidden');
+                if (avatar) avatar.classList.add('hidden');
             }
         });
     </script>

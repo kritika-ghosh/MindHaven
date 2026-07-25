@@ -44,28 +44,29 @@
   <!-- Page Transition Overlay -->
   <div id="page-transition-overlay" style="position:fixed;inset:0;background:radial-gradient(circle at center,#260059,#0c0814);z-index:9999;pointer-events:none;opacity:0;transition:opacity 0.5s ease;"></div>
 
-  <!-- Header -->
-  <header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-5 md:px-16 py-4 backdrop-blur-xl border-b border-white/20 shadow-sm" style="background:var(--col-nav-bg);backdrop-filter:blur(20px);">
-    <div class="flex items-center gap-3">
-      <a href="index.html" class="w-10 h-10 rounded-full flex items-center justify-center text-white shadow-lg" style="background:var(--col-primary-glow)">
-        <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">psychology</span>
+  <!-- Top Navigation Bar -->
+  <header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-5 md:px-16 py-4 backdrop-blur-xl border-b border-white/20 transition-all duration-300" style="background:var(--col-nav-bg);backdrop-filter:blur(20px);">
+    <div class="flex items-center gap-2">
+      <a href="index.html" class="w-8 h-8 rounded-full flex items-center justify-center text-white flex-shrink-0" style="background:var(--col-primary-glow)">
+        <span class="material-symbols-outlined text-[20px]" style="font-variation-settings:'FILL' 1">psychology</span>
       </a>
-      <span class="font-extrabold tracking-tight text-on-surface text-xl">MindHaven</span>
+      <span class="font-extrabold text-lg tracking-tight" style="color:var(--col-text-primary)">MindHaven</span>
     </div>
-    <div class="hidden md:flex gap-8 items-center">
-      <a class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors" href="about.html">About Us</a>
-      <span class="text-sm font-extrabold" style="color:var(--col-primary)">Assess</span>
-      <a class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors" href="insights.html">Insights</a>
-      <a class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors" href="dashboard.html">Dashboard</a>
-      <a class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors" href="breathe.html">Breathe</a>
-    
+    <nav class="hidden md:flex gap-8 items-center">
+      <a href="about.html" style="font-size:0.85rem;font-weight:700;color:var(--col-text-secondary);text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='var(--col-primary)'" onmouseout="this.style.color='var(--col-text-secondary)'">About Us</a>
+      <span                   style="font-size:0.85rem;font-weight:800;color:var(--col-primary);white-space:nowrap;">Assess</span>
+      <a href="insights.html"  style="font-size:0.85rem;font-weight:700;color:var(--col-text-secondary);text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='var(--col-primary)'" onmouseout="this.style.color='var(--col-text-secondary)'">Insights</a>
+      <a href="dashboard.html" style="font-size:0.85rem;font-weight:700;color:var(--col-text-secondary);text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='var(--col-primary)'" onmouseout="this.style.color='var(--col-text-secondary)'">Dashboard</a>
+      <a href="breathe.html" style="font-size:0.85rem;font-weight:700;color:var(--col-text-secondary);text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='var(--col-primary)'" onmouseout="this.style.color='var(--col-text-secondary)'">Breathe</a>
+    </nav>
+    <div class="flex items-center gap-3 flex-shrink-0">
       <button onclick="toggleTheme()" class="theme-toggle" aria-label="Toggle theme">
         <span class="material-symbols-outlined theme-icon-light">light_mode</span>
         <span class="material-symbols-outlined theme-icon-dark">dark_mode</span>
       </button>
-    </div>
-    <div class="w-10 h-10 rounded-full border-2 overflow-hidden" style="border-color:var(--col-primary)">
-      <img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBztPBgUikdMRMvVm0IcNyj_V_FC7lgVwYQoa0gT_EeoVPA8zk5nygf1oGRHBEtEQMPrxWClUc7YBf7klJQw9fF5-pfjK0rlkgxCbMJJMrghdtUw6JaTJM6-iovQaSrOqiarGKkV34uchNJUf87OxzbhTSwpgUyCB2qA9Zxn3QhHsOEJaNhBSyZMrtc18W70IXuxNKXkJtJCKHxinc_SmUW3_1vk-H1_kaFIU4ISLXkVY0n6St9c8YVesNCghMyMNIJDyYXotwgeg" alt="Profile"/>
+      <div class="w-10 h-10 rounded-full overflow-hidden border-2" style="border-color:var(--col-border-active)">
+        <img alt="Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAc6gUeyepdAYeiT1kNrp5-bdopO8mAEmM2WIzSh9bpb2Y8TkI54s9vjF4LOjA-CNNSNpSIm2Nafm88rhjVUOlTI8-roRmdfUWKGWgE_3pEHvtFLMdpNR54iDmZ10yU7khzKni1gysp2QOiwlfBItm6VE2jqvz2_7DYcsgWy_MT8xRh26dZs3VT8biI-c1qOrW-itV65RWqBh47nVVfQNZsyeyEZK6p5YBW1aXF5mY1SvjDylraJKV-3IumaI8po6FbnGl31hDdjQ"/>
+      </div>
     </div>
   </header>
 

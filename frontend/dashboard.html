@@ -26,9 +26,9 @@
     <div id="page-transition-overlay"></div>
 
     <!-- Top Navigation Bar -->
-    <header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-5 md:px-16 py-4 backdrop-blur-xl border-b border-white/20 target-container" style="background:var(--col-nav-bg); backdrop-filter:blur(20px); border-color:var(--col-border);">
+    <header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-5 md:px-16 py-4 backdrop-blur-xl border-b border-white/20 transition-all duration-300" style="background:var(--col-nav-bg);backdrop-filter:blur(20px);">
         <div class="flex items-center gap-2">
-            <a href="index.html" class="w-8 h-8 rounded-full flex items-center justify-center text-white flex-shrink-0" style="background:var(--col-primary)">
+            <a href="index.html" class="w-8 h-8 rounded-full flex items-center justify-center text-white flex-shrink-0" style="background:var(--col-primary-glow)">
                 <span class="material-symbols-outlined text-[20px]" style="font-variation-settings:'FILL' 1">psychology</span>
             </a>
             <span class="font-extrabold text-lg tracking-tight" style="color:var(--col-text-primary)">MindHaven</span>
@@ -42,9 +42,10 @@
         </nav>
         <div class="flex items-center gap-3 flex-shrink-0">
             <button onclick="toggleTheme()" class="theme-toggle" aria-label="Toggle theme">
-  <span class="material-symbols-outlined theme-icon-light">light_mode</span>
-  <span class="material-symbols-outlined theme-icon-dark">dark_mode</span>
-</button>\n            <div class="w-10 h-10 rounded-full overflow-hidden border-2" style="border-color:var(--col-border)">
+                <span class="material-symbols-outlined theme-icon-light">light_mode</span>
+                <span class="material-symbols-outlined theme-icon-dark">dark_mode</span>
+            </button>
+            <div class="w-10 h-10 rounded-full overflow-hidden border-2" style="border-color:var(--col-border-active)">
                 <img id="user-avatar" alt="Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAc6gUeyepdAYeiT1kNrp5-bdopO8mAEmM2WIzSh9bpb2Y8TkI54s9vjF4LOjA-CNNSNpSIm2Nafm88rhjVUOlTI8-roRmdfUWKGWgE_3pEHvtFLMdpNR54iDmZ10yU7khzKni1gysp2QOiwlfBItm6VE2jqvz2_7DYcsgWy_MT8xRh26dZs3VT8biI-c1qOrW-itV65RWqBh47nVVfQNZsyeyEZK6p5YBW1aXF5mY1SvjDylraJKV-3IumaI8po6FbnGl31hDdjQ"/>
             </div>
             <button onclick="handleLogout()" class="hidden md:flex items-center gap-1 text-xs font-bold text-red-500 hover:text-red-700 bg-white/20 border border-white/40 px-3 py-1.5 rounded-full transition-all">
