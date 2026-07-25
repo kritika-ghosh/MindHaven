@@ -213,17 +213,146 @@
             </div>
         </section>
 
-        <!-- Image Interaction Section -->
-        <section class="relative h-[450px] rounded-[3rem] overflow-hidden group shadow-2xl scroll-section">
-            <img class="w-full h-full object-cover scale-105 group-hover:scale-100 transition-transform duration-1000 brightness-90" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDvzozH8r-68l57_2qIs-g4J9_FXn4Y0yE_TvtGoi6l56YZ0QI51zY5uAtV7-nSIvBZe74Rr4NcNAve8SCHczsn9Y6kKeddKytpKRtA9HBYtMK3zTCi30Ur9j_lEG1dfTsVQ7mrlcFpNMK7dNUJtS35e58-15uhKh6ygaQFTRfVsjrWVWh1z3Lipi1xX2BL36oxsC1k9vzZ0Rq6JmsFkStopinwK0YIqZqK5OVAfkV5GRRDeuMvd41FCHnOi_EOcjiLx1XCt0VXXw" alt="Meditation"/>
-            <div class="absolute inset-0 bg-gradient-to-t from-primary/80 via-primary/20 to-transparent flex items-end p-8 md:p-12">
-                <div class="max-w-xl space-y-6">
-                    <h3 class="text-2xl md:text-4xl font-extrabold text-white drop-shadow-md leading-tight">Unlock more profound insights through focused breathing.</h3>
-                    <a href="breathe.html" class="pill-3d px-8 py-4 text-white rounded-full font-bold flex items-center gap-2 no-underline">
-                        <span class="material-symbols-outlined">air</span>
-                        Start Breathing Exercise
-                    </a>
-                </div>
+        <!-- Image/Animation Interaction Section -->
+        <section class="glass-card rounded-[3rem] overflow-hidden p-8 md:p-12 lg:p-16 flex flex-col md:flex-row items-center justify-between gap-8 scroll-section relative border border-white/10 shadow-2xl">
+            <!-- Background gradient effects that rotate or float -->
+            <div class="absolute inset-0 bg-gradient-to-tr from-primary/5 via-secondary/5 to-transparent pointer-events-none"></div>
+            
+            <div class="max-w-xl space-y-6 z-10 text-left">
+                <span class="text-xs font-bold uppercase tracking-widest text-primary opacity-80">Pranayama Practice</span>
+                <h3 class="text-3xl md:text-5xl font-extrabold text-on-surface leading-tight tracking-tight">Unlock more profound insights through focused breathing.</h3>
+                <p class="text-sm text-on-surface-variant/80 font-medium leading-relaxed max-w-md">
+                    Calm your autonomic nervous system. Breathing exercises lower cortisol, regulate emotional fatigue, and improve real-time cognitive coherence scores.
+                </p>
+                <a href="breathe.html" class="pill-3d px-8 py-4 text-white rounded-full font-bold flex items-center gap-2 no-underline w-fit">
+                    <span class="material-symbols-outlined">air</span>
+                    Start Breathing Exercise
+                </a>
+            </div>
+            
+            <!-- Custom animated brain SVG -->
+            <div class="relative w-72 h-72 md:w-[320px] md:h-[320px] lg:w-[350px] lg:h-[350px] flex items-center justify-center z-10 flex-shrink-0">
+                <!-- Glowing backlights -->
+                <div class="absolute w-48 h-48 bg-primary/20 rounded-full blur-[80px] animate-pulse"></div>
+                <div class="absolute w-36 h-36 bg-secondary/15 rounded-full blur-[60px] animate-pulse" style="animation-delay: 1.5s"></div>
+                
+                <svg viewBox="0 0 320 280" class="w-full h-full relative z-10">
+                    <style>
+                        .brain-node {
+                            transform-origin: center;
+                            animation: nodePulse 2.4s ease-in-out infinite;
+                        }
+                        .brain-path {
+                            stroke-dasharray: 6 150;
+                            stroke-dashoffset: 0;
+                            animation: signalTravel 4s linear infinite;
+                        }
+                        @keyframes nodePulse {
+                            0%, 100% {
+                                transform: scale(0.85);
+                                opacity: 0.4;
+                            }
+                            50% {
+                                transform: scale(1.2);
+                                opacity: 1;
+                            }
+                        }
+                        @keyframes signalTravel {
+                            0% {
+                                stroke-dashoffset: 200;
+                            }
+                            100% {
+                                stroke-dashoffset: 0;
+                            }
+                        }
+                    </style>
+                    <defs>
+                        <!-- Fades and gradients for lines -->
+                        <linearGradient id="left-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="var(--col-primary)" stop-opacity="0.8"/>
+                            <stop offset="100%" stop-color="var(--col-secondary)" stop-opacity="0.3"/>
+                        </linearGradient>
+                        <linearGradient id="right-grad" x1="100%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="var(--col-secondary)" stop-opacity="0.8"/>
+                            <stop offset="100%" stop-color="var(--col-primary)" stop-opacity="0.3"/>
+                        </linearGradient>
+                    </defs>
+                    
+                    <!-- Faint brain lobe backgrounds -->
+                    <path d="M 160 40 C 110 40, 70 80, 70 140 C 70 180, 95 200, 120 205 C 130 220, 140 230, 145 250 H 175 C 180 230, 190 220, 200 205 C 225 200, 250 180, 250 140 C 250 80, 210 40, 160 40 Z" 
+                          fill="none" stroke="var(--col-primary)" stroke-width="2" stroke-opacity="0.12" stroke-dasharray="4 4" />
+                    
+                    <!-- LEFT HEMISPHERE PATHS -->
+                    <!-- Outer cortex curve -->
+                    <path d="M 160 40 C 120 40, 80 70, 75 130 C 70 180, 100 200, 130 215 C 145 220, 150 235, 150 250" 
+                          fill="none" stroke="url(#left-grad)" stroke-width="2.5" stroke-linecap="round" class="brain-path" />
+                    <!-- Inner structural paths -->
+                    <path d="M 160 90 C 120 95, 95 120, 105 160" fill="none" stroke="var(--col-primary)" stroke-opacity="0.35" stroke-width="1.5" />
+                    <path d="M 130 45 C 120 90, 140 120, 140 170" fill="none" stroke="var(--col-primary)" stroke-opacity="0.35" stroke-width="1.5" />
+                    <path d="M 100 60 C 105 100, 115 130, 140 130" fill="none" stroke="var(--col-primary)" stroke-opacity="0.35" stroke-width="1.5" />
+                    <path d="M 75 90 C 95 110, 115 110, 130 215" fill="none" stroke="var(--col-primary)" stroke-opacity="0.35" stroke-width="1.5" />
+                    <path d="M 75 130 C 100 135, 115 160, 160 170" fill="none" stroke="var(--col-primary)" stroke-opacity="0.35" stroke-width="1.5" />
+                    <path d="M 100 200 C 115 180, 140 170, 160 220" fill="none" stroke="var(--col-primary)" stroke-opacity="0.35" stroke-width="1.5" />
+
+                    <!-- RIGHT HEMISPHERE PATHS -->
+                    <!-- Outer cortex curve -->
+                    <path d="M 160 40 C 200 40, 240 70, 245 130 C 250 180, 220 200, 190 215 C 175 220, 170 235, 170 250" 
+                          fill="none" stroke="url(#right-grad)" stroke-width="2.5" stroke-linecap="round" class="brain-path" />
+                    <!-- Inner structural paths -->
+                    <path d="M 160 90 C 200 95, 225 120, 215 160" fill="none" stroke="var(--col-secondary)" stroke-opacity="0.35" stroke-width="1.5" />
+                    <path d="M 190 45 C 200 90, 180 120, 180 170" fill="none" stroke="var(--col-secondary)" stroke-opacity="0.35" stroke-width="1.5" />
+                    <path d="M 220 60 C 215 100, 205 130, 180 130" fill="none" stroke="var(--col-secondary)" stroke-opacity="0.35" stroke-width="1.5" />
+                    <path d="M 245 90 C 225 110, 205 110, 190 215" fill="none" stroke="var(--col-secondary)" stroke-opacity="0.35" stroke-width="1.5" />
+                    <path d="M 245 130 C 220 135, 205 160, 160 170" fill="none" stroke="var(--col-secondary)" stroke-opacity="0.35" stroke-width="1.5" />
+                    <path d="M 220 200 C 205 180, 180 170, 160 220" fill="none" stroke="var(--col-secondary)" stroke-opacity="0.35" stroke-width="1.5" />
+
+                    <!-- STEM AND CEREBELLUM -->
+                    <path d="M 150 250 L 150 270 M 170 250 L 170 270 M 160 220 L 160 250" fill="none" stroke="var(--col-primary)" stroke-width="2" stroke-opacity="0.4" />
+                    <!-- Cerebellum lines -->
+                    <path d="M 190 215 C 195 230, 210 230, 200 245 M 220 200 C 225 215, 215 225, 210 230" fill="none" stroke="var(--col-secondary)" stroke-opacity="0.3" stroke-width="1.5" />
+
+                    <!-- PULSING NODES (CIRCLES) -->
+                    <!-- Center & Stem Nodes -->
+                    <circle cx="160" cy="40" r="5" fill="var(--col-primary-glow)" class="brain-node" style="animation-delay: 0s" />
+                    <circle cx="160" cy="90" r="4.5" fill="var(--col-primary-glow)" class="brain-node" style="animation-delay: 0.6s" />
+                    <circle cx="160" cy="170" r="4.5" fill="var(--col-secondary)" class="brain-node" style="animation-delay: 1.2s" />
+                    <circle cx="160" cy="220" r="5" fill="var(--col-primary-glow)" class="brain-node" style="animation-delay: 0.3s" />
+                    <circle cx="150" cy="250" r="4" fill="var(--col-primary-glow)" class="brain-node" style="animation-delay: 0.9s" />
+                    <circle cx="170" cy="250" r="4" fill="var(--col-primary-glow)" class="brain-node" style="animation-delay: 1.5s" />
+                    <circle cx="160" cy="270" r="5" fill="var(--col-secondary)" class="brain-node" style="animation-delay: 2.1s" />
+
+                    <!-- Left Lobe Nodes -->
+                    <circle cx="130" cy="45" r="4" fill="var(--col-primary-glow)" class="brain-node" style="animation-delay: 0.2s" />
+                    <circle cx="100" cy="60" r="4" fill="var(--col-primary-glow)" class="brain-node" style="animation-delay: 0.8s" />
+                    <circle cx="75" cy="90" r="4.5" fill="var(--col-primary-glow)" class="brain-node" style="animation-delay: 1.4s" />
+                    <circle cx="65" cy="130" r="5" fill="var(--col-primary-glow)" class="brain-node" style="animation-delay: 0.4s" />
+                    <circle cx="75" cy="170" r="4" fill="var(--col-primary-glow)" class="brain-node" style="animation-delay: 1.0s" />
+                    <circle cx="100" cy="200" r="4" fill="var(--col-primary-glow)" class="brain-node" style="animation-delay: 1.6s" />
+                    <circle cx="130" cy="215" r="4.5" fill="var(--col-primary-glow)" class="brain-node" style="animation-delay: 2.2s" />
+                    <circle cx="130" cy="90" r="3.5" fill="var(--col-primary)" class="brain-node" style="animation-delay: 0.5s" />
+                    <circle cx="105" cy="120" r="3.5" fill="var(--col-primary)" class="brain-node" style="animation-delay: 1.1s" />
+                    <circle cx="115" cy="160" r="3.5" fill="var(--col-primary)" class="brain-node" style="animation-delay: 1.7s" />
+                    <circle cx="140" cy="130" r="3.5" fill="var(--col-primary)" class="brain-node" style="animation-delay: 0.7s" />
+                    <circle cx="140" cy="170" r="3.5" fill="var(--col-primary)" class="brain-node" style="animation-delay: 1.3s" />
+
+                    <!-- Right Lobe Nodes -->
+                    <circle cx="190" cy="45" r="4" fill="var(--col-secondary)" class="brain-node" style="animation-delay: 0.3s" />
+                    <circle cx="220" cy="60" r="4" fill="var(--col-secondary)" class="brain-node" style="animation-delay: 0.9s" />
+                    <circle cx="245" cy="90" r="4.5" fill="var(--col-secondary)" class="brain-node" style="animation-delay: 1.5s" />
+                    <circle cx="255" cy="130" r="5" fill="var(--col-secondary)" class="brain-node" style="animation-delay: 0.5s" />
+                    <circle cx="245" cy="170" r="4" fill="var(--col-secondary)" class="brain-node" style="animation-delay: 1.1s" />
+                    <circle cx="220" cy="200" r="4" fill="var(--col-secondary)" class="brain-node" style="animation-delay: 1.7s" />
+                    <circle cx="190" cy="215" r="4.5" fill="var(--col-secondary)" class="brain-node" style="animation-delay: 2.3s" />
+                    <circle cx="190" cy="90" r="3.5" fill="var(--col-secondary)" class="brain-node" style="animation-delay: 0.6s" />
+                    <circle cx="215" cy="120" r="3.5" fill="var(--col-secondary)" class="brain-node" style="animation-delay: 1.2s" />
+                    <circle cx="205" cy="160" r="3.5" fill="var(--col-secondary)" class="brain-node" style="animation-delay: 1.8s" />
+                    <circle cx="180" cy="130" r="3.5" fill="var(--col-secondary)" class="brain-node" style="animation-delay: 0.8s" />
+                    <circle cx="180" cy="170" r="3.5" fill="var(--col-secondary)" class="brain-node" style="animation-delay: 1.4s" />
+                    
+                    <!-- Cerebellum & Outer Extra Nodes -->
+                    <circle cx="200" cy="245" r="3.5" fill="var(--col-secondary)" class="brain-node" style="animation-delay: 1.9s" />
+                    <circle cx="210" cy="230" r="3" fill="var(--col-secondary)" class="brain-node" style="animation-delay: 2.5s" />
+                </svg>
             </div>
         </section>
     </main>
