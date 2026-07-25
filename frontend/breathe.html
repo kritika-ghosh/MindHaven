@@ -1,20 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta name="theme-color" content="#120F17">
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>MindHaven | Pranayama Studio</title>
   <meta name="description" content="Guided pranayama breathing exercises to reduce burnout and restore mental balance."/>
   <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
   <link href="css/styles.css" rel="stylesheet"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
 
   <style>
     * { box-sizing: border-box; }
-    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { font-family: var(--font-body); }
 
     /* ── Orb ────────────────────────────────────── */
     #orb-wrap {
@@ -60,47 +62,47 @@
       padding: 4px 14px; border-radius: 99px;
       font-size: 0.68rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
     }
-    .pb-inhale { background: rgba(107,56,212,0.12); color: #6b38d4; }
-    .pb-hold   { background: rgba(111,70,185,0.12); color: #6f46b9; }
-    .pb-exhale { background: rgba(93,90,105,0.1);  color: #5d5a69; }
+    .pb-inhale { background: rgba(124,58,237,0.1); color: var(--col-primary); }
+    .pb-hold   { background: rgba(168,85,247,0.1); color: var(--col-secondary); }
+    .pb-exhale { background: rgba(107,100,132,0.1);  color: var(--col-text-tertiary); }
 
     /* ── Round dots ─────────────────────────────── */
     .rd {
       height: 8px; width: 8px; border-radius: 99px;
-      background: rgba(107,56,212,0.18);
+      background: rgba(124,58,237,0.18);
       transition: all 0.3s ease;
     }
-    .rd.done    { background: #6b38d4; }
-    .rd.current { background: #6b38d4; width: 24px; }
+    .rd.done    { background: var(--col-primary); }
+    .rd.current { background: var(--col-primary); width: 24px; }
 
     /* ── Step numbers ───────────────────────────── */
     .snum {
       min-width: 26px; height: 26px; border-radius: 50%;
-      background: rgba(107,56,212,0.1); color: #6b38d4;
+      background: rgba(124,58,237,0.1); color: var(--col-primary);
       font-weight: 800; font-size: 0.72rem;
       display: flex; align-items: center; justify-content: center;
       transition: all 0.25s ease;
     }
-    .snum.lit { background: #6b38d4; color: #fff; }
+    .snum.lit { background: var(--col-primary); color: #fff; }
 
     /* ── Technique selector ─────────────────────── */
     .tcard {
       cursor: pointer;
       transition: all 0.22s ease;
-      border: 1.5px solid rgba(255,255,255,0.45);
+      border: 1.5px solid var(--col-glass-border);
     }
     .tcard:hover { transform: translateY(-3px); }
     .tcard.sel {
-      border-color: rgba(107,56,212,0.5) !important;
-      background: rgba(107,56,212,0.07) !important;
+      border-color: var(--col-border-active) !important;
+      background: var(--col-glass-bg) !important;
       box-shadow: 0 6px 24px rgba(107,56,212,0.15);
     }
-    .tcard.sel .tname { color: #6b38d4 !important; }
-    .tcard.sel .ticon { color: #6b38d4 !important; }
+    .tcard.sel .tname { color:var(--col-primary) !important; }
+    .tcard.sel .ticon { color:var(--col-primary) !important; }
 
     /* ── Buttons ────────────────────────────────── */
     .btn-primary {
-      background: linear-gradient(135deg, #8455ef, #6b38d4);
+      background: linear-gradient(135deg, var(--col-primary-glow), var(--col-primary));
       color: #fff; font-weight: 800; font-size: 0.85rem;
       border-radius: 16px; border: none; cursor: pointer;
       display: flex; align-items: center; justify-content: center; gap: 6px;
@@ -111,14 +113,14 @@
     .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 28px rgba(107,56,212,0.35); }
     .btn-primary:active { transform: scale(0.97); }
     .btn-secondary {
-      background: rgba(255,255,255,0.35);
-      color: #1c1b1b; font-weight: 800; font-size: 0.85rem;
+      background: var(--col-glass-bg);
+      color: var(--col-text-[var(--col-primary)]); font-weight: 800; font-size: 0.85rem;
       border-radius: 16px; border: 1.5px solid rgba(255,255,255,0.6);
       cursor: pointer; padding: 14px 18px;
       display: flex; align-items: center; justify-content: center;
       transition: all 0.18s ease;
     }
-    .btn-secondary:hover { background: rgba(255,255,255,0.6); }
+    .btn-secondary:hover { background: var(--col-glass-border); }
     .btn-secondary:active { transform: scale(0.97); }
 
     /* ── Toast ──────────────────────────────────── */
@@ -135,8 +137,9 @@
     }
     #done-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   </style>
+  <script src="js/theme.js"></script>
 </head>
-<body style="background:#fcf9f8; min-height:100vh; overflow-x:hidden; color:#1c1b1b;">
+<body>
 
   <canvas id="webgl-bg"></canvas>
 
@@ -147,21 +150,26 @@
   </div>
 
   <!-- ─── Header ───────────────────────────────────── -->
-  <header style="position:fixed;top:0;left:0;width:100%;z-index:50;display:flex;justify-content:space-between;align-items:center;padding:14px 64px;backdrop-filter:blur(24px);background:rgba(252,249,248,0.35);border-bottom:1px solid rgba(255,255,255,0.22);">
+  <header style="position:fixed;top:0;left:0;width:100%;z-index:50;display:flex;justify-content:space-between;align-items:center;padding:14px 64px;backdrop-filter:blur(24px);background:var(--col-nav-bg);border-bottom:1px solid var(--col-border);">
     <div style="display:flex;align-items:center;gap:12px;">
-      <a href="index.html" style="width:40px;height:40px;border-radius:50%;background:#8455ef;display:flex;align-items:center;justify-content:center;text-decoration:none;">
+      <a href="index.html" style="width:40px;height:40px;border-radius:50%;background:var(--col-primary-glow);display:flex;align-items:center;justify-content:center;text-decoration:none;">
         <span class="material-symbols-outlined" style="color:#fff;font-variation-settings:'FILL' 1">psychology</span>
       </a>
-      <span style="font-weight:800;font-size:1.15rem;color:#1c1b1b;letter-spacing:-0.02em;">MindHaven</span>
+      <span style="font-weight:800;font-size:1.15rem;color:var(--col-text-[var(--col-primary)]);letter-spacing:-0.02em;">MindHaven</span>
     </div>
     <div class="hidden md:flex gap-8 items-center text-sm font-bold">
-      <a style="color:#494454;text-decoration:none;" href="about.html">About Us</a>
-      <a href="assess.html" style="color:#494454;text-decoration:none;">Assess</a>
-      <a style="color:#494454;text-decoration:none;" href="insights.html">Insights</a>
-      <a style="color:#494454;text-decoration:none;" href="dashboard.html">Dashboard</a>
-      <span style="color:#6b38d4;">Breathe</span>
+      <a style="color:var(--col-text-secondary);text-decoration:none;" href="about.html">About Us</a>
+      <a href="assess.html" style="color:var(--col-text-secondary);text-decoration:none;">Assess</a>
+      <a style="color:var(--col-text-secondary);text-decoration:none;" href="insights.html">Insights</a>
+      <a style="color:var(--col-text-secondary);text-decoration:none;" href="dashboard.html">Dashboard</a>
+      <span style="color:var(--col-primary);">Breathe</span>
     </div>
-    <a href="insights.html" style="display:flex;align-items:center;gap:6px;font-size:0.75rem;font-weight:700;color:#494454;text-decoration:none;padding:8px 16px;border-radius:99px;border:1px solid rgba(0,0,0,0.1);background:rgba(255,255,255,0.35);transition:all 0.2s ease;" onmouseover="this.style.background='rgba(255,255,255,0.65)'" onmouseout="this.style.background='rgba(255,255,255,0.35)'">
+    
+      <button onclick="toggleTheme()" class="theme-toggle" aria-label="Toggle theme">
+        <span class="material-symbols-outlined theme-icon-light">light_mode</span>
+        <span class="material-symbols-outlined theme-icon-dark">dark_mode</span>
+      </button>
+      <a href="insights.html" style="display:flex;align-items:center;gap:6px;font-size:0.75rem;font-weight:700;color:var(--col-text-secondary);text-decoration:none;padding:8px 16px;border-radius:99px;border:1px solid rgba(0,0,0,0.1);background:var(--col-glass-bg);transition:all 0.2s ease;" onmouseover="this.style.background='rgba(255,255,255,0.65)'" onmouseout="this.style.background='rgba(255,255,255,0.35)'">
       <span class="material-symbols-outlined" style="font-size:1rem;">arrow_back</span>
       Back to Insights
     </a>
@@ -170,25 +178,25 @@
   <main class="pb-36 md:pb-20" style="max-width:1100px;margin:0 auto;padding-top:112px;padding-left:40px;padding-right:40px;position:relative;z-index:1;">
 
     <!-- Hero -->
-    <div style="text-align:center;margin-bottom:36px;">
-      <p style="font-size:0.72rem;font-weight:800;letter-spacing:0.15em;text-transform:uppercase;color:#6b38d4;margin-bottom:10px;">Pranayama Studio</p>
-      <h1 style="font-size:clamp(2rem,5vw,3.2rem);font-weight:800;letter-spacing:-0.03em;color:#1c1b1b;margin:0 0 12px;">Guided Breathing Exercises</h1>
-      <p style="font-size:0.875rem;color:#494454;max-width:520px;margin:0 auto;line-height:1.65;">Restore your nervous system with ancient pranayama techniques. Choose a practice, follow the visual guide, and reset.</p>
+    <div class="scroll-section" style="text-align:center;margin-bottom:36px;">
+      <p style="font-size:0.72rem;font-weight:800;letter-spacing:0.15em;text-transform:uppercase;color:var(--col-primary);margin-bottom:10px;">Pranayama Studio</p>
+      <h1 style="font-size:clamp(2rem,5vw,3.2rem);font-weight:800;letter-spacing:-0.03em;color:var(--col-text-[var(--col-primary)]);margin:0 0 12px;">Guided Breathing Exercises</h1>
+      <p style="font-size:0.875rem;color:var(--col-text-secondary);max-width:520px;margin:0 auto;line-height:1.65;">Restore your nervous system with ancient pranayama techniques. Choose a practice, follow the visual guide, and reset.</p>
     </div>
 
     <!-- ─── Technique Selector ────────────────────── -->
-    <div id="tgrid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:32px;"></div>
+    <div id="tgrid" class="scroll-section" style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:32px;"></div>
 
     <!-- ─── Studio Grid ───────────────────────────── -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;" id="studio-grid">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;" id="studio-grid" class="scroll-section">
 
       <!-- LEFT: Orb + Controls -->
-      <div class="glass-card" style="border-radius:36px;border:1.5px solid rgba(255,255,255,0.5);box-shadow:0 8px 40px rgba(0,0,0,0.06);padding:36px 28px;display:flex;flex-direction:column;align-items:center;gap:20px;">
+      <div class="glass-card" style="border-radius:36px;border:1.5px solid var(--col-glass-border);box-shadow:0 8px 40px rgba(0,0,0,0.06);padding:36px 28px;display:flex;flex-direction:column;align-items:center;gap:20px;">
 
         <!-- Title -->
         <div style="text-align:center;">
-          <h2 id="s-title" style="font-size:1.2rem;font-weight:800;color:#1c1b1b;margin:0 0 4px;">Box Breathing</h2>
-          <p  id="s-sub"   style="font-size:0.72rem;color:#494454;margin:0;">4-4-4-4 · Stress Reset · 5 rounds</p>
+          <h2 id="s-title" style="font-size:1.2rem;font-weight:800;color:var(--col-text-[var(--col-primary)]);margin:0 0 4px;">Box Breathing</h2>
+          <p  id="s-sub"   style="font-size:0.72rem;color:var(--col-text-secondary);margin:0;">4-4-4-4 · Stress Reset · 5 rounds</p>
         </div>
 
         <!-- Orb -->
@@ -220,7 +228,7 @@
         <!-- Round dots -->
         <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
           <div id="round-dots" style="display:flex;gap:6px;align-items:center;"></div>
-          <p  id="round-lbl" style="font-size:0.72rem;font-weight:700;color:#494454;margin:0;">Round 1 of 5</p>
+          <p  id="round-lbl" style="font-size:0.72rem;font-weight:700;color:var(--col-text-secondary);margin:0;">Round 1 of 5</p>
         </div>
 
         <!-- Buttons -->
@@ -239,35 +247,35 @@
       <div style="display:flex;flex-direction:column;gap:16px;">
 
         <!-- Step-by-step -->
-        <div class="glass-card" style="border-radius:32px;border:1.5px solid rgba(255,255,255,0.5);box-shadow:0 4px 24px rgba(0,0,0,0.05);padding:28px;">
+        <div class="glass-card" style="border-radius:32px;border:1.5px solid var(--col-glass-border);box-shadow:0 4px 24px rgba(0,0,0,0.05);padding:28px;">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;">
-            <span class="material-symbols-outlined" style="color:#6b38d4;font-variation-settings:'FILL' 1">format_list_numbered</span>
-            <h3 style="font-size:0.95rem;font-weight:800;color:#1c1b1b;margin:0;">Step-by-Step Guide</h3>
+            <span class="material-symbols-outlined" style="color:var(--col-primary);font-variation-settings:'FILL' 1">format_list_numbered</span>
+            <h3 style="font-size:0.95rem;font-weight:800;color:var(--col-text-[var(--col-primary)]);margin:0;">Step-by-Step Guide</h3>
           </div>
           <div id="step-guide" style="display:flex;flex-direction:column;gap:14px;"></div>
         </div>
 
         <!-- Benefits -->
-        <div class="glass-card" style="border-radius:32px;border:1.5px solid rgba(255,255,255,0.5);box-shadow:0 4px 24px rgba(0,0,0,0.05);padding:28px;">
+        <div class="glass-card" style="border-radius:32px;border:1.5px solid var(--col-glass-border);box-shadow:0 4px 24px rgba(0,0,0,0.05);padding:28px;">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:18px;">
-            <span class="material-symbols-outlined" style="color:#6b38d4;font-variation-settings:'FILL' 1">favorite</span>
-            <h3 style="font-size:0.95rem;font-weight:800;color:#1c1b1b;margin:0;">Benefits</h3>
+            <span class="material-symbols-outlined" style="color:var(--col-primary);font-variation-settings:'FILL' 1">favorite</span>
+            <h3 style="font-size:0.95rem;font-weight:800;color:var(--col-text-[var(--col-primary)]);margin:0;">Benefits</h3>
           </div>
           <div id="ben-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"></div>
         </div>
 
         <!-- Tip -->
-        <div id="tip-box" style="border-radius:24px;padding:18px 20px;font-size:0.82rem;font-weight:500;line-height:1.65;background:rgba(107,56,212,0.06);border:1.5px solid rgba(107,56,212,0.16);color:#1c1b1b;">
-          <span class="material-symbols-outlined" style="font-size:1rem;vertical-align:middle;color:#6b38d4;margin-right:4px;">lightbulb</span>
-          <strong style="color:#6b38d4;">Tip:</strong>
+        <div id="tip-box" style="border-radius:24px;padding:18px 20px;font-size:0.82rem;font-weight:500;line-height:1.65;background:var(--col-glass-bg);border:1.5px solid var(--col-glass-border);color:var(--col-text-[var(--col-primary)]);">
+          <span class="material-symbols-outlined" style="font-size:1rem;vertical-align:middle;color:var(--col-primary);margin-right:4px;">lightbulb</span>
+          <strong style="color:var(--col-primary);">Tip:</strong>
           <span id="tip-text">Sit comfortably with your spine erect. Close your eyes and breathe naturally for a few moments before starting.</span>
         </div>
       </div>
     </div>
 
     <!-- ─── All Techniques Overview ────────────────── -->
-    <section style="margin-top:56px;">
-      <h2 style="font-size:1.15rem;font-weight:800;color:#1c1b1b;margin:0 0 20px;">All Techniques at a Glance</h2>
+    <section class="scroll-section" style="margin-top:56px;">
+      <h2 style="font-size:1.15rem;font-weight:800;color:var(--col-text-[var(--col-primary)]);margin:0 0 20px;">All Techniques at a Glance</h2>
       <div id="overview-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;"></div>
     </section>
 
@@ -406,8 +414,8 @@
       d.id = 'tc-' + t.id;
       d.style.cssText = 'border-radius:18px;padding:16px 8px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;';
       d.innerHTML =
-        '<span class="material-symbols-outlined ticon" style="font-size:2rem;color:#494454;font-variation-settings:\'FILL\' 1">' + t.icon + '</span>' +
-        '<p class="tname" style="font-size:0.7rem;font-weight:800;color:#1c1b1b;margin:0;line-height:1.3;">' + t.name + '</p>';
+        '<span class="material-symbols-outlined ticon" style="font-size:2rem;color:var(--col-text-secondary);font-variation-settings:\'FILL\' 1">' + t.icon + '</span>' +
+        '<p class="tname" style="font-size:0.7rem;font-weight:800;color:var(--col-text-[var(--col-primary)]);margin:0;line-height:1.3;">' + t.name + '</p>';
       d.onclick = function() { selectTech(t.id); };
       g.appendChild(d);
     });
@@ -426,11 +434,11 @@
             '<span class="material-symbols-outlined" style="color:' + t.color + ';font-variation-settings:\'FILL\' 1">' + t.icon + '</span>' +
           '</div>' +
           '<div>' +
-            '<p style="font-size:0.85rem;font-weight:800;color:#1c1b1b;margin:0 0 2px;">' + t.name + '</p>' +
-            '<p style="font-size:0.67rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#49445480;margin:0;">' + t.rounds + ' rounds</p>' +
+            '<p style="font-size:0.85rem;font-weight:800;color:var(--col-text-[var(--col-primary)]);margin:0 0 2px;">' + t.name + '</p>' +
+            '<p style="font-size:0.67rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--col-text-secondary)80;margin:0;">' + t.rounds + ' rounds</p>' +
           '</div>' +
         '</div>' +
-        '<p style="font-size:0.78rem;color:#494454;line-height:1.6;margin:0 0 12px;">' + t.steps[0] + '</p>' +
+        '<p style="font-size:0.78rem;color:var(--col-text-secondary);line-height:1.6;margin:0 0 12px;">' + t.steps[0] + '</p>' +
         '<div style="display:flex;flex-wrap:wrap;gap:6px;">' +
           t.benefits.slice(0,2).map(function(b) {
             return '<span style="font-size:0.67rem;font-weight:800;padding:3px 10px;border-radius:99px;background:' + t.color + '14;color:' + t.color + ';">' + b + '</span>';
@@ -463,7 +471,7 @@
       row.style.cssText = 'display:flex;gap:12px;align-items:flex-start;';
       row.innerHTML =
         '<div class="snum" id="sn' + i + '">' + (i + 1) + '</div>' +
-        '<p style="font-size:0.82rem;font-weight:500;color:#494454;line-height:1.65;margin:0;padding-top:3px;">' + s + '</p>';
+        '<p style="font-size:0.82rem;font-weight:500;color:var(--col-text-secondary);line-height:1.65;margin:0;padding-top:3px;">' + s + '</p>';
       sg.appendChild(row);
     });
 
@@ -472,10 +480,10 @@
     bg.innerHTML = '';
     t.benefits.forEach(function(b) {
       var card = document.createElement('div');
-      card.style.cssText = 'display:flex;align-items:center;gap:8px;border-radius:12px;padding:10px 12px;border:1.5px solid rgba(255,255,255,0.45);background:rgba(255,255,255,0.38);';
+      card.style.cssText = 'display:flex;align-items:center;gap:8px;border-radius:12px;padding:10px 12px;border:1.5px solid rgba(255,255,255,0.45);background:var(--col-glass-bg);';
       card.innerHTML =
-        '<span class="material-symbols-outlined" style="font-size:1rem;color:#6b38d4;font-variation-settings:\'FILL\' 1;flex-shrink:0;">check_circle</span>' +
-        '<span style="font-size:0.75rem;font-weight:700;color:#1c1b1b;">' + b + '</span>';
+        '<span class="material-symbols-outlined" style="font-size:1rem;color:var(--col-primary);font-variation-settings:\'FILL\' 1;flex-shrink:0;">check_circle</span>' +
+        '<span style="font-size:0.75rem;font-weight:700;color:var(--col-text-[var(--col-primary)]);">' + b + '</span>';
       bg.appendChild(card);
     });
 
@@ -724,27 +732,52 @@
   });
   </script>
     <!-- Mobile Bottom Navigation Bar -->
-    <nav class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/60 backdrop-blur-xl border-t border-white/20 flex justify-around items-center py-2 px-4 shadow-lg">
-        <a href="about.html" class="flex flex-col items-center gap-0.5 text-on-surface-variant/80 hover:text-primary transition-colors py-1">
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[var(--col-nav-bg)] backdrop-blur-xl border-t border-[var(--col-glass-border)] flex justify-around items-center py-2 px-4 shadow-lg">
+        <a href="about.html" class="flex flex-col items-center gap-0.5 text-[var(--col-text-secondary)] hover:text-[var(--col-primary)] transition-colors py-1">
             <span class="material-symbols-outlined text-xl">info</span>
             <span class="text-[10px] font-bold">About Us</span>
         </a>
-        <a href="assess.html" class="flex flex-col items-center gap-0.5 text-on-surface-variant/80 hover:text-primary transition-colors py-1">
+        <a href="assess.html" class="flex flex-col items-center gap-0.5 text-[var(--col-text-secondary)] hover:text-[var(--col-primary)] transition-colors py-1">
             <span class="material-symbols-outlined text-xl">medical_services</span>
             <span class="text-[10px] font-bold">Assess</span>
         </a>
-        <a href="insights.html" class="flex flex-col items-center gap-0.5 text-on-surface-variant/80 hover:text-primary transition-colors py-1">
+        <a href="insights.html" class="flex flex-col items-center gap-0.5 text-[var(--col-text-secondary)] hover:text-[var(--col-primary)] transition-colors py-1">
             <span class="material-symbols-outlined text-xl">insights</span>
             <span class="text-[10px] font-bold">Insights</span>
         </a>
-        <a href="dashboard.html" class="flex flex-col items-center gap-0.5 text-on-surface-variant/80 hover:text-primary transition-colors py-1">
+        <a href="dashboard.html" class="flex flex-col items-center gap-0.5 text-[var(--col-text-secondary)] hover:text-[var(--col-primary)] transition-colors py-1">
             <span class="material-symbols-outlined text-xl">dashboard</span>
             <span class="text-[10px] font-bold">Dashboard</span>
         </a>
-        <a href="breathe.html" class="flex flex-col items-center gap-0.5 text-primary transition-colors py-1">
+        <a href="breathe.html" class="flex flex-col items-center gap-0.5 text-[var(--col-primary)] transition-colors py-1">
             <span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">spa</span>
             <span class="text-[10px] font-extrabold">Breathe</span>
         </a>
     </nav>
+  <script src="js/gradual-blur.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+          gsap.registerPlugin(ScrollTrigger);
+          gsap.utils.toArray('.scroll-section').forEach(sec => {
+            gsap.from(sec, {
+              scrollTrigger: {
+                trigger: sec,
+                start: 'top 85%',
+              },
+              y: 40,
+              opacity: 0,
+              duration: 0.8,
+              ease: 'power3.out'
+            });
+          });
+      }
+      if (typeof createGradualBlur !== "undefined") {
+        createGradualBlur(document.querySelector('.fixed.inset-0'), { position: 'bottom', strength: 2, height: '6rem', divCount: 5, curve: 'bezier' });
+      }
+    });
+  </script>
 </body>
+
 </html>

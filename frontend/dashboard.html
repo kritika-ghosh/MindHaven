@@ -1,21 +1,24 @@
 <!DOCTYPE html>
-<html class="light" lang="en">
+<html lang="en">
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <meta name="theme-color" content="#120F17">
     <title>MindHaven | Biometric Dashboard</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <link href="css/styles.css" rel="stylesheet"/>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="js/theme.js"></script>
+    <script src="js/gradual-blur.js"></script>
 </head>
-<body class="bg-background text-on-background font-body-md min-h-screen overflow-x-hidden relative" style="font-family:'Plus Jakarta Sans',sans-serif;">
+<body class="bg-background text-on-background font-body-md min-h-screen overflow-x-hidden relative" style="font-family:'Inter','Plus Jakarta Sans',sans-serif;">
     <!-- WebGL Background Canvas -->
     <canvas id="webgl-bg"></canvas>
 
@@ -23,22 +26,25 @@
     <div id="page-transition-overlay"></div>
 
     <!-- Top Navigation Bar -->
-    <header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-5 md:px-16 py-4 backdrop-blur-xl border-b border-white/20" style="background:rgba(252,249,248,0.35)">
+    <header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-5 md:px-16 py-4 backdrop-blur-xl border-b border-white/20 target-container" style="background:var(--col-nav-bg); backdrop-filter:blur(20px); border-color:var(--col-border);">
         <div class="flex items-center gap-2">
-            <a href="index.html" class="w-8 h-8 rounded-full flex items-center justify-center text-white flex-shrink-0" style="background:#8455ef">
+            <a href="index.html" class="w-8 h-8 rounded-full flex items-center justify-center text-white flex-shrink-0" style="background:var(--col-primary)">
                 <span class="material-symbols-outlined text-[20px]" style="font-variation-settings:'FILL' 1">psychology</span>
             </a>
-            <span class="font-extrabold text-lg tracking-tight" style="color:#1c1b1b">MindHaven</span>
+            <span class="font-extrabold text-lg tracking-tight" style="color:var(--col-text-primary)">MindHaven</span>
         </div>
         <nav class="hidden md:flex gap-8 items-center">
-            <a href="about.html" style="font-size:0.85rem;font-weight:700;color:#494454;text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='#6b38d4'" onmouseout="this.style.color='#494454'">About Us</a>
-            <a href="assess.html"   style="font-size:0.85rem;font-weight:700;color:#494454;text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='#6b38d4'" onmouseout="this.style.color='#494454'">Assess</a>
-            <a href="insights.html"  style="font-size:0.85rem;font-weight:700;color:#494454;text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='#6b38d4'" onmouseout="this.style.color='#494454'">Insights</a>
-            <span                   style="font-size:0.85rem;font-weight:800;color:#6b38d4;white-space:nowrap;">Dashboard</span>
-            <a href="breathe.html" style="font-size:0.85rem;font-weight:700;color:#494454;text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='#6b38d4'" onmouseout="this.style.color='#494454'">Breathe</a>
+            <a href="about.html" style="font-size:0.85rem;font-weight:700;color:var(--col-text-secondary);text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='var(--col-primary)'" onmouseout="this.style.color='var(--col-text-secondary)'">About Us</a>
+            <a href="assess.html"   style="font-size:0.85rem;font-weight:700;color:var(--col-text-secondary);text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='var(--col-primary)'" onmouseout="this.style.color='var(--col-text-secondary)'">Assess</a>
+            <a href="insights.html"  style="font-size:0.85rem;font-weight:700;color:var(--col-text-secondary);text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='var(--col-primary)'" onmouseout="this.style.color='var(--col-text-secondary)'">Insights</a>
+            <span                   style="font-size:0.85rem;font-weight:800;color:var(--col-primary);white-space:nowrap;">Dashboard</span>
+            <a href="breathe.html" style="font-size:0.85rem;font-weight:700;color:var(--col-text-secondary);text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='var(--col-primary)'" onmouseout="this.style.color='var(--col-text-secondary)'">Breathe</a>
         </nav>
         <div class="flex items-center gap-3 flex-shrink-0">
-            <div class="w-10 h-10 rounded-full overflow-hidden border-2" style="border-color:rgba(107,56,212,0.25)">
+            <button onclick="toggleTheme()" class="theme-toggle" aria-label="Toggle theme">
+  <span class="material-symbols-outlined theme-icon-light">light_mode</span>
+  <span class="material-symbols-outlined theme-icon-dark">dark_mode</span>
+</button>\n            <div class="w-10 h-10 rounded-full overflow-hidden border-2" style="border-color:var(--col-border)">
                 <img id="user-avatar" alt="Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAc6gUeyepdAYeiT1kNrp5-bdopO8mAEmM2WIzSh9bpb2Y8TkI54s9vjF4LOjA-CNNSNpSIm2Nafm88rhjVUOlTI8-roRmdfUWKGWgE_3pEHvtFLMdpNR54iDmZ10yU7khzKni1gysp2QOiwlfBItm6VE2jqvz2_7DYcsgWy_MT8xRh26dZs3VT8biI-c1qOrW-itV65RWqBh47nVVfQNZsyeyEZK6p5YBW1aXF5mY1SvjDylraJKV-3IumaI8po6FbnGl31hDdjQ"/>
             </div>
             <button onclick="handleLogout()" class="hidden md:flex items-center gap-1 text-xs font-bold text-red-500 hover:text-red-700 bg-white/20 border border-white/40 px-3 py-1.5 rounded-full transition-all">
@@ -51,13 +57,13 @@
     <main class="pt-32 pb-36 md:pb-24 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto space-y-12 relative z-10">
         
         <!-- Header / Intro -->
-        <section class="flex flex-col md:flex-row md:justify-between md:items-end gap-6 border-b border-white/20 pb-8">
+        <section class="scroll-section flex flex-col md:flex-row md:justify-between md:items-end gap-6 border-b border-white/20 pb-8">
             <div class="space-y-2">
                 <span class="text-xs font-bold uppercase tracking-widest text-primary opacity-80" id="welcome-subtitle">Session Archive &amp; Telemetry</span>
                 <h1 class="text-3xl md:text-5xl font-extrabold text-on-surface tracking-tight" id="welcome-title">Your Burnout Analysis</h1>
             </div>
             <div class="flex flex-wrap gap-3">
-                <a href="assess.html" class="pill-3d px-6 py-3 rounded-full text-white font-bold text-sm flex items-center gap-2 shadow-lg">
+                <a href="assess.html" class="pill-3d px-6 py-3 rounded-full text-white font-bold text-sm flex items-center gap-2 shadow-lg hover:scale-105 transition-transform">
                     <span class="material-symbols-outlined text-lg">medical_services</span>
                     New Assessment
                 </a>
@@ -68,7 +74,7 @@
         </section>
 
         <!-- Stat Cards -->
-        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <section class="scroll-section grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <!-- Card 1: Burnout Trajectory -->
             <div class="glass-card p-6 rounded-3xl border border-white/50 shadow flex items-center gap-4 hover:scale-[1.02] transition-all duration-300">
                 <div class="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
@@ -122,7 +128,7 @@
         </section>
 
         <!-- Charts Section -->
-        <section class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <section class="scroll-section grid grid-cols-1 lg:grid-cols-12 gap-8">
             <!-- Line Chart: Burnout Trajectory -->
             <div class="glass-card p-6 md:p-8 rounded-[2rem] border border-white/50 shadow lg:col-span-8 flex flex-col justify-between hover:scale-[1.01] transition-transform duration-300">
                 <div class="mb-4">
@@ -147,7 +153,7 @@
         </section>
 
         <!-- Historical Archive Table -->
-        <section class="glass-card p-6 md:p-8 rounded-[2rem] border border-white/50 shadow space-y-6">
+        <section class="scroll-section glass-card p-6 md:p-8 rounded-[2rem] border border-white/50 shadow space-y-6">
             <div>
                 <h3 class="font-extrabold text-xl text-on-surface">Telemetry Archive</h3>
                 <p class="text-xs text-on-surface-variant/80">All records retrieved from your neural assessment nodes. Select any row to inspect detail reports.</p>
@@ -156,7 +162,7 @@
             <div class="overflow-x-auto w-full">
                 <table class="w-full text-left border-collapse">
                     <thead>
-                        <tr class="border-b border-white/20 text-xs font-bold uppercase tracking-wider text-on-surface-variant/60">
+                        <tr class="border-b border-white/20 text-xs font-bold uppercase tracking-wider text-on-surface-variant/60" style="border-color:var(--col-border)">
                             <th class="py-3 px-4">Date &amp; Time</th>
                             <th class="py-3 px-4">Burnout Level</th>
                             <th class="py-3 px-4 text-center">Vitality</th>
@@ -164,7 +170,7 @@
                             <th class="py-3 px-4">Voice Sentiment Summary</th>
                         </tr>
                     </thead>
-                    <tbody id="history-table-body" class="divide-y divide-white/10 text-sm font-semibold">
+                    <tbody id="history-table-body" class="divide-y divide-white/10 text-sm font-semibold" style="border-color:var(--col-border)">
                         <!-- Loaded dynamically -->
                         <tr>
                             <td colspan="5" class="text-center py-8 text-on-surface-variant/60">Retrieving secure biometric telemetry...</td>
@@ -198,6 +204,12 @@
             await loadDashboardData();
         });
 
+        document.addEventListener('themeToggled', () => {
+            if (window.dashboardRecords) {
+                renderDashboardCharts(window.dashboardRecords);
+            }
+        });
+        
         async function loadDashboardData() {
             let records = [];
             const isGuest = sessionStorage.getItem('mindhaven_guest') === 'true';
@@ -480,7 +492,7 @@
                             position: 'top',
                             labels: {
                                 font: { family: 'Plus Jakarta Sans', size: 11, weight: 'bold' },
-                                color: '#4b5563',
+                                color: textColor,
                                 boxWidth: 12,
                                 usePointStyle: true,
                                 pointStyle: 'circle'
@@ -509,13 +521,16 @@
                         y: {
                             min: 0,
                             max: 4,
+                            grid: { color: gridColor },
                             ticks: { 
                                 stepSize: 1,
+                                color: textColor,
                                 font: { family: 'Plus Jakarta Sans', weight: 'bold' } 
                             }
                         },
                         x: {
-                            ticks: { font: { family: 'Plus Jakarta Sans', weight: 'bold' } }
+                            grid: { color: gridColor },
+                            ticks: { color: textColor, font: { family: 'Plus Jakarta Sans', weight: 'bold' } }
                         }
                     }
                 },
@@ -590,11 +605,13 @@
                     },
                     scales: {
                         r: {
-                            angleLines: { display: true },
+                            angleLines: { display: true, color: gridColor },
+                            grid: { color: gridColor },
                             suggestedMin: 0,
                             suggestedMax: 100,
                             ticks: { display: false },
                             pointLabels: {
+                                color: textColor,
                                 font: { family: 'Plus Jakarta Sans', weight: 'extrabold', size: 10 }
                             }
                         }
@@ -994,7 +1011,7 @@
     </script>
 
     <!-- History Detail Modal (Slide-over drawer) -->
-    <div id="history-modal" class="fixed inset-y-0 right-0 w-[500px] max-w-full bg-background/95 backdrop-blur-2xl border-l border-white/20 shadow-2xl z-50 transform translate-x-full transition-transform duration-500 flex flex-col hidden">
+    <div id="history-modal" style="background:var(--col-bg-elevated);" class="fixed inset-y-0 right-0 w-[500px] max-w-full bg-background backdrop-blur-2xl border-l border-white/20 shadow-2xl z-50 transform translate-x-full transition-transform duration-500 flex flex-col hidden">
         <!-- Header -->
         <div class="flex items-center justify-between p-6 border-b border-white/20 bg-white/10">
             <div>
@@ -1065,7 +1082,7 @@
     <div id="modal-backdrop" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 hidden opacity-0 transition-opacity duration-300" onclick="closeHistoryDetailModal()"></div>
 
     <!-- Mobile Bottom Navigation Bar -->
-    <nav class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/60 backdrop-blur-xl border-t border-white/20 flex justify-around items-center py-2 px-4 shadow-lg">
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 z-50 backdrop-blur-xl border-t border-white/20 flex justify-around items-center py-2 px-4 shadow-lg" style="background:var(--col-nav-bg); border-color:var(--col-border);">
         <a href="about.html" class="flex flex-col items-center gap-0.5 text-on-surface-variant/80 hover:text-primary transition-colors py-1">
             <span class="material-symbols-outlined text-xl">info</span>
             <span class="text-[10px] font-bold">About Us</span>

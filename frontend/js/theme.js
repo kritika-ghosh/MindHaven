@@ -1,11 +1,47 @@
 /* ═══════════════════════════════════════════════════════════════
-   js/theme.js  —  Shared Tailwind config + CSS vars
-   Include this BEFORE tailwind.config assignment on every page.
+   js/theme.js  —  Shared Tailwind config + Theme Toggle
+   Include this BEFORE other scripts on every page.
+   Handles: system preference detection, localStorage persistence,
+   toggle function, and Tailwind config.
 ═══════════════════════════════════════════════════════════════ */
 
-/* Called inline as: <script>applyTailwindTheme()</script>
-   after the tailwind CDN script tag.                          */
+/* ── Theme Initialization (runs immediately to prevent flash) ── */
+(function initTheme() {
+  var saved = localStorage.getItem('mindhaven_theme');
+  var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  var theme = saved || (prefersDark ? 'dark' : 'light');
 
+  document.documentElement.classList.remove('dark', 'light');
+  document.documentElement.classList.add(theme);
+
+  // Update meta theme-color for mobile browsers
+  var meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) {
+    meta.setAttribute('content', theme === 'dark' ? '#120F17' : '#faf9fc');
+  }
+})();
+
+/* ── Toggle Function (exposed globally for onclick) ────────── */
+window.toggleTheme = function() {
+  var html = document.documentElement;
+  var isDark = html.classList.contains('dark');
+  var newTheme = isDark ? 'light' : 'dark';
+
+  html.classList.remove('dark', 'light');
+  html.classList.add(newTheme);
+  localStorage.setItem('mindhaven_theme', newTheme);
+
+  // Update meta theme-color
+  var meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) {
+    meta.setAttribute('content', newTheme === 'dark' ? '#120F17' : '#faf9fc');
+  }
+
+  // Dispatch custom event for components that need to react
+  window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
+};
+
+/* ── Tailwind Configuration ────────────────────────────────── */
 (function () {
   if (typeof tailwind === 'undefined') return;
 
@@ -14,26 +50,26 @@
     theme: {
       extend: {
         colors: {
-          'primary':                  '#6b38d4',
-          'secondary':                '#6f46b9',
+          'primary':                  'var(--col-primary)',
+          'secondary':                'var(--col-secondary)',
           'tertiary':                 '#5d5a69',
-          'background':               '#fcf9f8',
-          'surface':                  '#fcf9f8',
-          'surface-bright':           '#fcf9f8',
-          'surface-dim':              '#dcd9d9',
-          'surface-container':        '#f0eded',
-          'surface-container-low':    '#f6f3f2',
-          'surface-container-high':   '#eae7e7',
-          'surface-container-highest':'#e5e2e1',
-          'surface-container-lowest': '#ffffff',
-          'on-surface':               '#1c1b1b',
-          'on-surface-variant':       '#494454',
-          'on-background':            '#1c1b1b',
+          'background':               'var(--col-bg-deep)',
+          'surface':                  'var(--col-bg-surface)',
+          'surface-bright':           'var(--col-bg-surface)',
+          'surface-dim':              'var(--col-bg-elevated)',
+          'surface-container':        'var(--col-bg-elevated)',
+          'surface-container-low':    'var(--col-bg-surface)',
+          'surface-container-high':   'var(--col-bg-hover)',
+          'surface-container-highest':'var(--col-bg-hover)',
+          'surface-container-lowest': 'var(--col-bg-surface)',
+          'on-surface':               'var(--col-text-primary)',
+          'on-surface-variant':       'var(--col-text-secondary)',
+          'on-background':            'var(--col-text-primary)',
           'on-primary':               '#ffffff',
           'on-secondary':             '#ffffff',
           'on-tertiary':              '#ffffff',
-          'primary-container':        '#8455ef',
-          'secondary-container':      '#b188ff',
+          'primary-container':        'var(--col-primary-glow)',
+          'secondary-container':      'var(--col-secondary)',
           'primary-fixed':            '#e9ddff',
           'primary-fixed-dim':        '#d0bcff',
           'secondary-fixed':          '#ebdcff',
@@ -41,10 +77,10 @@
           'inverse-primary':          '#d0bcff',
           'inverse-surface':          '#313030',
           'inverse-on-surface':       '#f3f0ef',
-          'outline':                  '#7b7486',
-          'outline-variant':          '#cbc3d7',
-          'surface-tint':             '#6d3bd7',
-          'error':                    '#ba1a1a',
+          'outline':                  'var(--col-text-tertiary)',
+          'outline-variant':          'var(--col-border)',
+          'surface-tint':             'var(--col-primary)',
+          'error':                    'var(--col-danger)',
           'on-error':                 '#ffffff',
           'error-container':          '#ffdad6',
           'on-error-container':       '#93000a',
@@ -59,7 +95,7 @@
           'gutter':         '24px',
         },
         fontFamily: {
-          'body-md':  ['Plus Jakarta Sans', 'sans-serif'],
+          'body-md':  ['Inter', 'Plus Jakarta Sans', 'sans-serif'],
           'title-md': ['Plus Jakarta Sans', 'sans-serif'],
         },
       },

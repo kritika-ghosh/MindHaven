@@ -1,12 +1,13 @@
 <!DOCTYPE html>
-<html class="light" lang="en">
+<html lang="en">
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <meta name="theme-color" content="#120F17">
     <title>MindHaven | AI Insights Hub</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <link href="css/styles.css" rel="stylesheet"/>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -15,53 +16,11 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/config.js"></script>
     <script src="js/theme.js"></script>
+    <script src="js/gradual-blur.js"></script>
 
     <style>
         .immersive-3d-bg {
             perspective: 1000px;
-        }
-        
-        /* Glassmorphic Chat Widget */
-        .chat-widget {
-            background: rgba(255, 255, 255, 0.45);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border: 1.5px solid rgba(255, 255, 255, 0.60);
-            box-shadow: 0 16px 48px rgba(107, 56, 212, 0.16);
-            transform: scale(0.9) translateY(40px);
-            opacity: 0;
-            pointer-events: none;
-            transition: none; /* Handled via GSAP */
-        }
-        
-        .chat-widget.active {
-            pointer-events: auto;
-        }
-
-        /* Pulsing Dot for Online Status */
-        .pulse-dot {
-            width: 8px;
-            height: 8px;
-            background-color: #10b981;
-            border-radius: 50%;
-            display: inline-block;
-            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-            animation: pulse-dot-anim 1.8s infinite;
-        }
-
-        @keyframes pulse-dot-anim {
-            0% {
-                transform: scale(0.95);
-                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-            }
-            70% {
-                transform: scale(1);
-                box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
-            }
-            100% {
-                transform: scale(0.95);
-                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
-            }
         }
 
         /* Custom Scrollbar for Chat Messages */
@@ -69,18 +28,18 @@
             width: 4px;
         }
         #chat-messages::-webkit-scrollbar-track {
-            background: rgba(252, 249, 248, 0.3);
+            background: var(--col-nav-bg);
         }
         #chat-messages::-webkit-scrollbar-thumb {
-            background: rgba(107, 56, 212, 0.25);
+            background: var(--col-border-active);
             border-radius: 4px;
         }
         #chat-messages::-webkit-scrollbar-thumb:hover {
-            background: rgba(107, 56, 212, 0.4);
+            background: var(--col-primary);
         }
     </style>
 </head>
-<body class="bg-background text-on-background font-body-md min-h-screen overflow-x-hidden immersive-3d-bg" style="font-family:'Plus Jakarta Sans',sans-serif;">
+<body class="bg-background text-on-background font-body-md min-h-screen overflow-x-hidden immersive-3d-bg" style="font-family:'Inter','Plus Jakarta Sans',sans-serif;">
     <!-- WebGL Background Canvas -->
     <canvas id="webgl-bg"></canvas>
 
@@ -90,22 +49,26 @@
 
 
     <!-- Top Navigation Bar -->
-    <header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-5 md:px-16 py-4 backdrop-blur-xl border-b border-white/20 transition-all duration-300" style="background:rgba(252,249,248,0.35)">
+    <header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-5 md:px-16 py-4 backdrop-blur-xl border-b border-white/20 transition-all duration-300" style="background:var(--col-nav-bg);backdrop-filter:blur(20px);">
         <div class="flex items-center gap-2">
-            <a href="index.html" class="w-8 h-8 rounded-full flex items-center justify-center text-white flex-shrink-0" style="background:#8455ef">
+            <a href="index.html" class="w-8 h-8 rounded-full flex items-center justify-center text-white flex-shrink-0" style="background:var(--col-primary-glow)">
                 <span class="material-symbols-outlined text-[20px]" style="font-variation-settings:'FILL' 1">psychology</span>
             </a>
-            <span class="font-extrabold text-lg tracking-tight" style="color:#1c1b1b">MindHaven</span>
+            <span class="font-extrabold text-lg tracking-tight" style="color:var(--col-text-primary)">MindHaven</span>
         </div>
         <nav class="hidden md:flex gap-8 items-center">
-            <a href="about.html" style="font-size:0.85rem;font-weight:700;color:#494454;text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='#6b38d4'" onmouseout="this.style.color='#494454'">About Us</a>
-            <a href="assess.html"   style="font-size:0.85rem;font-weight:700;color:#494454;text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='#6b38d4'" onmouseout="this.style.color='#494454'">Assess</a>
-            <span                   style="font-size:0.85rem;font-weight:800;color:#6b38d4;white-space:nowrap;">Insights</span>
-            <a href="dashboard.html" style="font-size:0.85rem;font-weight:700;color:#494454;text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='#6b38d4'" onmouseout="this.style.color='#494454'">Dashboard</a>
-            <a href="breathe.html" style="font-size:0.85rem;font-weight:700;color:#494454;text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='#6b38d4'" onmouseout="this.style.color='#494454'">Breathe</a>
+            <a href="about.html" style="font-size:0.85rem;font-weight:700;color:var(--col-text-secondary);text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='var(--col-primary)'" onmouseout="this.style.color='var(--col-text-secondary)'">About Us</a>
+            <a href="assess.html"   style="font-size:0.85rem;font-weight:700;color:var(--col-text-secondary);text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='var(--col-primary)'" onmouseout="this.style.color='var(--col-text-secondary)'">Assess</a>
+            <span                   style="font-size:0.85rem;font-weight:800;color:var(--col-primary);white-space:nowrap;">Insights</span>
+            <a href="dashboard.html" style="font-size:0.85rem;font-weight:700;color:var(--col-text-secondary);text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='var(--col-primary)'" onmouseout="this.style.color='var(--col-text-secondary)'">Dashboard</a>
+            <a href="breathe.html" style="font-size:0.85rem;font-weight:700;color:var(--col-text-secondary);text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='var(--col-primary)'" onmouseout="this.style.color='var(--col-text-secondary)'">Breathe</a>
         </nav>
         <div class="flex items-center gap-3 flex-shrink-0">
-            <div class="w-10 h-10 rounded-full overflow-hidden border-2" style="border-color:rgba(107,56,212,0.25)">
+            <button onclick="toggleTheme()" class="theme-toggle" aria-label="Toggle theme">
+                <span class="material-symbols-outlined theme-icon-light">light_mode</span>
+                <span class="material-symbols-outlined theme-icon-dark">dark_mode</span>
+            </button>
+            <div class="w-10 h-10 rounded-full overflow-hidden border-2" style="border-color:var(--col-border-active)">
                 <img alt="Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAc6gUeyepdAYeiT1kNrp5-bdopO8mAEmM2WIzSh9bpb2Y8TkI54s9vjF4LOjA-CNNSNpSIm2Nafm88rhjVUOlTI8-roRmdfUWKGWgE_3pEHvtFLMdpNR54iDmZ10yU7khzKni1gysp2QOiwlfBItm6VE2jqvz2_7DYcsgWy_MT8xRh26dZs3VT8biI-c1qOrW-itV65RWqBh47nVVfQNZsyeyEZK6p5YBW1aXF5mY1SvjDylraJKV-3IumaI8po6FbnGl31hDdjQ"/>
             </div>
         </div>
@@ -166,7 +129,7 @@
                                 Loading AI insights...
                             </p>
                             <h4 class="text-base font-extrabold text-on-surface pt-4 uppercase tracking-wider">Acoustic & Sentiment Feedback</h4>
-                            <div class="bg-white/40 p-5 rounded-3xl border border-white/50 space-y-2">
+                            <div class="glass-card p-5 rounded-3xl space-y-2">
                                 <p class="text-xs text-primary font-bold uppercase tracking-wider">Linguistic Transcript</p>
                                 <p class="text-sm italic text-on-surface font-semibold" id="voice-transcript">"Transcript loading..."</p>
                                 <div class="pt-2 flex justify-between text-xs text-on-surface-variant font-bold">
@@ -176,15 +139,15 @@
                             
                             <h4 class="text-base font-extrabold text-on-surface pt-4 uppercase tracking-wider">Facial Analytics</h4>
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                <div class="bg-white/40 p-4 rounded-2xl border border-white/40 text-center">
+                                <div class="glass-card p-4 rounded-2xl text-center">
                                     <span class="text-[10px] text-on-surface-variant/60 uppercase font-bold">Positive Expression</span>
                                     <p class="text-xl font-extrabold text-green-600 mt-1" id="emo-pos">0%</p>
                                 </div>
-                                <div class="bg-white/40 p-4 rounded-2xl border border-white/40 text-center">
+                                <div class="glass-card p-4 rounded-2xl text-center">
                                     <span class="text-[10px] text-on-surface-variant/60 uppercase font-bold">Neutral State</span>
                                     <p class="text-xl font-extrabold text-primary mt-1" id="emo-neu">0%</p>
                                 </div>
-                                <div class="bg-white/40 p-4 rounded-2xl border border-white/40 text-center">
+                                <div class="glass-card p-4 rounded-2xl text-center">
                                     <span class="text-[10px] text-on-surface-variant/60 uppercase font-bold">Negative Tension</span>
                                     <p class="text-xl font-extrabold text-red-500 mt-1" id="emo-neg">0%</p>
                                 </div>
@@ -209,23 +172,23 @@
                 </div>
                 
                 <!-- Category Tabs -->
-                <div class="flex flex-wrap gap-2 bg-white/20 p-1.5 rounded-full border border-white/30 backdrop-blur-md">
-                    <button onclick="filterShap('all')" id="tab-all" class="px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-primary text-white">All</button>
-                    <button onclick="filterShap('Self-Reported')" id="tab-Self-Reported" class="px-4 py-1.5 rounded-full text-xs font-bold transition-all text-on-surface hover:bg-white/30">Survey</button>
-                    <button onclick="filterShap('Biometrics')" id="tab-Biometrics" class="px-4 py-1.5 rounded-full text-xs font-bold transition-all text-on-surface hover:bg-white/30">Biometrics</button>
-                    <button onclick="filterShap('Voice & Tone')" id="tab-Voice" class="px-4 py-1.5 rounded-full text-xs font-bold transition-all text-on-surface hover:bg-white/30">Voice &amp; Tone</button>
+                <div class="flex flex-wrap gap-2 p-1.5 rounded-full backdrop-blur-md" style="background:var(--col-glass-bg); border:1px solid var(--col-border);">
+                    <button onclick="filterShap('all')" id="tab-all" class="px-4 py-1.5 rounded-full text-xs font-bold transition-all text-white" style="background:var(--col-primary);">All</button>
+                    <button onclick="filterShap('Self-Reported')" id="tab-Self-Reported" class="px-4 py-1.5 rounded-full text-xs font-bold transition-all text-on-surface hover:opacity-70">Survey</button>
+                    <button onclick="filterShap('Biometrics')" id="tab-Biometrics" class="px-4 py-1.5 rounded-full text-xs font-bold transition-all text-on-surface hover:opacity-70">Biometrics</button>
+                    <button onclick="filterShap('Voice & Tone')" id="tab-Voice" class="px-4 py-1.5 rounded-full text-xs font-bold transition-all text-on-surface hover:opacity-70">Voice &amp; Tone</button>
                 </div>
             </div>
 
             <!-- Baseline / Current Score summary banner -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-white/20 p-5 rounded-3xl border border-white/40 text-center font-bold text-sm">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 glass-card p-5 rounded-3xl text-center font-bold text-sm">
                 <div>
                     <span class="text-[10px] text-on-surface-variant/60 uppercase tracking-wider block">Expected Baseline</span>
                     <span class="text-lg font-extrabold text-on-surface" id="shap-baseline-val">1.89 / 4.00</span>
                 </div>
                 <div class="border-y md:border-y-0 md:border-x border-white/30 py-3 md:py-0">
                     <span class="text-[10px] text-on-surface-variant/60 uppercase tracking-wider block">Total Shift</span>
-                    <span class="text-lg font-extrabold text-[#6b38d4]" id="shap-shift-val">+0.00</span>
+                    <span class="text-lg font-extrabold" style="color:var(--col-primary)" id="shap-shift-val">+0.00</span>
                 </div>
                 <div>
                     <span class="text-[10px] text-on-surface-variant/60 uppercase tracking-wider block">Final Burnout Score</span>
@@ -239,7 +202,7 @@
             </div>
             
             <!-- Explanatory note -->
-            <div class="flex items-start gap-2.5 p-4 bg-white/30 rounded-2xl border border-white/30 text-xs font-semibold text-on-surface-variant/80">
+            <div class="flex items-start gap-2.5 p-4 glass-card rounded-2xl text-xs font-semibold text-on-surface-variant/80">
                 <span class="material-symbols-outlined text-primary text-[18px]">info</span>
                 <p>
                     <strong>How to read this chart:</strong> Factors pulling to the right (<span class="text-red-500 font-extrabold">Coral Red</span>) indicate symptoms or biometrics that increased your stress/burnout rating. Factors pulling to the left (<span class="text-green-600 font-extrabold">Sage Green</span>) indicate wellness or protective indicators that helped keep your rating lower.
@@ -264,7 +227,7 @@
 
     <!-- Retake Assessment footer strip -->
     <div style="width:100%;padding:20px 64px;display:flex;justify-content:center;">
-        <a href="assess.html" style="display:inline-flex;align-items:center;gap:8px;font-size:0.8rem;font-weight:700;color:#494454;text-decoration:none;padding:10px 20px;border-radius:99px;border:1px solid rgba(0,0,0,0.1);background:rgba(255,255,255,0.4);transition:all 0.2s ease;" onmouseover="this.style.color='#6b38d4';this.style.borderColor='rgba(107,56,212,0.3)'" onmouseout="this.style.color='#494454';this.style.borderColor='rgba(0,0,0,0.1)'">
+        <a href="assess.html" style="display:inline-flex;align-items:center;gap:8px;font-size:0.8rem;font-weight:700;color:var(--col-text-secondary);text-decoration:none;padding:10px 20px;border-radius:99px;border:1px solid var(--col-border);background:var(--col-glass-bg);transition:all 0.2s ease;" onmouseover="this.style.color='var(--col-primary)';this.style.borderColor='var(--col-border-active)'" onmouseout="this.style.color='var(--col-text-secondary)';this.style.borderColor='var(--col-border)'">
             <span class="material-symbols-outlined" style="font-size:1rem;">replay</span>
             Retake Assessment
         </a>
@@ -279,13 +242,13 @@
     <!-- Chat Widget Container -->
     <div id="chat-widget" class="chat-widget hidden fixed bottom-36 right-6 md:bottom-24 md:right-8 w-[90vw] sm:w-[400px] h-[500px] max-h-[75vh] rounded-[2rem] flex flex-col overflow-hidden z-50">
         <!-- Header -->
-        <div class="flex items-center justify-between px-6 py-4 border-b border-white/20 bg-white/20 backdrop-blur-md">
+        <div class="flex items-center justify-between px-6 py-4 border-b backdrop-blur-md" style="background:var(--col-glass-bg); border-color:var(--col-border);">
             <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-full flex items-center justify-center text-white bg-[#8455ef]">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center text-white" style="background:var(--col-primary-glow)">
                     <span class="material-symbols-outlined text-[18px]">psychology</span>
                 </div>
                 <div>
-                    <h4 class="font-extrabold text-sm text-[#1c1b1b]">MindHaven AI</h4>
+                    <h4 class="font-extrabold text-sm" style="color:var(--col-text-primary)">MindHaven AI</h4>
                     <div class="flex items-center gap-1.5 mt-0.5">
                         <span class="pulse-dot"></span>
                         <span class="text-[10px] text-secondary font-bold">CBT Companion &bull; Online</span>
@@ -303,8 +266,8 @@
         </div>
 
         <!-- Chat Form -->
-        <form id="chat-form" onsubmit="sendMessage(event)" class="p-4 bg-white/15 border-t border-white/20 flex items-center gap-2">
-            <input id="chat-input" type="text" placeholder="Discuss your results or coping plan..." autocomplete="off" class="flex-1 glass-input py-2.5 px-4 rounded-full text-sm border border-white/40 focus:border-primary placeholder:text-on-surface-variant/55 bg-white/30" />
+        <form id="chat-form" onsubmit="sendMessage(event)" class="p-4 border-t flex items-center gap-2" style="background:var(--col-glass-bg); border-color:var(--col-border);">
+            <input id="chat-input" type="text" placeholder="Discuss your results or coping plan..." autocomplete="off" class="flex-1 glass-input py-2.5 px-4 rounded-full text-sm placeholder:text-on-surface-variant/55" />
             <button id="chat-send-btn" type="submit" class="pill-3d w-9 h-9 rounded-full flex items-center justify-center text-white cursor-pointer transition-all duration-200 shrink-0">
                 <span class="material-symbols-outlined text-[16px]">send</span>
             </button>
@@ -330,9 +293,11 @@
                 const tab = document.getElementById(id);
                 if (tab) {
                     if (c === category) {
-                        tab.className = "px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-primary text-white";
+                        tab.className = "px-4 py-1.5 rounded-full text-xs font-bold transition-all text-white";
+                        tab.style.background = "var(--col-primary)";
                     } else {
-                        tab.className = "px-4 py-1.5 rounded-full text-xs font-bold transition-all text-on-surface hover:bg-white/30";
+                        tab.className = "px-4 py-1.5 rounded-full text-xs font-bold transition-all text-on-surface hover:opacity-70";
+                        tab.style.background = "transparent";
                     }
                 }
             });
@@ -491,13 +456,25 @@ Paragraph 3: A 7-day recovery micro-plan with 3 specific, time-bound actions.
             initChatContext(predictionData);
 
             // Clean & bulletproof entrance animations for all sections
-            gsap.from('.scroll-section', {
-                y: 20,
-                opacity: 0,
-                duration: 0.8,
-                stagger: 0.25,
-                ease: "power2.out"
+            gsap.registerPlugin(ScrollTrigger);
+            gsap.utils.toArray('.scroll-section').forEach(function(section) {
+                gsap.from(section, {
+                    y: 40, opacity: 0, duration: 0.8, ease: 'power2.out',
+                    scrollTrigger: { trigger: section, start: 'top 88%', toggleActions: 'play none none none' }
+                });
             });
+
+            // Add counter animation for vitality score
+            var scoreEl = document.getElementById('vitality-score');
+            if (scoreEl && scoreEl._targetValue) {
+                gsap.from(scoreEl, { innerText: 0, snap: { innerText: 1 }, duration: 1.5, ease: 'power2.out' });
+            }
+
+            // Apply gradual blur to SHAP section bottom
+            var shapContainer = document.getElementById('shap-bars-container');
+            if (shapContainer && shapContainer.parentElement && typeof createGradualBlur === 'function') {
+                createGradualBlur(shapContainer.parentElement, { position: 'bottom', strength: 2, height: '6rem', divCount: 5, curve: 'bezier' });
+            }
         });
 
         function getMockHistoryForInsights() {
@@ -923,9 +900,10 @@ Once your breathing settles, we can look at the presentation. Anxiety is telling
             
             const bubbleDiv = document.createElement('div');
             if (role === 'user') {
-                bubbleDiv.className = 'max-w-[80%] rounded-[1.5rem] rounded-tr-none px-4 py-3 text-sm font-semibold bg-gradient-to-br from-[#8455ef] to-[#6b38d4] text-white shadow-md leading-relaxed';
+                bubbleDiv.className = 'max-w-[80%] rounded-[1.5rem] rounded-tr-none px-4 py-3 text-sm font-semibold text-white shadow-md leading-relaxed';
+                bubbleDiv.style.background = 'linear-gradient(135deg, var(--col-primary-glow), var(--col-primary))';
             } else {
-                bubbleDiv.className = 'max-w-[80%] rounded-[1.5rem] rounded-tl-none px-4 py-3 text-sm font-semibold bg-white/70 border border-white/40 text-on-surface shadow-sm leading-relaxed';
+                bubbleDiv.className = 'max-w-[80%] rounded-[1.5rem] rounded-tl-none px-4 py-3 text-sm font-semibold glass-card text-on-surface shadow-sm leading-relaxed';
             }
             
             bubbleDiv.innerHTML = formatMarkdown(content);
@@ -962,12 +940,12 @@ Once your breathing settles, we can look at the presentation. Anxiety is telling
             indicatorDiv.className = 'flex justify-start';
             
             const bubbleDiv = document.createElement('div');
-            bubbleDiv.className = 'max-w-[80%] rounded-[1.5rem] rounded-tl-none px-4 py-3 text-sm font-semibold bg-white/70 border border-white/40 text-on-surface shadow-sm flex items-center gap-1.5';
+            bubbleDiv.className = 'max-w-[80%] rounded-[1.5rem] rounded-tl-none px-4 py-3 text-sm font-semibold glass-card text-on-surface shadow-sm flex items-center gap-1.5';
             
             bubbleDiv.innerHTML = `
-                <div class="w-1.5 h-1.5 bg-[#6b38d4]/40 rounded-full animate-bounce" style="animation-delay: 0ms"></div>
-                <div class="w-1.5 h-1.5 bg-[#6b38d4]/70 rounded-full animate-bounce" style="animation-delay: 150ms"></div>
-                <div class="w-1.5 h-1.5 bg-[#6b38d4] rounded-full animate-bounce" style="animation-delay: 300ms"></div>
+                <div class="w-1.5 h-1.5 rounded-full animate-bounce" style="background:var(--col-primary); opacity:0.4; animation-delay: 0ms"></div>
+                <div class="w-1.5 h-1.5 rounded-full animate-bounce" style="background:var(--col-primary); opacity:0.7; animation-delay: 150ms"></div>
+                <div class="w-1.5 h-1.5 rounded-full animate-bounce" style="background:var(--col-primary); animation-delay: 300ms"></div>
             `;
             
             indicatorDiv.appendChild(bubbleDiv);
@@ -1062,7 +1040,7 @@ Once your breathing settles, we can look at the presentation. Anxiety is telling
         }
     </script>
     <!-- Mobile Bottom Navigation Bar -->
-    <nav class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/60 backdrop-blur-xl border-t border-white/20 flex justify-around items-center py-2 px-4 shadow-lg">
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 z-50 backdrop-blur-xl border-t flex justify-around items-center py-2 px-4 shadow-lg" style="background:var(--col-nav-bg); border-color:var(--col-border);">
         <a href="about.html" class="flex flex-col items-center gap-0.5 text-on-surface-variant/80 hover:text-primary transition-colors py-1">
             <span class="material-symbols-outlined text-xl">info</span>
             <span class="text-[10px] font-bold">About Us</span>

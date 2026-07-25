@@ -1,15 +1,17 @@
 <!DOCTYPE html>
-<html class="light" lang="en">
+<html lang="en">
 <head>
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <meta name="theme-color" content="#120F17">
   <title>MindHaven | Assessment Suite</title>
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Inter:wght@600&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
   <link href="css/styles.css" rel="stylesheet"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/theme.js"></script>
   <style>
@@ -17,18 +19,18 @@
     .phase.active { display: flex; }
     .choice-btn { transition: all 0.2s ease; }
     .choice-btn.selected {
-      background: rgba(107, 56, 212, 0.15) !important;
-      border: 1.5px solid rgba(107, 56, 212, 0.6) !important;
-      box-shadow: 0 8px 20px rgba(107, 56, 212, 0.15);
+      background: rgba(124, 58, 237, 0.12) !important;
+      border: 1.5px solid var(--col-border-active) !important;
+      box-shadow: 0 8px 20px rgba(124, 58, 237, 0.15);
     }
-    .choice-btn.selected .choice-icon { color: #6b38d4; font-variation-settings: 'FILL' 1; }
-    .choice-btn.selected .choice-label { color: #6b38d4; }
+    .choice-btn.selected .choice-icon { color: var(--col-primary); font-variation-settings: 'FILL' 1; }
+    .choice-btn.selected .choice-label { color: var(--col-primary); }
     .waveform-bar { height: 15%; transition: height 0.1s ease; }
     .waveform-bar.active { animation: wave 1s ease-in-out infinite alternate; }
     @keyframes wave { 0% { height: 15%; } 100% { height: 85%; } }
   </style>
 </head>
-<body class="bg-background text-on-surface font-body-md overflow-x-hidden min-h-screen relative" style="font-family: 'Plus Jakarta Sans', sans-serif;">
+<body class="text-on-surface font-body-md overflow-x-hidden min-h-screen relative" style="font-family: 'Inter', 'Plus Jakarta Sans', sans-serif;">
 
   <!-- WebGL Background Canvas -->
   <canvas id="webgl-bg"></canvas>
@@ -43,21 +45,26 @@
   <div id="page-transition-overlay" style="position:fixed;inset:0;background:radial-gradient(circle at center,#260059,#0c0814);z-index:9999;pointer-events:none;opacity:0;transition:opacity 0.5s ease;"></div>
 
   <!-- Header -->
-  <header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-5 md:px-16 py-4 backdrop-blur-xl border-b border-white/20 shadow-sm" style="background:rgba(252,249,248,0.3)">
+  <header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-5 md:px-16 py-4 backdrop-blur-xl border-b border-white/20 shadow-sm" style="background:var(--col-nav-bg);backdrop-filter:blur(20px);">
     <div class="flex items-center gap-3">
-      <a href="index.html" class="w-10 h-10 rounded-full flex items-center justify-center text-white shadow-lg" style="background:#8455ef">
+      <a href="index.html" class="w-10 h-10 rounded-full flex items-center justify-center text-white shadow-lg" style="background:var(--col-primary-glow)">
         <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">psychology</span>
       </a>
       <span class="font-extrabold tracking-tight text-on-surface text-xl">MindHaven</span>
     </div>
     <div class="hidden md:flex gap-8 items-center">
       <a class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors" href="about.html">About Us</a>
-      <span class="text-sm font-extrabold" style="color:#6b38d4">Assess</span>
+      <span class="text-sm font-extrabold" style="color:var(--col-primary)">Assess</span>
       <a class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors" href="insights.html">Insights</a>
       <a class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors" href="dashboard.html">Dashboard</a>
       <a class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors" href="breathe.html">Breathe</a>
+    
+      <button onclick="toggleTheme()" class="theme-toggle" aria-label="Toggle theme">
+        <span class="material-symbols-outlined theme-icon-light">light_mode</span>
+        <span class="material-symbols-outlined theme-icon-dark">dark_mode</span>
+      </button>
     </div>
-    <div class="w-10 h-10 rounded-full border-2 overflow-hidden" style="border-color:#6b38d4">
+    <div class="w-10 h-10 rounded-full border-2 overflow-hidden" style="border-color:var(--col-primary)">
       <img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBztPBgUikdMRMvVm0IcNyj_V_FC7lgVwYQoa0gT_EeoVPA8zk5nygf1oGRHBEtEQMPrxWClUc7YBf7klJQw9fF5-pfjK0rlkgxCbMJJMrghdtUw6JaTJM6-iovQaSrOqiarGKkV34uchNJUf87OxzbhTSwpgUyCB2qA9Zxn3QhHsOEJaNhBSyZMrtc18W70IXuxNKXkJtJCKHxinc_SmUW3_1vk-H1_kaFIU4ISLXkVY0n6St9c8YVesNCghMyMNIJDyYXotwgeg" alt="Profile"/>
     </div>
   </header>
@@ -67,11 +74,11 @@
     <!-- Phase Progress Indicators -->
     <section class="flex flex-col items-center gap-3">
       <div class="flex gap-2 items-center">
-        <div class="h-1.5 w-16 rounded-full transition-all duration-500" style="background:#6b38d4" id="bar-quiz"></div>
-        <div class="h-1.5 w-16 rounded-full transition-all duration-500" style="background:#e5e2e1" id="bar-face"></div>
-        <div class="h-1.5 w-16 rounded-full transition-all duration-500" style="background:#e5e2e1" id="bar-voice"></div>
+        <div class="h-1.5 w-16 rounded-full transition-all duration-500" style="background:var(--col-primary)" id="bar-quiz"></div>
+        <div class="h-1.5 w-16 rounded-full transition-all duration-500" style="background:var(--col-border)" id="bar-face"></div>
+        <div class="h-1.5 w-16 rounded-full transition-all duration-500" style="background:var(--col-border)" id="bar-voice"></div>
       </div>
-      <p class="text-xs font-extrabold uppercase tracking-widest" style="color:#6f46b9" id="phase-label">Phase 1 of 3 — Questionnaire</p>
+      <p class="text-xs font-extrabold uppercase tracking-widest" style="color:var(--col-secondary)" id="phase-label">Phase 1 of 3 — Questionnaire</p>
     </section>
 
     <!-- ═══════════════════════════════════════════════ -->
@@ -81,11 +88,11 @@
 
       <!-- Question counter + text -->
       <div class="space-y-3 max-w-2xl w-full">
-        <p class="text-xs font-extrabold uppercase tracking-widest" style="color:#6b38d4" id="q-counter">Question 1 of 5</p>
-        <h1 class="text-2xl md:text-4xl font-extrabold tracking-tight leading-tight" style="color:#1c1b1b" id="q-text">
+        <p class="text-xs font-extrabold uppercase tracking-widest" style="color:var(--col-primary)" id="q-counter">Question 1 of 5</p>
+        <h1 class="text-2xl md:text-4xl font-extrabold tracking-tight leading-tight" style="color:var(--col-text-primary)" id="q-text">
           Do you often feel exhausted or stressed after classes and hostel work, even with enough sleep?
         </h1>
-        <p class="text-sm font-medium" style="color:#49445499">
+        <p class="text-sm font-medium" style="color:var(--col-text-secondary)">
           Reflect on your experience over the past 48 hours.
         </p>
       </div>
@@ -95,32 +102,32 @@
 
         <button class="choice-btn glass-card rounded-3xl p-6 md:p-8 flex flex-col items-center gap-4 cursor-pointer border border-white/40"
                 data-value="Never" onclick="pickAnswer(this)">
-          <span class="material-symbols-outlined text-4xl choice-icon" style="color:#494454">circle</span>
-          <span class="text-xs font-bold uppercase tracking-wider choice-label" style="color:#494454">Never</span>
+          <span class="material-symbols-outlined text-4xl choice-icon" style="color:var(--col-text-secondary)">circle</span>
+          <span class="text-xs font-bold uppercase tracking-wider choice-label" style="color:var(--col-text-secondary)">Never</span>
         </button>
 
         <button class="choice-btn glass-card rounded-3xl p-6 md:p-8 flex flex-col items-center gap-4 cursor-pointer border border-white/40"
                 data-value="Rarely" onclick="pickAnswer(this)">
-          <span class="material-symbols-outlined text-4xl choice-icon" style="color:#494454">radio_button_checked</span>
-          <span class="text-xs font-bold uppercase tracking-wider choice-label" style="color:#494454">Rarely</span>
+          <span class="material-symbols-outlined text-4xl choice-icon" style="color:var(--col-text-secondary)">radio_button_checked</span>
+          <span class="text-xs font-bold uppercase tracking-wider choice-label" style="color:var(--col-text-secondary)">Rarely</span>
         </button>
 
         <button class="choice-btn glass-card rounded-3xl p-6 md:p-8 flex flex-col items-center gap-4 cursor-pointer border border-white/40"
                 data-value="Sometimes" onclick="pickAnswer(this)">
-          <span class="material-symbols-outlined text-4xl choice-icon" style="color:#494454">stars</span>
-          <span class="text-xs font-bold uppercase tracking-wider choice-label" style="color:#494454">Sometimes</span>
+          <span class="material-symbols-outlined text-4xl choice-icon" style="color:var(--col-text-secondary)">stars</span>
+          <span class="text-xs font-bold uppercase tracking-wider choice-label" style="color:var(--col-text-secondary)">Sometimes</span>
         </button>
 
         <button class="choice-btn glass-card rounded-3xl p-6 md:p-8 flex flex-col items-center gap-4 cursor-pointer border border-white/40"
                 data-value="Often" onclick="pickAnswer(this)">
-          <span class="material-symbols-outlined text-4xl choice-icon" style="color:#494454">auto_awesome</span>
-          <span class="text-xs font-bold uppercase tracking-wider choice-label" style="color:#494454">Often</span>
+          <span class="material-symbols-outlined text-4xl choice-icon" style="color:var(--col-text-secondary)">auto_awesome</span>
+          <span class="text-xs font-bold uppercase tracking-wider choice-label" style="color:var(--col-text-secondary)">Often</span>
         </button>
 
         <button class="choice-btn glass-card rounded-3xl p-6 md:p-8 flex flex-col items-center gap-4 cursor-pointer border border-white/40"
                 data-value="Always" onclick="pickAnswer(this)">
-          <span class="material-symbols-outlined text-4xl choice-icon" style="color:#494454">flare</span>
-          <span class="text-xs font-bold uppercase tracking-wider choice-label" style="color:#494454">Always</span>
+          <span class="material-symbols-outlined text-4xl choice-icon" style="color:var(--col-text-secondary)">flare</span>
+          <span class="text-xs font-bold uppercase tracking-wider choice-label" style="color:var(--col-text-secondary)">Always</span>
         </button>
 
       </div>
@@ -129,7 +136,7 @@
       <div id="quiz-done-area" class="hidden mt-2">
         <button onclick="showPhase('face')"
           class="px-10 py-4 rounded-full text-white font-extrabold text-sm flex items-center gap-2 shadow-lg"
-          style="background:linear-gradient(135deg,#8455ef,#6b38d4)">
+          style="background:linear-gradient(135deg,var(--col-primary-glow),var(--col-primary));">
           <span class="material-symbols-outlined">videocam</span>
           Proceed to Facial Scan
         </button>
@@ -142,8 +149,8 @@
     <div id="phase-face" class="phase w-full flex-col items-center text-center gap-6">
 
       <div class="space-y-2 max-w-xl">
-        <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight" style="color:#1c1b1b">Facial Feature Analysis</h2>
-        <p class="text-sm font-medium" style="color:#49445499">
+        <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight" style="color:var(--col-text-primary)">Facial Feature Analysis</h2>
+        <p class="text-sm font-medium" style="color:var(--col-text-secondary)">
           Position your face within the grid. Press <strong>Start Scan</strong> to record a 10-second biometric sample.
         </p>
       </div>
@@ -169,14 +176,14 @@
       <div class="flex flex-col items-center gap-4">
         <button id="face-start-btn" onclick="startFaceScan()"
           class="px-10 py-4 rounded-full text-white font-extrabold text-sm flex items-center gap-2 shadow-lg"
-          style="background:linear-gradient(135deg,#8455ef,#6b38d4)">
+          style="background:linear-gradient(135deg,var(--col-primary-glow),var(--col-primary));">
           <span class="material-symbols-outlined">videocam</span>
           <span id="face-btn-label">Start Facial Scan</span>
         </button>
 
         <button id="face-next-btn" onclick="showPhase('voice')"
           class="px-10 py-4 rounded-full font-extrabold text-sm flex items-center gap-2 shadow border border-white/60 hidden"
-          style="background:rgba(255,255,255,0.4);color:#1c1b1b">
+          style="background:var(--col-glass-bg);color:var(--col-text-primary)">
           <span class="material-symbols-outlined">mic</span>
           Proceed to Voice Recording
         </button>
@@ -189,8 +196,8 @@
     <div id="phase-voice" class="phase w-full flex-col items-center text-center gap-6">
 
       <div class="space-y-2 max-w-xl">
-        <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight" style="color:#1c1b1b">Voice Sentiment Capture</h2>
-        <p class="text-sm font-medium" style="color:#49445499">
+        <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight" style="color:var(--col-text-primary)">Voice Sentiment Capture</h2>
+        <p class="text-sm font-medium" style="color:var(--col-text-secondary)">
           Talk about your current stress level or how your day went. Press <strong>Start Recording</strong> for a 10-second audio sample.
         </p>
       </div>
@@ -199,11 +206,11 @@
       <div class="glass-card rounded-[32px] p-8 flex flex-col justify-between w-full max-w-2xl border border-white/50 shadow-lg" style="height:280px">
         <div class="flex justify-between items-start">
           <div class="text-left">
-            <p class="text-xs font-bold uppercase tracking-widest" style="color:#6f46b9">Acoustic Channel</p>
-            <h3 class="text-xl font-extrabold" style="color:#1c1b1b">Voice Analysis</h3>
+            <p class="text-xs font-bold uppercase tracking-widest" style="color:var(--col-secondary)">Acoustic Channel</p>
+            <h3 class="text-xl font-extrabold" style="color:var(--col-text-primary)">Voice Analysis</h3>
           </div>
-          <div id="mic-icon-box" class="w-12 h-12 rounded-2xl flex items-center justify-center border border-white/40 shadow-sm" style="background:rgba(255,255,255,0.4)">
-            <span class="material-symbols-outlined text-3xl" id="mic-icon" style="color:#6b38d4">mic</span>
+          <div id="mic-icon-box" class="w-12 h-12 rounded-2xl flex items-center justify-center border border-white/40 shadow-sm" style="background:var(--col-glass-bg);">
+            <span class="material-symbols-outlined text-3xl" id="mic-icon" style="color:var(--col-primary)">mic</span>
           </div>
         </div>
 
@@ -226,13 +233,13 @@
         </div>
 
         <div class="grid grid-cols-2 gap-4">
-          <div class="rounded-3xl p-4 border border-white/60 text-left" style="background:rgba(255,255,255,0.4)">
-            <p class="text-xs font-bold uppercase tracking-wider mb-0.5" style="color:#494454">Status</p>
-            <p class="font-extrabold" style="color:#6b38d4" id="voice-status">Idle</p>
+          <div class="rounded-3xl p-4 border border-white/60 text-left" style="background:var(--col-glass-bg);">
+            <p class="text-xs font-bold uppercase tracking-wider mb-0.5" style="color:var(--col-text-secondary)">Status</p>
+            <p class="font-extrabold" style="color:var(--col-primary)" id="voice-status">Idle</p>
           </div>
-          <div class="rounded-3xl p-4 border border-white/60 text-left" style="background:rgba(255,255,255,0.4)">
-            <p class="text-xs font-bold uppercase tracking-wider mb-0.5" style="color:#494454">Remaining</p>
-            <p class="font-extrabold" style="color:#6f46b9" id="voice-countdown">10s</p>
+          <div class="rounded-3xl p-4 border border-white/60 text-left" style="background:var(--col-glass-bg);">
+            <p class="text-xs font-bold uppercase tracking-wider mb-0.5" style="color:var(--col-text-secondary)">Remaining</p>
+            <p class="font-extrabold" style="color:var(--col-secondary)" id="voice-countdown">10s</p>
           </div>
         </div>
       </div>
@@ -241,14 +248,14 @@
       <div class="flex flex-col items-center gap-4">
         <button id="voice-start-btn" onclick="startVoiceScan()"
           class="px-10 py-4 rounded-full text-white font-extrabold text-sm flex items-center gap-2 shadow-lg"
-          style="background:linear-gradient(135deg,#8455ef,#6b38d4)">
+          style="background:linear-gradient(135deg,var(--col-primary-glow),var(--col-primary));">
           <span class="material-symbols-outlined">mic</span>
           <span id="voice-btn-label">Start Voice Recording</span>
         </button>
 
         <button id="voice-next-btn" onclick="submitAll()"
           class="px-10 py-4 rounded-full font-extrabold text-sm flex items-center gap-2 shadow border border-white/60 hidden"
-          style="background:rgba(255,255,255,0.4);color:#1c1b1b">
+          style="background:var(--col-glass-bg);color:var(--col-text-primary)">
           <span class="material-symbols-outlined">send</span>
           Compile &amp; Get Insights
         </button>
@@ -258,15 +265,15 @@
   </main>
 
   <!-- Full-screen Loading Overlay -->
-  <div id="loading-overlay" class="fixed inset-0 backdrop-blur-2xl z-[200] flex flex-col items-center justify-center hidden" style="background:rgba(255,255,255,0.25)">
+  <div id="loading-overlay" class="fixed inset-0 backdrop-blur-2xl z-[200] flex flex-col items-center justify-center hidden" style="background:var(--col-glass-bg);">
     <div class="glass-card p-12 rounded-[40px] border border-white/60 shadow-2xl flex flex-col items-center gap-6 max-w-sm text-center">
       <div class="relative w-20 h-20">
-        <div class="absolute inset-0 rounded-full border-4" style="border-color:rgba(107,56,212,0.2)"></div>
-        <div class="absolute inset-0 rounded-full border-4 border-t-primary animate-spin" style="border-color:rgba(107,56,212,0.2);border-top-color:#6b38d4"></div>
+        <div class="absolute inset-0 rounded-full border-4" style="border-color:rgba(124,58,237,0.2)"></div>
+        <div class="absolute inset-0 rounded-full border-4 border-t-primary animate-spin" style="border-color:rgba(124,58,237,0.2);border-top-color:var(--col-primary)"></div>
       </div>
       <div>
-        <h3 class="text-xl font-extrabold" style="color:#1c1b1b">Analyzing Your Data</h3>
-        <p class="text-sm font-medium mt-2 animate-pulse" style="color:#494454" id="loading-msg">Transmitting neural vectors...</p>
+        <h3 class="text-xl font-extrabold" style="color:var(--col-text-primary)">Analyzing Your Data</h3>
+        <p class="text-sm font-medium mt-2 animate-pulse" style="color:var(--col-text-secondary)" id="loading-msg">Transmitting neural vectors...</p>
       </div>
     </div>
   </div>
@@ -307,7 +314,7 @@
       const order = ['quiz','face','voice'];
       const idx = order.indexOf(name);
       order.forEach((k,i) => {
-        document.getElementById(bars[k]).style.background = i <= idx ? '#6b38d4' : '#e5e2e1';
+        document.getElementById(bars[k]).style.background = i <= idx ? 'var(--col-primary)' : 'var(--col-border)';
       });
       document.getElementById('phase-label').textContent = labels[name];
 
@@ -324,9 +331,9 @@
       // Reset all choice buttons
       document.querySelectorAll('.choice-btn').forEach(btn => {
         btn.classList.remove('selected');
-        btn.querySelector('.choice-icon').style.color = '#494454';
+        btn.querySelector('.choice-icon').style.color = 'var(--col-text-secondary)';
         btn.querySelector('.choice-icon').style.fontVariationSettings = "'FILL' 0";
-        btn.querySelector('.choice-label').style.color = '#494454';
+        btn.querySelector('.choice-label').style.color = 'var(--col-text-secondary)';
       });
     }
 
@@ -758,7 +765,7 @@
     });
   </script>
     <!-- Mobile Bottom Navigation Bar -->
-    <nav class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/60 backdrop-blur-xl border-t border-white/20 flex justify-around items-center py-2 px-4 shadow-lg">
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center py-2 px-4 shadow-lg border-t border-white/10" style="background:var(--col-nav-bg);backdrop-filter:blur(20px);">
         <a href="about.html" class="flex flex-col items-center gap-0.5 text-on-surface-variant/80 hover:text-primary transition-colors py-1">
             <span class="material-symbols-outlined text-xl">info</span>
             <span class="text-[10px] font-bold">About Us</span>
@@ -780,5 +787,6 @@
             <span class="text-[10px] font-bold">Breathe</span>
         </a>
     </nav>
+  <script src="js/gradual-blur.js"></script>
 </body>
 </html>
