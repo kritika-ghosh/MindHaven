@@ -329,8 +329,11 @@
     // ───────────────────────────────────────────────
     // QUIZ LOGIC
     // ───────────────────────────────────────────────
+    let isQuizTransitioning = false;
+
     function renderQuestion() {
-      document.getElementById('q-counter').textContent = `Question ${currentQ + 1} of 5`;
+      currentQ = Math.min(currentQ, QUESTIONS.length - 1);
+      document.getElementById('q-counter').textContent = `Question ${currentQ + 1} of ${QUESTIONS.length}`;
       document.getElementById('q-text').textContent = QUESTIONS[currentQ];
       // Reset all choice buttons
       document.querySelectorAll('.choice-btn').forEach(btn => {
@@ -339,9 +342,12 @@
         btn.querySelector('.choice-icon').style.fontVariationSettings = "'FILL' 0";
         btn.querySelector('.choice-label').style.color = 'var(--col-text-secondary)';
       });
+      isQuizTransitioning = false;
     }
 
     function pickAnswer(btn) {
+      if (isQuizTransitioning) return;
+
       // Mark selection visually
       document.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
@@ -350,7 +356,8 @@
       answers[currentQ] = value;
       console.log(`Q${currentQ+1} answered: ${value}`);
 
-      if (currentQ < 4) {
+      if (currentQ < QUESTIONS.length - 1) {
+        isQuizTransitioning = true;
         // Auto-advance to next question after short delay
         setTimeout(() => {
           currentQ++;
