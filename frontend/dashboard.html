@@ -342,30 +342,40 @@
             // Generate clean dates for historical labels
             const labels = chronRows.map((r, i) => {
                 const date = new Date(r.created_at);
-                return date.toLocaleDateString(undefined, {month: 'short', day: 'numeric'});
+                return isNaN(date.getTime()) 
+                    ? "Unknown Date" 
+                    : date.toLocaleDateString(undefined, {month: 'short', day: 'numeric'});
             });
-            const burnoutScores = chronRows.map(r => r.burnout_score);
+            const burnoutScores = chronRows.map(r => parseFloat(r.burnout_score) || 0.0);
 
+            const futureLabels = [];
+            const futurePredictions = [];
             const oneDayMs = 24 * 60 * 60 * 1000;
 
             if (actualCount > 0) {
                 // 1. Group records by unique calendar date (YYYY-MM-DD) to calculate daily averages
                 const dailyMap = {};
                 chronRows.forEach(r => {
-                    const dateStr = new Date(r.created_at).toISOString().split('T')[0];
+                    if (!r.created_at) return;
+                    const dateObj = new Date(r.created_at);
+                    if (isNaN(dateObj.getTime())) return;
+                    
+                    const dateStr = dateObj.toISOString().split('T')[0];
                     if (!dailyMap[dateStr]) {
-                        dailyMap[dateStr] = { sum: 0, count: 0 };
+                        dailyMap[dateStr] = { sum: 0.0, count: 0 };
                     }
-                    dailyMap[dateStr].sum += r.burnout_score;
+                    dailyMap[dateStr].sum += parseFloat(r.burnout_score) || 0.0;
                     dailyMap[dateStr].count += 1;
                 });
 
-                // Convert map to sorted array of daily averages
+                // Convert map to sorted array of daily averages, using cross-browser safe date creation
                 const dailyRecords = Object.keys(dailyMap).map(dateStr => {
+                    const parts = dateStr.split('-');
+                    const dateObj = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]), 12, 0, 0);
                     return {
                         dateStr: dateStr,
                         burnout_score: dailyMap[dateStr].sum / dailyMap[dateStr].count,
-                        timeMs: new Date(dateStr + "T12:00:00").getTime() // Noon to avoid timezone shifts
+                        timeMs: dateObj.getTime()
                     };
                 }).sort((a, b) => a.timeMs - b.timeMs);
 
@@ -375,8 +385,8 @@
                 const beta = 0.3;
                 const phi = 0.85;
 
-                let level = dailyRecords[0].burnout_score;
-                let trend = 0;
+                let level = dailyCount > 0 ? dailyRecords[0].burnout_score : 0.0;
+                let trend = 0.0;
 
                 if (dailyCount >= 2) {
                     const dailyFirstTime = dailyRecords[0].timeMs;
@@ -385,7 +395,7 @@
                     
                     // Initialize trend from first daily interval
                     const timeDiff = dx[1] - dx[0];
-                    trend = timeDiff > 0 ? (dy[1] - dy[0]) / timeDiff : 0;
+                    trend = timeDiff > 0 ? (dy[1] - dy[0]) / timeDiff : 0.0;
 
                     for (let i = 1; i < dailyCount; i++) {
                         const prevLevel = level;
@@ -401,7 +411,7 @@
                 // 2. Generate predictions for the next 7 days, anchored to the last actual raw score
                 const lastRecord = chronRows[actualCount - 1];
                 const lastDate = new Date(lastRecord.created_at);
-                const startScore = lastRecord.burnout_score; // Anchor point
+                const startScore = parseFloat(lastRecord.burnout_score) || 0.0; // Anchor point
 
                 for (let i = 1; i <= 7; i++) {
                     const fDate = new Date(lastDate.getTime() + i * oneDayMs);
