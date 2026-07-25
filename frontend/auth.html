@@ -217,7 +217,7 @@
                     if (data.session) {
                         sessionStorage.setItem('mindhaven_auth', 'true');
                         sessionStorage.setItem('mindhaven_user', name || email);
-                        navigateTo('about.html');
+                        navigateTo('assess.html');
                     } else {
                         alert('Account created! Please check your email for verification before signing in.');
                         btn.disabled = false;
@@ -236,7 +236,7 @@
                     
                     sessionStorage.setItem('mindhaven_auth', 'true');
                     sessionStorage.setItem('mindhaven_user', data.user.user_metadata?.full_name || email);
-                    navigateTo('about.html');
+                    navigateTo('assess.html');
                 }
             } catch (err) {
                 console.error("Auth error:", err);
@@ -252,7 +252,7 @@
                 sb.auth.signOut().catch(() => {});
             }
             seedGuestData();
-            navigateTo('about.html');
+            navigateTo('assess.html');
         }
 
         document.addEventListener('DOMContentLoaded', async function () {
