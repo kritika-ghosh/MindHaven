@@ -56,25 +56,23 @@
     <!-- Main Content Grid -->
     <main class="pt-32 pb-36 md:pb-24 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto space-y-16 relative z-10">
         
-        <!-- Hero Section: The Paper Title -->
+        <!-- Hero Section: Platform Title -->
         <section class="text-center space-y-6 max-w-4xl mx-auto">
             <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary font-bold text-xs uppercase tracking-wider">
-                <span class="material-symbols-outlined text-sm">menu_book</span>
-                Research &amp; Methodology
+                <span class="material-symbols-outlined text-sm">spa</span>
+                Platform Ecosystem
             </div>
             <h1 class="text-3xl md:text-5xl font-extrabold text-on-surface tracking-tight leading-tight">
-                Towards Unbiased Student Burnout Detection
+                Empowering Mental Resilience through Multimodal AI
             </h1>
             <p class="text-lg md:text-xl font-bold text-secondary">
-                A Hybrid Approach Combining Psychometric, Visual, and Voice Signals
+                MindHaven combines clinical psychological design, computer vision, and real-time support.
             </p>
             <div class="text-xs text-on-surface-variant font-bold uppercase tracking-widest pt-2">
-                School of Computing Science, Engineering and Artificial Intelligence <br/>
-                <span class="text-primary">VIT Bhopal University, Madhya Pradesh</span>
+                MindHaven Wellness Engine <br/>
+                <span class="text-primary">Advanced Multi-Modal Psychological Diagnostics &amp; Therapy</span>
             </div>
         </section>
-
-
 
         <!-- Paper Sections -->
         <section class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -82,149 +80,77 @@
             <!-- Left Side: Table of Contents -->
             <div class="lg:col-span-4 sticky top-24 space-y-4">
                 <div class="glass-card p-6 rounded-3xl border border-white/40 shadow-lg">
-                    <h3 class="font-extrabold text-lg text-on-surface mb-4">Paper Outline</h3>
+                    <h3 class="font-extrabold text-lg text-on-surface mb-4">Ecosystem Modules</h3>
                     <ul class="space-y-3 text-sm font-semibold text-on-surface-variant/80">
-                        <li><a href="#abstract" class="hover:text-primary transition-colors flex items-center gap-2"><span class="material-symbols-outlined text-base">description</span>Abstract</a></li>
-                        <li><a href="#introduction" class="hover:text-primary transition-colors flex items-center gap-2"><span class="material-symbols-outlined text-base">info</span>I. Introduction</a></li>
-                        <li><a href="#methodology" class="hover:text-primary transition-colors flex items-center gap-2"><span class="material-symbols-outlined text-base">clinical_notes</span>II. Methodology</a></li>
-                        <li><a href="#formulas" class="hover:text-primary transition-colors flex items-center gap-2"><span class="material-symbols-outlined text-base">calculate</span>III. Geometric Ratios</a></li>
-                        <li><a href="#results" class="hover:text-primary transition-colors flex items-center gap-2"><span class="material-symbols-outlined text-base">bar_chart</span>IV. Results &amp; Metrics</a></li>
-                        <li><a href="#conclusion" class="hover:text-primary transition-colors flex items-center gap-2"><span class="material-symbols-outlined text-base">verified</span>V. Conclusion &amp; References</a></li>
+                        <li><a href="#overview" class="hover:text-primary transition-colors flex items-center gap-2"><span class="material-symbols-outlined text-base">dashboard</span>I. Core ML Model</a></li>
+                        <li><a href="#chatbot" class="hover:text-primary transition-colors flex items-center gap-2"><span class="material-symbols-outlined text-base">chat</span>II. AI Support Chatbot</a></li>
+                        <li><a href="#predictive" class="hover:text-primary transition-colors flex items-center gap-2"><span class="material-symbols-outlined text-base">bar_chart</span>III. Explainable Analytics</a></li>
+                        <li><a href="#breathing" class="hover:text-primary transition-colors flex items-center gap-2"><span class="material-symbols-outlined text-base">air</span>IV. Therapeutic Breathing</a></li>
                     </ul>
                 </div>
                 
                 <div class="glass-card p-6 rounded-3xl border border-white/40 shadow-lg text-center flex flex-col items-center gap-3">
                     <span class="text-2xl font-extrabold text-primary leading-none">95.76%</span>
-                    <p class="text-xs font-bold text-on-surface mt-1">CatBoost Regression R² Score</p>
+                    <p class="text-xs font-bold text-on-surface mt-1">Model Assessment R² Score</p>
                     <a href="assess.html" class="w-full pill-3d py-3 text-white font-bold text-sm rounded-full flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md mt-2">
                         <span class="material-symbols-outlined text-sm">medical_services</span>
-                        Try It Out
+                        Start Assessment
                     </a>
                 </div>
             </div>
 
             <!-- Right Side: Content Details -->
-            <div class="lg:col-span-8 space-y-12">
-                <!-- Abstract -->
-                <div id="abstract" class="glass-card p-8 md:p-10 rounded-[2.5rem] border border-white/50 shadow-md scroll-mt-24 space-y-4">
-                    <div class="flex items-center gap-3 text-primary">
-                        <span class="material-symbols-outlined text-2xl font-bold">description</span>
-                        <h3 class="text-xl font-extrabold">Abstract</h3>
-                    </div>
-                    <p class="text-sm md:text-base text-on-surface-variant leading-relaxed font-medium">
-                        Mental burnout is a significant occupational and psychological issue that arises especially among college students who regularly face academic and social pressure in their life. This paper introduces a multimodal system that detects mental burnout in students which integrates data in a flow starting from questionnaire, facial expressions, and voice sentiment analysis to provide a more unbiased result. Due to the lack of a suitable public dataset for such a problem, a new custom dataset has been created with great precautions.
-                    </p>
-                    <p class="text-sm md:text-base text-on-surface-variant leading-relaxed font-medium">
-                        The architecture processes each data path starting with an initial questionnaire which provides a self-reported baseline, facial analysis which computes the eye and mouth aspect ratios (EAR/MAR) and detects emotions using the Deepface library, and voice sentiment analysis via VADER library which calculates the compound sentiment of how the person is feeling. These variety of features are then fused and fed into a CatBoost continuous regression model, which achieved an R² score of 95.76%.
-                    </p>
-                </div>
-
-                <!-- Section I: Introduction -->
-                <div id="introduction" class="glass-card p-8 md:p-10 rounded-[2.5rem] border border-white/50 shadow-md scroll-mt-24 space-y-4">
-                    <div class="flex items-center gap-3 text-secondary">
-                        <span class="material-symbols-outlined text-2xl font-bold">info</span>
-                        <h3 class="text-xl font-extrabold">I. Introduction &amp; Motivation</h3>
-                    </div>
-                    <p class="text-sm md:text-base text-on-surface-variant leading-relaxed font-medium">
-                        In today’s society, mental burnout has come out to be a crucial challenge to an individual’s overall well-being and productivity. The pressures of academic stress and changes in the surroundings can make college students highly prone to burnout and thus need detection and support.
-                    </p>
-                    <p class="text-sm md:text-base text-on-surface-variant leading-relaxed font-medium">
-                        Traditional methods have relied majorly on self-report clinical questionnaires, which tend to miss real-time emotional fluctuations and suffer from subjective individual bias. By utilizing multi-modal fusion, our model combines data from three distinct sources (arranged survey, facial aspect ratios, and voice sentiment) to create an objective, unbiased evaluation.
-                    </p>
-                </div>
-
-                <!-- Section II: Methodology -->
-                <div id="methodology" class="glass-card p-8 md:p-10 rounded-[2.5rem] border border-white/50 shadow-md scroll-mt-24 space-y-6">
+            <div class="lg:col-span-8 space-y-8">
+                <!-- Core ML Model -->
+                <div id="overview" class="glass-card p-8 md:p-10 rounded-[2.5rem] border border-white/50 shadow-md scroll-mt-24 space-y-4">
                     <div class="flex items-center gap-3 text-primary">
                         <span class="material-symbols-outlined text-2xl font-bold">clinical_notes</span>
-                        <h3 class="text-xl font-extrabold">II. Architecture &amp; Methodology</h3>
+                        <h3 class="text-xl font-extrabold">I. Core Multimodal ML Model</h3>
                     </div>
-                    
-                    <div class="space-y-4 text-sm md:text-base text-on-surface-variant font-medium">
-                        <p>Our empirical methodology is divided into a structured three-part pipeline:</p>
-                        <ul class="space-y-3 pl-4 list-decimal">
-                            <li>
-                                <strong>Psychometric Baseline (Survey):</strong> A questionnaire covering aspects of academic burnout derived from the Maslach Burnout Inventory (MBI) to set a self-reported cognitive state.
-                            </li>
-                            <li>
-                                <strong>Facial Geometric Indicators (Computer Vision):</strong> A 20-second camera capture extracts EAR and MAR landmarks dynamically. Deepface is used to compute facial expression scores (Positive, Neutral, Negative).
-                            </li>
-                            <li>
-                                <strong>Voice Sentimental Channel:</strong> Live vocals are captured and processed through Speech Recognition. Sentiment compound scores are computed via the Valence Aware Dictionary and sEntiment Reasoner (VADER) library.
-                            </li>
-                        </ul>
-                    </div>
+                    <p class="text-sm md:text-base text-on-surface-variant leading-relaxed font-medium">
+                        MindHaven features a state-of-the-art <strong>CatBoost Regressor</strong> framework designed to evaluate mental fatigue objectively. Instead of relying solely on subjective forms, the engine evaluates stress using three distinct channels:
+                    </p>
+                    <ul class="space-y-2 text-sm text-on-surface-variant font-semibold pl-5 list-disc">
+                        <li><strong>Psychometrics:</strong> Short survey baseline modeled after the Maslach Burnout Inventory.</li>
+                        <li><strong>Computer Vision:</strong> Computes Eye Aspect Ratio (EAR) for blinking fatigue and Mouth Aspect Ratio (MAR) for muscular tension.</li>
+                        <li><strong>Vocal Sentiment:</strong> Utilizes speech recognition and VADER sentiment dictionaries to detect tone stability.</li>
+                    </ul>
                 </div>
 
-                <!-- Section III: Formulas -->
-                <div id="formulas" class="glass-card p-8 md:p-10 rounded-[2.5rem] border border-white/50 shadow-md scroll-mt-24 space-y-6">
+                <!-- AI Chatbot -->
+                <div id="chatbot" class="glass-card p-8 md:p-10 rounded-[2.5rem] border border-white/50 shadow-md scroll-mt-24 space-y-4">
                     <div class="flex items-center gap-3 text-secondary">
-                        <span class="material-symbols-outlined text-2xl font-bold">calculate</span>
-                        <h3 class="text-xl font-extrabold">III. Geometric Feature Formulas</h3>
+                        <span class="material-symbols-outlined text-2xl font-bold">chat</span>
+                        <h3 class="text-xl font-extrabold">II. Real-Time Supportive Therapy Chatbot</h3>
                     </div>
-                    
-                    <div class="space-y-6 font-medium text-sm md:text-base text-on-surface-variant">
-                        <!-- EAR -->
-                        <div class="space-y-2">
-                            <h4 class="font-extrabold text-on-surface">1. Eye Aspect Ratio (EAR)</h4>
-                            <p class="text-xs text-on-surface-variant/80">Calculates eye fatigue based on vertical and horizontal landmark distances:</p>
-                            <div class="bg-white/40 p-4 rounded-xl border border-white/60 font-mono text-xs text-primary overflow-x-auto">
-                                EAR = (dist(P2, P6) + dist(P3, P5)) / (2 * dist(P1, P4))
-                            </div>
-                        </div>
-
-                        <!-- MAR -->
-                        <div class="space-y-2">
-                            <h4 class="font-extrabold text-on-surface">2. Mouth Aspect Ratio (MAR)</h4>
-                            <p class="text-xs text-on-surface-variant/80">Measures physical tension and yawning frequencies based on vertical height and width:</p>
-                            <div class="bg-white/40 p-4 rounded-xl border border-white/60 font-mono text-xs text-primary overflow-x-auto">
-                                MAR = (max_y(INNER_MOUTH) - min_y(INNER_MOUTH)) / dist(L454, L234)
-                            </div>
-                        </div>
-                    </div>
+                    <p class="text-sm md:text-base text-on-surface-variant leading-relaxed font-medium">
+                        Our interactive therapist chatbot, located at the bottom-right of the interface, acts as an on-demand mental health companion. It processes user chat sentiment in real-time, matching response styling and therapeutic guidance directly to your current stress profile. The chatbot suggests coping strategies, guides users through grounding techniques, and tracks verbal sentiment progress over time.
+                    </p>
                 </div>
 
-                <!-- Section IV: Results -->
-                <div id="results" class="glass-card p-8 md:p-10 rounded-[2.5rem] border border-white/50 shadow-md scroll-mt-24 space-y-6">
+                <!-- Explainable Analytics -->
+                <div id="predictive" class="glass-card p-8 md:p-10 rounded-[2.5rem] border border-white/50 shadow-md scroll-mt-24 space-y-4">
                     <div class="flex items-center gap-3 text-primary">
                         <span class="material-symbols-outlined text-2xl font-bold">bar_chart</span>
-                        <h3 class="text-xl font-extrabold">IV. Results &amp; Benchmarks</h3>
+                        <h3 class="text-xl font-extrabold">III. Explainable Predictive Graph</h3>
                     </div>
-                    
-                    <p class="text-sm md:text-base text-on-surface-variant font-medium leading-relaxed">
-                        Through rigorous 5-Fold Cross-Validation, the continuous <strong>CatBoost Regressor</strong> yielded the highest performance, achieving a Mean R² score of <strong>95.76%</strong>. It consistently outperformed alternative regression architectures including Random Forest Regressor (95.32%) and Support Vector Regressor (92.95%).
+                    <p class="text-sm md:text-base text-on-surface-variant leading-relaxed font-medium">
+                        Your mental state shouldn't be a black box. MindHaven provides a personalized explanation graph based on SHAP (SHapley Additive exPlanations) values to highlight what is driving your fatigue:
                     </p>
-
-                    <div class="overflow-x-auto w-full">
-                        <table class="w-full text-left text-xs border-collapse">
-                            <thead>
-                                <tr class="border-b border-white/20 text-on-surface-variant/60 uppercase font-bold">
-                                    <th class="py-2 pr-4">Regression Model</th>
-                                    <th class="py-2 px-4 text-center">Mean R² Score</th>
-                                    <th class="py-2 px-4 text-center">Mean RMSE</th>
-                                    <th class="py-2 px-4 text-center">Mean MAE</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-white/10 font-bold text-on-surface/85">
-                                <tr><td class="py-2 pr-4">CatBoost Regressor (Ours)</td><td class="py-2 px-4 text-center text-primary">95.76%</td><td class="py-2 px-4 text-center">0.1727</td><td class="py-2 px-4 text-center">0.1378</td></tr>
-                                <tr><td class="py-2 pr-4">Random Forest Regressor</td><td class="py-2 px-4 text-center text-primary">95.32%</td><td class="py-2 px-4 text-center">0.1805</td><td class="py-2 px-4 text-center">0.1444</td></tr>
-                                <tr><td class="py-2 pr-4">Support Vector Regressor (SVR)</td><td class="py-2 px-4 text-center text-primary">92.95%</td><td class="py-2 px-4 text-center">0.2227</td><td class="py-2 px-4 text-center">0.1719</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
+                    <ul class="space-y-2 text-sm text-on-surface-variant font-semibold pl-5 list-disc">
+                        <li><span class="text-red-500 font-extrabold">Coral Red (Right-pulling):</span> Symptoms or biometric anomalies (like high yawning rates or sleep deficits) raising your stress rating.</li>
+                        <li><span class="text-green-600 font-extrabold">Sage Green (Left-pulling):</span> Protective factors (like active workouts or social breaks) keeping your rating down.</li>
+                    </ul>
                 </div>
 
-                <!-- Section V: Conclusion -->
-                <div id="conclusion" class="glass-card p-8 md:p-10 rounded-[2.5rem] border border-white/50 shadow-md scroll-mt-24 space-y-4">
+                <!-- Therapeutic Breathing -->
+                <div id="breathing" class="glass-card p-8 md:p-10 rounded-[2.5rem] border border-white/50 shadow-md scroll-mt-24 space-y-4">
                     <div class="flex items-center gap-3 text-secondary">
-                        <span class="material-symbols-outlined text-2xl font-bold">verified</span>
-                        <h3 class="text-xl font-extrabold">V. Conclusion &amp; Future Directions</h3>
+                        <span class="material-symbols-outlined text-2xl font-bold">air</span>
+                        <h3 class="text-xl font-extrabold">IV. Therapeutic Breathing (Pranayama)</h3>
                     </div>
                     <p class="text-sm md:text-base text-on-surface-variant leading-relaxed font-medium">
-                        This project successfully validated a multimodal machine learning framework that evaluates student burnout levels objectively. Feature importance graphs confirm that physiological facial indicators (MAR &amp; EAR) are the most significant markers, proving the necessity of multi-modal features over subjective reports.
-                    </p>
-                    <p class="text-sm md:text-base text-on-surface-variant leading-relaxed font-medium">
-                        Future extensions will focus on gathering long-term temporal sequences from individuals to map fatigue fluctuations throughout semesters and incorporating wearable sensors like heart-rate variability for continuous diagnosis.
+                        To help users immediately de-escalate acute stress, the platform integrates paced breathing modules. The breathing guide helps synchronize heart rate variability and settle autonomic nervous tension. Users can practice daily, which lowers facial muscular markers (MAR) and feeds positive signals back into the diagnostic model.
                     </p>
                 </div>
             </div>
@@ -234,7 +160,7 @@
     <!-- Footer -->
     <footer class="w-full text-center py-6 border-t border-white/20 bg-white/5 backdrop-blur-md">
         <p class="text-xs text-on-surface-variant/60 font-semibold">
-            &copy; 2026 MindHaven Wellness Inc. Powered by VIT Bhopal University Research.
+            &copy; 2026 MindHaven Wellness Inc. Powered by Advanced AI Research.
         </p>
     </footer>
 
