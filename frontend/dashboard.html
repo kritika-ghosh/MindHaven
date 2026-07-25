@@ -346,60 +346,74 @@
             });
             const burnoutScores = chronRows.map(r => r.burnout_score);
 
-            const futureLabels = [];
-            const futurePredictions = [];
+            const oneDayMs = 24 * 60 * 60 * 1000;
 
             if (actualCount > 0) {
-                const firstTime = new Date(chronRows[0].created_at).getTime();
-                const oneDayMs = 24 * 60 * 60 * 1000;
-                
-                // x array is time in days since first record
-                const x = chronRows.map(r => (new Date(r.created_at).getTime() - firstTime) / oneDayMs);
-                const y = burnoutScores;
+                // 1. Group records by unique calendar date (YYYY-MM-DD) to calculate daily averages
+                const dailyMap = {};
+                chronRows.forEach(r => {
+                    const dateStr = new Date(r.created_at).toISOString().split('T')[0];
+                    if (!dailyMap[dateStr]) {
+                        dailyMap[dateStr] = { sum: 0, count: 0 };
+                    }
+                    dailyMap[dateStr].sum += r.burnout_score;
+                    dailyMap[dateStr].count += 1;
+                });
 
-                // Holt's Dampened Exponential Smoothing
-                // Alpha = 0.4 (level smoothing), Beta = 0.3 (trend smoothing), Phi = 0.85 (trend damping)
+                // Convert map to sorted array of daily averages
+                const dailyRecords = Object.keys(dailyMap).map(dateStr => {
+                    return {
+                        dateStr: dateStr,
+                        burnout_score: dailyMap[dateStr].sum / dailyMap[dateStr].count,
+                        timeMs: new Date(dateStr + "T12:00:00").getTime() // Noon to avoid timezone shifts
+                    };
+                }).sort((a, b) => a.timeMs - b.timeMs);
+
+                // Run Holt's smoothing over daily aggregated array
+                const dailyCount = dailyRecords.length;
                 const alpha = 0.4;
                 const beta = 0.3;
                 const phi = 0.85;
 
-                let level = y[0];
+                let level = dailyRecords[0].burnout_score;
                 let trend = 0;
 
-                if (actualCount >= 2) {
-                    // Initialize trend from first interval
-                    const timeDiff = x[1] - x[0];
-                    trend = timeDiff > 0 ? (y[1] - y[0]) / timeDiff : 0;
+                if (dailyCount >= 2) {
+                    const dailyFirstTime = dailyRecords[0].timeMs;
+                    const dx = dailyRecords.map(r => (r.timeMs - dailyFirstTime) / oneDayMs);
+                    const dy = dailyRecords.map(r => r.burnout_score);
                     
-                    for (let i = 1; i < actualCount; i++) {
+                    // Initialize trend from first daily interval
+                    const timeDiff = dx[1] - dx[0];
+                    trend = timeDiff > 0 ? (dy[1] - dy[0]) / timeDiff : 0;
+
+                    for (let i = 1; i < dailyCount; i++) {
                         const prevLevel = level;
                         const prevTrend = trend;
-                        const dt = x[i] - x[i-1];
-                        
-                        // Scale damping to the time step elapsed
+                        const dt = dx[i] - dx[i-1];
                         const currentPhi = Math.pow(phi, dt || 1);
-                        
-                        level = alpha * y[i] + (1 - alpha) * (prevLevel + currentPhi * prevTrend);
+
+                        level = alpha * dy[i] + (1 - alpha) * (prevLevel + currentPhi * prevTrend);
                         trend = beta * (level - prevLevel) + (1 - beta) * currentPhi * prevTrend;
                     }
                 }
 
-                // Generate predictions for the next 7 days
+                // 2. Generate predictions for the next 7 days, anchored to the last actual raw score
                 const lastRecord = chronRows[actualCount - 1];
                 const lastDate = new Date(lastRecord.created_at);
-                const lastTimeOffset = (lastDate.getTime() - firstTime) / oneDayMs;
-                
+                const startScore = lastRecord.burnout_score; // Anchor point
+
                 for (let i = 1; i <= 7; i++) {
                     const fDate = new Date(lastDate.getTime() + i * oneDayMs);
                     futureLabels.push(fDate.toLocaleDateString(undefined, {month: 'short', day: 'numeric'}) + " (Predicted)");
-                    
-                    // Forecast h steps ahead: Y_t+h = Level + sum_{k=1}^h (phi^k * Trend)
+
                     let accumDamping = 0;
                     for (let k = 1; k <= i; k++) {
                         accumDamping += Math.pow(phi, k);
                     }
-                    const forecastVal = level + accumDamping * trend;
-                    futurePredictions.push(Math.max(0, Math.min(4, forecastVal))); // Clamp to valid range [0, 4]
+                    // Extrapolate from the last raw score using the stable daily trend
+                    const forecastVal = startScore + accumDamping * trend;
+                    futurePredictions.push(Math.max(0, Math.min(4, forecastVal)));
                 }
             }
 
