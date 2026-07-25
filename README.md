@@ -87,20 +87,31 @@ The model was trained directly on the empirical VIT student dataset (266 cleaned
 
 ---
 
+## 📈 Predictive Trendline Forecasting
+
+The MindHaven dashboard features a **7-day predictive forecast** plotted on the "Burnout Risk Trajectory" line chart.
+
+To provide physiologically realistic, human-aligned stress forecasts, we implement **Holt's Dampened Exponential Smoothing** directly in the client-side JavaScript:
+
+1. **Daily Aggregation:** Historical telemetry records are automatically grouped and averaged by calendar date (`YYYY-MM-DD`). This establishes a stable time step ($dt \ge 1$ day) and prevents numerical trend explosions caused by multiple assessments taken seconds/minutes apart.
+2. **Recency Weighting:** Holt's model updates the level and trend day-by-day, prioritizing recent behaviors over distant baselines.
+3. **Dampened Extrapolation ($\phi = 0.85$):** Each day into the future, the trend slope is damped by $0.85$, causing the projection to slowly curve and flatten. This represents that stress levels eventually stabilize or self-correct, preventing unrealistic runaway scores.
+4. **Seamless Connection (No Jumps):** The prediction line is anchored exactly to the user's last raw session score ($Y_{\text{last}}$) to eliminate visual discontinuities (vertical jumps).
+   $$\text{Forecast}(h) = Y_{\text{last}} + \left( \sum_{k=1}^{h} \phi^k \right) \times \text{Final Daily Trend}$$
+
+---
+
 ## 💬 CBT Fine-Tuned Chatbot
 
-MindHaven integrates a custom fine-tuned large language model, **`kritika53245/mindhaven-cbt-qwen`**, trained on Cognitive Behavioral Therapy (CBT) dialogue datasets.
+MindHaven integrates a dual-mode empathetic CBT wellness coach served via a FastAPI gateway at `/v1/chat/completions`:
 
-### 1. Design & Objectives
-Unlike general-purpose conversational LLMs, the CBT Chatbot is aligned to act as an empathetic wellness coach:
-*   Reflects user stress patterns and biological metrics back in a supportive, non-clinical manner.
-*   Guides users through cognitive restructuring (identifying automatic negative thoughts).
-*   Recommends actionable recovery micro-plans tailored to their diagnostic score.
+### 1. Primary Mode: Server-Side Groq API Proxy
+*   **High Performance:** Requests are securely proxied server-side to Groq using the high-performance **`llama-3.3-70b-versatile`** model.
+*   **CORS & Security:** Bypasses browser CORS blocks and eliminates client-side credential exposure by resolving API keys dynamically from Hugging Face environment variables (`GROQ_API_KEY`, `GROQ_KEY`, or `GROK_KEY`) or bearer headers.
+*   **Few-Shot CBT Personality:** Guided by embedded cognitive restructuring exemplars (addressing academic freeze, imposter syndrome, and physical anxiety) to act as an empathetic therapist.
 
-### 2. Architecture & Inference Setup
-*   **Base Architecture:** Qwen-based causal language model.
-*   **Inference Precision:** Loaded in `float16` half-precision to fit within a standard T4 GPU VRAM footprint (under 16GB VRAM).
-*   **OpenAI Compatibility:** Served via a FastAPI gateway exposing `/v1/chat/completions`, formatting prompts dynamically using the Qwen chat template (`tokenizer.apply_chat_template`).
+### 2. Fallback Mode: Local Qwen GGUF Model
+*   **Local GGUF execution:** If no Groq credentials can be resolved, the FastAPI backend automatically falls back to running a local quantized model, **`mindhaven-cbt-qwen-Q4_K_M.gguf`** (loaded from Hugging Face repository `kritika53245/mindhaven-cbt-qwen-gguf`), directly in the Space's CPU/RAM resources using `llama-cpp-python`.
 
 ---
 
