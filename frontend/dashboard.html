@@ -335,12 +335,81 @@
         function renderDashboardCharts(rows) {
             // Sort ascending for chronological trend
             const chronRows = [...rows].reverse();
+            const actualCount = chronRows.length;
             
+            if (actualCount === 0) return;
+
+            // Generate clean dates for historical labels
             const labels = chronRows.map((r, i) => {
                 const date = new Date(r.created_at);
-                return date.toLocaleDateString(undefined, {month: 'short', day: 'numeric'}) + ` (N-${chronRows.length - i})`;
+                return date.toLocaleDateString(undefined, {month: 'short', day: 'numeric'});
             });
             const burnoutScores = chronRows.map(r => r.burnout_score);
+
+            const futureLabels = [];
+            const futurePredictions = [];
+
+            if (actualCount > 0) {
+                const firstTime = new Date(chronRows[0].created_at).getTime();
+                const oneDayMs = 24 * 60 * 60 * 1000;
+                
+                // x array is time in days since first record
+                const x = chronRows.map(r => (new Date(r.created_at).getTime() - firstTime) / oneDayMs);
+                const y = burnoutScores;
+
+                // Holt's Dampened Exponential Smoothing
+                // Alpha = 0.4 (level smoothing), Beta = 0.3 (trend smoothing), Phi = 0.85 (trend damping)
+                const alpha = 0.4;
+                const beta = 0.3;
+                const phi = 0.85;
+
+                let level = y[0];
+                let trend = 0;
+
+                if (actualCount >= 2) {
+                    // Initialize trend from first interval
+                    const timeDiff = x[1] - x[0];
+                    trend = timeDiff > 0 ? (y[1] - y[0]) / timeDiff : 0;
+                    
+                    for (let i = 1; i < actualCount; i++) {
+                        const prevLevel = level;
+                        const prevTrend = trend;
+                        const dt = x[i] - x[i-1];
+                        
+                        // Scale damping to the time step elapsed
+                        const currentPhi = Math.pow(phi, dt || 1);
+                        
+                        level = alpha * y[i] + (1 - alpha) * (prevLevel + currentPhi * prevTrend);
+                        trend = beta * (level - prevLevel) + (1 - beta) * currentPhi * prevTrend;
+                    }
+                }
+
+                // Generate predictions for the next 7 days
+                const lastRecord = chronRows[actualCount - 1];
+                const lastDate = new Date(lastRecord.created_at);
+                const lastTimeOffset = (lastDate.getTime() - firstTime) / oneDayMs;
+                
+                for (let i = 1; i <= 7; i++) {
+                    const fDate = new Date(lastDate.getTime() + i * oneDayMs);
+                    futureLabels.push(fDate.toLocaleDateString(undefined, {month: 'short', day: 'numeric'}) + " (Predicted)");
+                    
+                    // Forecast h steps ahead: Y_t+h = Level + sum_{k=1}^h (phi^k * Trend)
+                    let accumDamping = 0;
+                    for (let k = 1; k <= i; k++) {
+                        accumDamping += Math.pow(phi, k);
+                    }
+                    const forecastVal = level + accumDamping * trend;
+                    futurePredictions.push(Math.max(0, Math.min(4, forecastVal))); // Clamp to valid range [0, 4]
+                }
+            }
+
+            const combinedLabels = [...labels, ...futureLabels];
+            const actualDatasetData = [...burnoutScores, ...Array(7).fill(null)];
+            const predictedDatasetData = [
+                ...Array(actualCount - 1).fill(null),
+                burnoutScores[actualCount - 1], // Start exactly at last actual score to connect
+                ...futurePredictions
+            ];
  
             // 1. Burnout risk trend line chart
             const ctxLine = document.getElementById('vitality-chart').getContext('2d');
@@ -349,11 +418,11 @@
             vitalityChartInstance = new Chart(ctxLine, {
                 type: 'line',
                 data: {
-                    labels: labels,
+                    labels: combinedLabels,
                     datasets: [
                         {
-                            label: 'Burnout Score',
-                            data: burnoutScores,
+                            label: 'Actual Burnout Score',
+                            data: actualDatasetData,
                             borderColor: '#8455ef',
                             backgroundColor: 'rgba(132, 85, 239, 0.1)',
                             fill: false,
@@ -362,6 +431,19 @@
                             pointBackgroundColor: '#6b38d4',
                             pointHoverRadius: 7,
                             pointRadius: 4
+                        },
+                        {
+                            label: '7-Day Predicted Trend',
+                            data: predictedDatasetData,
+                            borderColor: '#f43f5e',
+                            backgroundColor: 'rgba(244, 63, 94, 0.05)',
+                            borderDash: [6, 6],
+                            fill: false,
+                            tension: 0.3,
+                            borderWidth: 2.5,
+                            pointBackgroundColor: '#f43f5e',
+                            pointHoverRadius: 5,
+                            pointRadius: 3
                         }
                     ]
                 },
@@ -369,7 +451,35 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { display: false }
+                        legend: { 
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                font: { family: 'Plus Jakarta Sans', size: 11, weight: 'bold' },
+                                color: '#4b5563',
+                                boxWidth: 12,
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
+                        tooltip: {
+                            enabled: true,
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            titleColor: '#111827',
+                            bodyColor: '#4b5563',
+                            borderColor: 'rgba(0, 0, 0, 0.05)',
+                            borderWidth: 1,
+                            titleFont: { family: 'Plus Jakarta Sans', weight: 'bold' },
+                            bodyFont: { family: 'Plus Jakarta Sans' },
+                            padding: 10,
+                            displayColors: true,
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.parsed.y.toFixed(2);
+                                    return ` ${context.dataset.label}: ${value}`;
+                                }
+                            }
+                        }
                     },
                     scales: {
                         y: {
@@ -387,6 +497,31 @@
                 },
                 plugins: [drawBandsPlugin]
             });
+
+            // Update prediction note summary text
+            const predictionNoteContainer = document.getElementById('prediction-note-container');
+            const predictionNoteText = document.getElementById('prediction-note-text');
+            if (predictionNoteContainer && predictionNoteText) {
+                if (actualCount >= 2) {
+                    const finalPredictVal = futurePredictions[futurePredictions.length - 1];
+                    const lastScore = burnoutScores[actualCount - 1];
+                    const diff = finalPredictVal - lastScore;
+                    let trendPhrase = "";
+                    
+                    if (Math.abs(diff) < 0.05) {
+                        trendPhrase = "hold stable at " + finalPredictVal.toFixed(2);
+                    } else if (diff > 0) {
+                        trendPhrase = "increase to " + finalPredictVal.toFixed(2) + " (↗ rising risk)";
+                    } else {
+                        trendPhrase = "decrease to " + finalPredictVal.toFixed(2) + " (↘ declining risk)";
+                    }
+                    
+                    predictionNoteText.innerHTML = `<strong>Predictive Analysis:</strong> Based on your previous ${actualCount} sessions, your burnout score is projected to ${trendPhrase} by next week.`;
+                    predictionNoteContainer.style.display = 'flex';
+                } else {
+                    predictionNoteContainer.style.display = 'none';
+                }
+            }
 
             // 2. Emotion Radar Chart (Average pos/neu/neg expression)
             let avgPos = 0, avgNeu = 0, avgNeg = 0, count = 0;
