@@ -346,6 +346,10 @@
         };
 
         function renderDashboardCharts(rows) {
+            const isDark = document.documentElement.classList.contains('dark');
+            const textColor = isDark ? '#9f97b8' : '#494454';
+            const gridColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)';
+
             // Sort ascending for chronological trend
             const chronRows = [...rows].reverse();
             const actualCount = chronRows.length;
