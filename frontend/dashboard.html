@@ -892,18 +892,6 @@
             }
         }
 
-        // Logout
-        async function handleLogout() {
-            sessionStorage.removeItem('mindhaven_auth');
-            sessionStorage.removeItem('mindhaven_guest');
-            sessionStorage.removeItem('mindhaven_user');
-            sessionStorage.removeItem('burnout_prediction');
-            
-            if (sb) {
-                await sb.auth.signOut().catch(() => {});
-            }
-            navigateTo('auth.html');
-        }
 
         // Generate 6 mock telemetry rows for judges (guest mode)
         function generateMockHistory() {

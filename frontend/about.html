@@ -47,6 +47,9 @@
             <div id="user-profile-avatar" class="hidden w-10 h-10 rounded-full overflow-hidden border-2" style="border-color:var(--col-border-active)">
                 <img alt="Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAc6gUeyepdAYeiT1kNrp5-bdopO8mAEmM2WIzSh9bpb2Y8TkI54s9vjF4LOjA-CNNSNpSIm2Nafm88rhjVUOlTI8-roRmdfUWKGWgE_3pEHvtFLMdpNR54iDmZ10yU7khzKni1gysp2QOiwlfBItm6VE2jqvz2_7DYcsgWy_MT8xRh26dZs3VT8biI-c1qOrW-itV65RWqBh47nVVfQNZsyeyEZK6p5YBW1aXF5mY1SvjDylraJKV-3IumaI8po6FbnGl31hDdjQ"/>
             </div>
+            <button id="logout-btn" onclick="handleLogout()" class="hidden flex items-center gap-1 text-xs font-bold text-red-500 hover:text-red-700 bg-white/20 border border-white/40 px-3 py-1.5 rounded-full transition-all">
+                <span class="material-symbols-outlined text-[14px]">logout</span>Sign Out
+            </button>
         </div>
     </header>
 
@@ -239,18 +242,21 @@
     <script src="js/3d-elements.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Check if user is logged in to toggle Sign In / Profile Avatar
+            // Check if user is logged in to toggle Sign In / Profile Avatar / Logout button
             const isAuth = sessionStorage.getItem('mindhaven_auth') === 'true';
             const isGuest = sessionStorage.getItem('mindhaven_guest') === 'true';
             const authBtn = document.getElementById('auth-btn');
             const avatar = document.getElementById('user-profile-avatar');
+            const logoutBtn = document.getElementById('logout-btn');
             
             if (isAuth || isGuest) {
                 if (authBtn) authBtn.classList.add('hidden');
                 if (avatar) avatar.classList.remove('hidden');
+                if (logoutBtn) logoutBtn.classList.remove('hidden');
             } else {
                 if (authBtn) authBtn.classList.remove('hidden');
                 if (avatar) avatar.classList.add('hidden');
+                if (logoutBtn) logoutBtn.classList.add('hidden');
             }
         });
     </script>

@@ -102,3 +102,21 @@ window.toggleTheme = function() {
     },
   };
 })();
+
+/* ── Global Logout Helper ─────────────────────────────────── */
+window.handleLogout = async function() {
+  sessionStorage.removeItem('mindhaven_auth');
+  sessionStorage.removeItem('mindhaven_guest');
+  sessionStorage.removeItem('mindhaven_user');
+  sessionStorage.removeItem('burnout_prediction');
+  
+  if (window.sb) {
+    await window.sb.auth.signOut().catch(function() {});
+  }
+  
+  if (typeof navigateTo === 'function') {
+    navigateTo('auth.html');
+  } else {
+    window.location.href = 'auth.html';
+  }
+};
