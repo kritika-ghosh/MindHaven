@@ -538,16 +538,16 @@
         const GROQ_MODEL = "llama-3.3-70b-versatile";
 
         function openChatWithPrompt(promptText) {
-            const chatWidget = document.getElementById('chat-widget');
-            if (chatWidget && chatWidget.classList.contains('hidden')) {
-                toggleChat();
+            if (typeof window.toggleChat === 'function' && !window.isChatOpen) {
+                window.toggleChat();
             }
             const input = document.getElementById('chat-input');
             if (input) {
                 input.value = promptText;
-                input.focus();
+                setTimeout(() => input.focus(), 150);
             }
         }
+        window.openChatWithPrompt = openChatWithPrompt;
 
         let activeFilter = 'all';
 
@@ -1100,6 +1100,17 @@ Once your breathing settles, we can look at the presentation. Anxiety is telling
         function toggleChat() {
             const chatWidget = document.getElementById('chat-widget');
             const toggleBtnIcon = document.querySelector('#chat-toggle-btn span');
+            if (!chatWidget) return;
+
+            // Seed welcoming message if chat context hasn't been initialized yet
+            if (chatHistory.length === 0) {
+                const fallbackData = loadPrediction() || {
+                    burnout_score: 2.0,
+                    suggestion: "Moderate burnout",
+                    debug_data: {}
+                };
+                initChatContext(fallbackData);
+            }
             
             if (isChatOpen) {
                 // Close Chat Widget using GSAP
@@ -1120,8 +1131,9 @@ Once your breathing settles, we can look at the presentation. Anxiety is telling
                     duration: 0.4,
                     ease: "power2.inOut"
                 });
-                toggleBtnIcon.textContent = 'chat';
+                if (toggleBtnIcon) toggleBtnIcon.textContent = 'chat';
                 isChatOpen = false;
+                window.isChatOpen = false;
             } else {
                 // Open Chat Widget
                 chatWidget.classList.remove('hidden');
@@ -1140,12 +1152,14 @@ Once your breathing settles, we can look at the presentation. Anxiety is telling
                     duration: 0.4,
                     ease: "power2.inOut"
                 });
-                toggleBtnIcon.textContent = 'close';
+                if (toggleBtnIcon) toggleBtnIcon.textContent = 'close';
                 isChatOpen = true;
+                window.isChatOpen = true;
                 
                 scrollToBottom();
             }
         }
+        window.toggleChat = toggleChat;
 
         function appendMessage(role, content) {
             const messagesContainer = document.getElementById('chat-messages');
