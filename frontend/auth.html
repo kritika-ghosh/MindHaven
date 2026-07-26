@@ -121,17 +121,16 @@
                 <div class="relative">
                     <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-white/20"></div></div>
                     <div class="relative flex justify-center">
-                        <span class="px-3 text-[10px] font-bold uppercase tracking-widest" style="background:rgba(252,249,248,0.4);color:#49445499">or</span>
+                        <span class="px-3 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/60 rounded-full" style="background:var(--col-glass-bg)">or</span>
                     </div>
                 </div>
 
                 <button onclick="guestLogin()" type="button"
-                    class="w-full py-3.5 rounded-2xl border font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 hover:bg-white/50"
-                    style="background:rgba(255,255,255,0.3);border-color:rgba(107,56,212,0.25);color:#6b38d4">
-                    <span class="material-symbols-outlined text-lg" style="font-variation-settings:'FILL' 1">badge</span>
-                    Continue as Guest (Demo Mode)
+                    class="w-full pill-outline py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 shadow-sm">
+                    <span class="material-symbols-outlined text-lg text-primary" style="font-variation-settings:'FILL' 1">badge</span>
+                    <span class="text-on-surface">Continue as Guest (Demo Mode)</span>
                 </button>
-                <p class="text-[10px] font-medium" style="color:#49445480">Hackathon judges: click above for instant access with sample data</p>
+                <p class="text-[10px] font-semibold text-on-surface-variant/70">Hackathon judges: click above for instant access with sample data</p>
             </div>
         </div>
     </main>
