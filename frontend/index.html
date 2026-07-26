@@ -59,88 +59,34 @@
     </header>
 
     <!-- Main Hero -->
-    <main class="flex-1 px-margin-mobile md:px-margin-desktop pt-32 pb-20 relative z-10 max-w-container-max mx-auto w-full">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            
-            <!-- Left Hero Content -->
-            <div class="lg:col-span-7 text-left space-y-6">
-                <div class="hero-badge inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-primary font-bold text-xs uppercase tracking-wider mb-2" style="background:rgba(124,58,237,0.08);border:1px solid var(--col-border-active);">
-                    <span class="material-symbols-outlined text-sm">auto_awesome</span>
-                    AI-Powered Wellness Engine
-                </div>
-                <h1 class="hero-title text-4xl md:text-6xl font-extrabold text-on-surface tracking-tight leading-tight">
-                    Unlock Total Mental Clarity with <span class="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">MindHaven</span>
-                </h1>
-                <p class="hero-desc text-base md:text-lg text-on-surface-variant max-w-xl font-medium leading-relaxed">
-                    A multi-modal psychometric evaluation suite combining facial emotional intelligence, voice sentiment, and behavioral profiling to realign your focus and defeat burnout.
-                </p>
-
-                <!-- Call to Actions -->
-                <div class="pt-4 flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
-                    <a href="assess.html" class="hero-cta pill-3d px-8 py-4 rounded-full text-white font-extrabold text-base flex items-center justify-center gap-3 shadow-xl">
-                        <span class="material-symbols-outlined">medical_services</span>
-                        Take Assessment
-                    </a>
-                    <a href="pricing.html" class="hero-cta pill-outline px-8 py-4 rounded-full font-extrabold text-base flex items-center justify-center gap-3 active:scale-95 shadow-sm">
-                        <span class="material-symbols-outlined">payments</span>
-                        Pricing Options
-                    </a>
-                </div>
-
-                <!-- Quick Model Metrics Badge Row -->
-                <div class="pt-4 flex flex-wrap items-center gap-4 text-xs font-bold text-on-surface-variant/80">
-                    <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card border border-white/20">
-                        <span class="material-symbols-outlined text-primary text-base">verified</span>
-                        <span>95.76% Model R² Accuracy</span>
-                    </div>
-                    <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card border border-white/20">
-                        <span class="material-symbols-outlined text-secondary text-base">videocam</span>
-                        <span>MediaPipe Biometrics</span>
-                    </div>
-                    <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card border border-white/20">
-                        <span class="material-symbols-outlined text-primary text-base">insights</span>
-                        <span>SHAP Explainability</span>
-                    </div>
-                </div>
+    <main class="flex-1 flex flex-col items-center justify-center text-center px-margin-mobile pt-32 pb-20 relative z-10 max-w-4xl mx-auto">
+        <div class="space-y-6">
+            <div class="hero-badge inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-primary font-bold text-xs uppercase tracking-wider mb-2" style="background:rgba(124,58,237,0.08);border:1px solid var(--col-border-active);">
+                <span class="material-symbols-outlined text-sm">auto_awesome</span>
+                AI-Powered Wellness Engine
             </div>
+            <h1 class="hero-title text-4xl md:text-6xl font-extrabold text-on-surface tracking-tight leading-tight">
+                Unlock Total Mental Clarity with <span class="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">MindHaven</span>
+            </h1>
+            <p class="hero-desc text-lg md:text-xl text-on-surface-variant max-w-2xl mx-auto font-medium leading-relaxed">
+                A multi-modal psychometric evaluation suite combining facial emotional intelligence, voice sentiment, and behavioral profiling to realign your focus and defeat burnout.
+            </p>
+        </div>
 
-            <!-- Right 3D Mesh Brain Model Card -->
-            <div class="lg:col-span-5 w-full flex justify-center">
-                <div class="relative w-full h-[400px] sm:h-[460px] lg:h-[500px] glass-card rounded-[2.5rem] border-2 shadow-2xl overflow-hidden flex flex-col justify-between p-6 select-none"
-                     style="border-color:var(--col-primary); background: linear-gradient(135deg, rgba(124,58,237,0.06) 0%, rgba(255,255,255,0.12) 100%);" id="hero-brain-card">
-                    
-                    <!-- 3D Canvas Container -->
-                    <div id="hero-brain-container" class="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing">
-                        <canvas id="hero-brain-canvas" class="w-full h-full"></canvas>
-                    </div>
-
-                    <!-- Top Overlay Badges -->
-                    <div class="relative z-10 flex items-center justify-between pointer-events-none">
-                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider text-primary border border-primary/30" style="background:var(--col-glass-bg)">
-                            <span class="pulse-dot"></span>
-                            3D Neural Mesh Model
-                        </div>
-                        <button id="hero-brain-screenshot-btn" title="Take 3D Screenshot" class="pointer-events-auto px-3 py-1 rounded-full text-xs font-bold text-on-surface hover:text-primary transition-all glass-card border border-white/30 flex items-center gap-1 active:scale-95 shadow-sm">
-                            <span class="material-symbols-outlined text-sm text-primary">photo_camera</span>
-                            <span class="hidden sm:inline">Snapshot</span>
-                        </button>
-                    </div>
-
-                    <!-- Bottom Controls & Hints Overlay -->
-                    <div class="relative z-10 flex items-center justify-between text-[11px] font-bold text-on-surface-variant/80 pointer-events-none border-t border-white/20 pt-3">
-                        <span class="flex items-center gap-1">
-                            <span class="material-symbols-outlined text-sm text-primary">3d_rotation</span>
-                            Drag to rotate &bull; Scroll to zoom
-                        </span>
-                        <span class="text-primary font-extrabold">Real-Time WebGL</span>
-                    </div>
-                </div>
-            </div>
-
+        <!-- Call to Actions -->
+        <div class="mt-12 flex flex-col sm:flex-row gap-5 justify-center items-center w-full">
+            <a href="assess.html" class="hero-cta w-full sm:w-auto pill-3d px-10 py-5 rounded-full text-white font-bold text-lg flex items-center justify-center gap-3">
+                <span class="material-symbols-outlined">medical_services</span>
+                Take Assessment
+            </a>
+            <a href="pricing.html" class="hero-cta w-full sm:w-auto pill-outline px-10 py-5 rounded-full font-bold text-lg flex items-center justify-center gap-3 active:scale-95 shadow-lg shadow-black/5">
+                <span class="material-symbols-outlined">payments</span>
+                Pricing Options
+            </a>
         </div>
 
         <!-- Feature Grid Preview -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 w-full max-w-container-max mt-24">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 w-full max-w-5xl mt-20">
             <div class="feature-card glass-card p-6 rounded-3xl flex flex-col items-center text-center space-y-3">
                 <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-primary" style="background:rgba(124,58,237,0.08);">
                     <span class="material-symbols-outlined text-2xl">videocam</span>
@@ -286,6 +232,5 @@
           }
         });
     </script>
-    <script src="js/3d-elements.js"></script>
 </body>
 </html>
