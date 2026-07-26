@@ -1095,17 +1095,6 @@ Once your breathing settles, we can look at the presentation. Anxiety is telling
             const welcomeText = `Hello! I'm MindHaven-CBT, your wellness assistant. I've reviewed your biometric overview, which indicates a **${label}** burnout state (Score: ${score}/4.0) with a **${trendText}** trajectory. I noticed some details like your facial neutral state of ${neu} and negative tension at ${neg}. How are you feeling right now? We can discuss your results or walk through some coping strategies together.`;
             
             appendMessage("assistant", welcomeText);
-
-            // Configuration Warning
-            const apiKey = window.MINDHAVEN_CONFIG?.GROQ_KEY || "";
-            const customUrl = window.MINDHAVEN_CONFIG?.NGROK_URL || "";
-            const isLocalNgrok = customUrl.includes("ngrok") && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1";
-            
-            if (isLocalNgrok) {
-                appendMessage("assistant", "**Configuration Warning**: A local Ngrok config was detected on a production deployment. The system has automatically fallen back to the Hugging Face Space proxy.");
-            } else if (customUrl === "" && (!apiKey || apiKey.startsWith("gsk_YOUR") || apiKey === "")) {
-                appendMessage("assistant", "**Configuration Note**: No local Groq key was detected in the browser config. The chatbot will attempt to route via your Hugging Face Space; please ensure your Hugging Face environment variables (`GROQ_API_KEY`, `GROQ_KEY`, or `GROK_KEY`) are set.");
-            }
         }
 
         function toggleChat() {
