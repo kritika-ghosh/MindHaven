@@ -354,8 +354,11 @@
 
         function renderDashboardCharts(rows) {
             const isDark = document.documentElement.classList.contains('dark');
-            const textColor = isDark ? '#9f97b8' : '#494454';
-            const gridColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)';
+            const textColor = isDark ? '#e2d9f3' : '#494454';
+            const gridColor = isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.08)';
+            const radarAngleColor = isDark ? 'rgba(255, 255, 255, 0.32)' : 'rgba(0, 0, 0, 0.18)';
+            const radarGridColor = isDark ? 'rgba(255, 255, 255, 0.24)' : 'rgba(0, 0, 0, 0.14)';
+            const radarLabelColor = isDark ? '#ffffff' : '#1e192b';
 
             // Sort ascending for chronological trend
             const chronRows = [...rows].reverse();
@@ -412,24 +415,27 @@
                 let level = dailyCount > 0 ? dailyRecords[0].burnout_score : 0.0;
                 let trend = 0.0;
 
-                if (dailyCount >= 2) {
-                    const dailyFirstTime = dailyRecords[0].timeMs;
-                    const dx = dailyRecords.map(r => (r.timeMs - dailyFirstTime) / oneDayMs);
-                    const dy = dailyRecords.map(r => r.burnout_score);
+
+            if (actualCount >= 1) {
+                // Initialize Holt's parameters
+                let alpha = 0.4;  // Level smoothing factor
+                let beta = 0.2;   // Trend smoothing factor
+                let phi = 0.85;   // Trend damping parameter (prevents linear runaway)
+
+                let level = burnoutScores[0];
+                let trend = actualCount > 1 ? (burnoutScores[actualCount - 1] - burnoutScores[0]) / (actualCount - 1) : 0;
+
+                // 1. Fit historical series with damped trend update
+                for (let i = 1; i < actualCount; i++) {
+                    const prevLevel = level;
+                    const prevTrend = trend;
+                    const timeDeltaDays = Math.max(1, (new Date(chronRows[i].created_at) - new Date(chronRows[i-1].created_at)) / (1000 * 60 * 60 * 24));
                     
-                    // Initialize trend from first daily interval
-                    const timeDiff = dx[1] - dx[0];
-                    trend = timeDiff > 0 ? (dy[1] - dy[0]) / timeDiff : 0.0;
-
-                    for (let i = 1; i < dailyCount; i++) {
-                        const prevLevel = level;
-                        const prevTrend = trend;
-                        const dt = dx[i] - dx[i-1];
-                        const currentPhi = Math.pow(phi, dt || 1);
-
-                        level = alpha * dy[i] + (1 - alpha) * (prevLevel + currentPhi * prevTrend);
-                        trend = beta * (level - prevLevel) + (1 - beta) * currentPhi * prevTrend;
-                    }
+                    const dy = (burnoutScores[i] - burnoutScores[i-1]);
+                    const currentPhi = Math.pow(phi, timeDeltaDays);
+                    
+                    level = alpha * burnoutScores[i] + (1 - alpha) * (prevLevel + currentPhi * prevTrend);
+                    trend = beta * (level - prevLevel) + (1 - beta) * currentPhi * prevTrend;
                 }
 
                 // 2. Generate predictions for the next 7 days, anchored to the last actual raw score
@@ -438,7 +444,7 @@
                 const startScore = parseFloat(lastRecord.burnout_score) || 0.0; // Anchor point
 
                 for (let i = 1; i <= 7; i++) {
-                    const fDate = new Date(lastDate.getTime() + i * oneDayMs);
+                    const fDate = new Date(lastDate.getTime() + i * (1000 * 60 * 60 * 24));
                     futureLabels.push(fDate.toLocaleDateString(undefined, {month: 'short', day: 'numeric'}) + " (Predicted)");
 
                     let accumDamping = 0;
@@ -471,12 +477,12 @@
                         {
                             label: 'Actual Burnout Score',
                             data: actualDatasetData,
-                            borderColor: '#8455ef',
-                            backgroundColor: 'rgba(132, 85, 239, 0.1)',
+                            borderColor: isDark ? '#a855f7' : '#8455ef',
+                            backgroundColor: isDark ? 'rgba(168, 85, 247, 0.15)' : 'rgba(132, 85, 239, 0.1)',
                             fill: false,
                             tension: 0.3,
                             borderWidth: 3.5,
-                            pointBackgroundColor: '#6b38d4',
+                            pointBackgroundColor: isDark ? '#c084fc' : '#6b38d4',
                             pointHoverRadius: 7,
                             pointRadius: 4
                         },
@@ -512,10 +518,10 @@
                         },
                         tooltip: {
                             enabled: true,
-                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                            titleColor: '#111827',
-                            bodyColor: '#4b5563',
-                            borderColor: 'rgba(0, 0, 0, 0.05)',
+                            backgroundColor: isDark ? 'rgba(30, 25, 43, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                            titleColor: isDark ? '#ffffff' : '#111827',
+                            bodyColor: isDark ? '#e2d9f3' : '#4b5563',
+                            borderColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.05)',
                             borderWidth: 1,
                             titleFont: { family: 'Plus Jakarta Sans', weight: 'bold' },
                             bodyFont: { family: 'Plus Jakarta Sans' },
@@ -570,13 +576,14 @@
                     predictionNoteText.innerHTML = `<strong>Predictive Analysis:</strong> Based on your previous ${actualCount} sessions, your burnout score is projected to ${trendPhrase} by next week.`;
                     predictionNoteContainer.style.display = 'flex';
                 } else {
-                    predictionNoteContainer.style.display = 'none';
+                    predictionNoteText.innerHTML = `<strong>Predictive Analysis:</strong> Complete 1 more assessment to unlock 7-day burnout trajectory forecasting.`;
+                    predictionNoteContainer.style.display = 'flex';
                 }
             }
 
             // 2. Emotion Radar Chart (Average pos/neu/neg expression)
             let avgPos = 0, avgNeu = 0, avgNeg = 0, count = 0;
-            rows.forEach(r => {
+            chronRows.forEach(r => {
                 if (r.emo_pos !== null && r.emo_neu !== null && r.emo_neg !== null) {
                     avgPos += parseFloat(r.emo_pos) || 0;
                     avgNeu += parseFloat(r.emo_neu) || 0;
@@ -603,10 +610,14 @@
                     datasets: [{
                         label: 'Average Expression %',
                         data: [avgPos, avgNeu, avgNeg],
-                        backgroundColor: 'rgba(107, 56, 212, 0.2)',
-                        borderColor: '#6b38d4',
-                        borderWidth: 2,
-                        pointBackgroundColor: '#8455ef'
+                        backgroundColor: isDark ? 'rgba(168, 85, 247, 0.35)' : 'rgba(107, 56, 212, 0.2)',
+                        borderColor: isDark ? '#c084fc' : '#6b38d4',
+                        borderWidth: 3,
+                        pointBackgroundColor: isDark ? '#ffffff' : '#8455ef',
+                        pointBorderColor: isDark ? '#a855f7' : '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
                     }]
                 },
                 options: {
@@ -617,14 +628,14 @@
                     },
                     scales: {
                         r: {
-                            angleLines: { display: true, color: gridColor },
-                            grid: { color: gridColor },
+                            angleLines: { display: true, color: radarAngleColor, lineWidth: 1.5 },
+                            grid: { color: radarGridColor, lineWidth: 1.5 },
                             suggestedMin: 0,
                             suggestedMax: 100,
                             ticks: { display: false },
                             pointLabels: {
-                                color: textColor,
-                                font: { family: 'Plus Jakarta Sans', weight: 'extrabold', size: 10 }
+                                color: radarLabelColor,
+                                font: { family: 'Plus Jakarta Sans', weight: '800', size: 11 }
                             }
                         }
                     }
