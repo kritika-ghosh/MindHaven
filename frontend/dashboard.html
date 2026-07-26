@@ -212,11 +212,13 @@
             await loadDashboardData();
         });
 
-        document.addEventListener('themeToggled', () => {
+        function handleThemeChange() {
             if (window.dashboardRecords) {
                 renderDashboardCharts(window.dashboardRecords);
             }
-        });
+        }
+        window.addEventListener('themechange', handleThemeChange);
+        document.addEventListener('themeToggled', handleThemeChange);
         
         async function loadDashboardData() {
             let records = [];
@@ -339,28 +341,28 @@
                 // Draw Low risk band (y: 0.0 to 1.5)
                 const y0 = y.getPixelForValue(0.0);
                 const y1_5 = y.getPixelForValue(1.5);
-                ctx.fillStyle = isDark ? 'rgba(74, 222, 128, 0.16)' : 'rgba(74, 222, 128, 0.08)'; // Green tint
+                ctx.fillStyle = isDark ? 'rgba(74, 222, 128, 0.16)' : 'rgba(74, 222, 128, 0.10)'; // Green tint
                 ctx.fillRect(left, y1_5, right - left, y0 - y1_5);
 
                 // Draw Moderate risk band (y: 1.5 to 3.0)
                 const y3_0 = y.getPixelForValue(3.0);
-                ctx.fillStyle = isDark ? 'rgba(253, 224, 71, 0.16)' : 'rgba(253, 224, 71, 0.08)'; // Yellow tint
+                ctx.fillStyle = isDark ? 'rgba(253, 224, 71, 0.16)' : 'rgba(253, 224, 71, 0.10)'; // Yellow tint
                 ctx.fillRect(left, y3_0, right - left, y1_5 - y3_0);
 
                 // Draw Severe risk band (y: 3.0 to 4.0)
                 const y4_0 = y.getPixelForValue(4.0);
-                ctx.fillStyle = isDark ? 'rgba(248, 113, 113, 0.16)' : 'rgba(248, 113, 113, 0.08)'; // Red tint
+                ctx.fillStyle = isDark ? 'rgba(248, 113, 113, 0.16)' : 'rgba(248, 113, 113, 0.10)'; // Red tint
                 ctx.fillRect(left, y4_0, right - left, y3_0 - y4_0);
             }
         };
 
         function renderDashboardCharts(rows) {
             const isDark = document.documentElement.classList.contains('dark');
-            const textColor = isDark ? '#ffffff' : '#332d41';
-            const gridColor = isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.08)';
-            const axisBorderColor = isDark ? 'rgba(255, 255, 255, 0.35)' : 'rgba(0, 0, 0, 0.15)';
-            const radarAngleColor = isDark ? 'rgba(255, 255, 255, 0.32)' : 'rgba(0, 0, 0, 0.18)';
-            const radarGridColor = isDark ? 'rgba(255, 255, 255, 0.24)' : 'rgba(0, 0, 0, 0.14)';
+            const textColor = isDark ? '#ffffff' : '#1e192b';
+            const gridColor = isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.12)';
+            const axisBorderColor = isDark ? 'rgba(255, 255, 255, 0.35)' : 'rgba(0, 0, 0, 0.25)';
+            const radarAngleColor = isDark ? 'rgba(255, 255, 255, 0.32)' : 'rgba(0, 0, 0, 0.22)';
+            const radarGridColor = isDark ? 'rgba(255, 255, 255, 0.24)' : 'rgba(0, 0, 0, 0.16)';
             const radarLabelColor = isDark ? '#ffffff' : '#1e192b';
 
             // Sort ascending for chronological trend
