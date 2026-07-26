@@ -108,13 +108,71 @@
                 <div class="absolute -top-4 -right-4 w-20 h-20 rounded-full bg-secondary-fixed-dim blur-xl opacity-40 floating-3d" style="animation-delay: -1s"></div>
                 <div class="absolute -bottom-4 -left-4 w-28 h-28 rounded-full bg-primary-fixed blur-2xl opacity-35 floating-3d" style="animation-delay: -2.5s"></div>
             </div>
+
+            <!-- Vitality Score Detailed Explanation Card -->
+            <div class="glass-card p-8 md:p-10 rounded-[2.5rem] border border-white/40 shadow-xl max-w-4xl w-full text-left space-y-6">
+                <div class="flex items-center gap-3 text-primary">
+                    <span class="material-symbols-outlined text-3xl font-bold">bolt</span>
+                    <div>
+                        <h3 class="text-xl font-extrabold text-on-surface">Understanding Your Vitality Score</h3>
+                        <p class="text-xs font-semibold text-on-surface-variant/80">How your score is calculated and what it means for your daily wellbeing</p>
+                    </div>
+                </div>
+
+                <p class="text-sm md:text-base text-on-surface-variant font-medium leading-relaxed">
+                    Your <strong>Vitality Score (0–100%)</strong> is an overall measurement of your current mental stamina, emotional resilience, and energy reserves. Higher scores reflect strong cognitive energy and low burnout risk, while lower scores indicate elevated stress and fatigue.
+                </p>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
+                    <div class="p-4 rounded-2xl border border-green-500/20 bg-green-500/5 space-y-1">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-extrabold text-green-600 dark:text-green-400">75% – 100%</span>
+                            <span class="material-symbols-outlined text-green-500 text-sm">sentiment_very_satisfied</span>
+                        </div>
+                        <p class="text-xs font-bold text-on-surface">Optimal Vitality</p>
+                        <p class="text-[11px] text-on-surface-variant/80 font-medium">Strong energy reserves, low burnout risk, and balanced focus.</p>
+                    </div>
+
+                    <div class="p-4 rounded-2xl border border-blue-500/20 bg-blue-500/5 space-y-1">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-extrabold text-blue-600 dark:text-blue-400">50% – 74%</span>
+                            <span class="material-symbols-outlined text-blue-500 text-sm">sentiment_satisfied</span>
+                        </div>
+                        <p class="text-xs font-bold text-on-surface">Steady Energy</p>
+                        <p class="text-[11px] text-on-surface-variant/80 font-medium">Good overall stamina with mild fatigue; routine rest recommended.</p>
+                    </div>
+
+                    <div class="p-4 rounded-2xl border border-amber-500/20 bg-amber-500/5 space-y-1">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-extrabold text-amber-600 dark:text-amber-400">25% – 49%</span>
+                            <span class="material-symbols-outlined text-amber-500 text-sm">sentiment_dissatisfied</span>
+                        </div>
+                        <p class="text-xs font-bold text-on-surface">Elevated Fatigue</p>
+                        <p class="text-[11px] text-on-surface-variant/80 font-medium">Noticeable mental strain; structured breaks and relaxation advised.</p>
+                    </div>
+
+                    <div class="p-4 rounded-2xl border border-rose-500/20 bg-rose-500/5 space-y-1">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-extrabold text-rose-600 dark:text-rose-400">0% – 24%</span>
+                            <span class="material-symbols-outlined text-rose-500 text-sm">warning</span>
+                        </div>
+                        <p class="text-xs font-bold text-on-surface">High Strain</p>
+                        <p class="text-[11px] text-on-surface-variant/80 font-medium">Significant exhaustion; immediate rest and breathing exercises suggested.</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 pt-2 text-xs font-semibold text-on-surface-variant/70 border-t border-white/20">
+                    <span class="material-symbols-outlined text-primary text-base">insights</span>
+                    <span>Calculated by combining your questionnaire baseline, facial aspect ratios (EAR/MAR), and voice sentiment analysis.</span>
+                </div>
+            </div>
         </section>
 
         <!-- Section 2: LLM Diagnosis -->
         <section class="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-start scroll-section">
             <div class="lg:col-span-4 sticky top-24 space-y-6">
                 <h3 class="text-2xl font-extrabold text-on-surface tracking-tight">Haven Insights</h3>
-                <p class="text-sm text-on-surface-variant/80 font-medium leading-relaxed">The AI has processed your behavioral patterns, facial tracking vectors, and speech tone to generate this holistic diagnosis.</p>
+                <p class="text-sm text-on-surface-variant/80 font-medium leading-relaxed">The AI has processed your behavioral patterns, facial tracking vectors, and speech sentiment to generate this holistic diagnosis.</p>
                 <div class="flex items-center gap-3 p-4 glass-card rounded-2xl">
                     <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">verified</span>
                     <span class="text-xs font-bold text-on-surface">Biometric Confidence: 98.4%</span>
@@ -136,7 +194,7 @@
                                 <p class="text-xs text-primary font-bold uppercase tracking-wider">Linguistic Transcript</p>
                                 <p class="text-sm italic text-on-surface font-semibold" id="voice-transcript">"Transcript loading..."</p>
                                 <div class="pt-2 flex justify-between text-xs text-on-surface-variant font-bold">
-                                    <span>Tone Sentiment: <span class="text-secondary" id="sentiment-score">Loading...</span></span>
+                                    <span>Voice Sentiment: <span class="text-secondary" id="sentiment-score">Loading...</span></span>
                                 </div>
                             </div>
                             
@@ -179,7 +237,7 @@
                     <button onclick="filterShap('all')" id="tab-all" class="px-4 py-1.5 rounded-full text-xs font-bold transition-all text-white" style="background:var(--col-primary);">All</button>
                     <button onclick="filterShap('Self-Reported')" id="tab-Self-Reported" class="px-4 py-1.5 rounded-full text-xs font-bold transition-all text-on-surface hover:opacity-70">Survey</button>
                     <button onclick="filterShap('Biometrics')" id="tab-Biometrics" class="px-4 py-1.5 rounded-full text-xs font-bold transition-all text-on-surface hover:opacity-70">Biometrics</button>
-                    <button onclick="filterShap('Voice & Tone')" id="tab-Voice" class="px-4 py-1.5 rounded-full text-xs font-bold transition-all text-on-surface hover:opacity-70">Voice &amp; Tone</button>
+                    <button onclick="filterShap('Voice Analysis')" id="tab-Voice" class="px-4 py-1.5 rounded-full text-xs font-bold transition-all text-on-surface hover:opacity-70">Voice Analysis</button>
                 </div>
             </div>
 
@@ -427,8 +485,8 @@
             activeFilter = category;
             
             // Highlight active tab
-            ['all', 'Self-Reported', 'Biometrics', 'Voice & Tone'].forEach(c => {
-                const id = c === 'Voice & Tone' ? 'tab-Voice' : 'tab-' + c;
+            ['all', 'Self-Reported', 'Biometrics', 'Voice Analysis'].forEach(c => {
+                const id = c === 'Voice Analysis' ? 'tab-Voice' : 'tab-' + c;
                 const tab = document.getElementById(id);
                 if (tab) {
                     if (c === category) {

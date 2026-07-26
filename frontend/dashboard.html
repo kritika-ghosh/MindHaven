@@ -785,8 +785,8 @@
         }
 
         function updateModalShapTabSelection() {
-            ['all', 'Self-Reported', 'Biometrics', 'Voice & Tone'].forEach(c => {
-                const id = c === 'Voice & Tone' ? 'modal-tab-Voice' : 'modal-tab-' + c;
+            ['all', 'Self-Reported', 'Biometrics', 'Voice Analysis'].forEach(c => {
+                const id = c === 'Voice Analysis' ? 'modal-tab-Voice' : 'modal-tab-' + c;
                 const tab = document.getElementById(id);
                 if (tab) {
                     if (c === modalActiveFilter) {
@@ -1040,7 +1040,7 @@
                     <button onclick="filterModalShap('all')" id="modal-tab-all" class="px-2.5 py-1 rounded-full text-[10px] font-bold transition-all bg-primary text-white">All</button>
                     <button onclick="filterModalShap('Self-Reported')" id="modal-tab-Self-Reported" class="px-2.5 py-1 rounded-full text-[10px] font-bold transition-all text-on-surface hover:bg-white/20">Survey</button>
                     <button onclick="filterModalShap('Biometrics')" id="modal-tab-Biometrics" class="px-2.5 py-1 rounded-full text-[10px] font-bold transition-all text-on-surface hover:bg-white/20">Bio</button>
-                    <button onclick="filterModalShap('Voice & Tone')" id="modal-tab-Voice" class="px-2.5 py-1 rounded-full text-[10px] font-bold transition-all text-on-surface hover:bg-white/20">Voice</button>
+                    <button onclick="filterModalShap('Voice Analysis')" id="modal-tab-Voice" class="px-2.5 py-1 rounded-full text-[10px] font-bold transition-all text-on-surface hover:bg-white/20">Voice</button>
                 </div>
             </div>
 
