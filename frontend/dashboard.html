@@ -334,28 +334,31 @@
                 const { ctx, chartArea: { left, right, top, bottom }, scales: { y } } = chart;
                 if (!y) return;
                 
+                const isDark = document.documentElement.classList.contains('dark');
+                
                 // Draw Low risk band (y: 0.0 to 1.5)
                 const y0 = y.getPixelForValue(0.0);
                 const y1_5 = y.getPixelForValue(1.5);
-                ctx.fillStyle = 'rgba(74, 222, 128, 0.08)'; // Green tint
+                ctx.fillStyle = isDark ? 'rgba(74, 222, 128, 0.16)' : 'rgba(74, 222, 128, 0.08)'; // Green tint
                 ctx.fillRect(left, y1_5, right - left, y0 - y1_5);
 
                 // Draw Moderate risk band (y: 1.5 to 3.0)
                 const y3_0 = y.getPixelForValue(3.0);
-                ctx.fillStyle = 'rgba(253, 224, 71, 0.08)'; // Yellow tint
+                ctx.fillStyle = isDark ? 'rgba(253, 224, 71, 0.16)' : 'rgba(253, 224, 71, 0.08)'; // Yellow tint
                 ctx.fillRect(left, y3_0, right - left, y1_5 - y3_0);
 
                 // Draw Severe risk band (y: 3.0 to 4.0)
                 const y4_0 = y.getPixelForValue(4.0);
-                ctx.fillStyle = 'rgba(248, 113, 113, 0.08)'; // Red tint
+                ctx.fillStyle = isDark ? 'rgba(248, 113, 113, 0.16)' : 'rgba(248, 113, 113, 0.08)'; // Red tint
                 ctx.fillRect(left, y4_0, right - left, y3_0 - y4_0);
             }
         };
 
         function renderDashboardCharts(rows) {
             const isDark = document.documentElement.classList.contains('dark');
-            const textColor = isDark ? '#e2d9f3' : '#494454';
-            const gridColor = isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.08)';
+            const textColor = isDark ? '#ffffff' : '#332d41';
+            const gridColor = isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.08)';
+            const axisBorderColor = isDark ? 'rgba(255, 255, 255, 0.35)' : 'rgba(0, 0, 0, 0.15)';
             const radarAngleColor = isDark ? 'rgba(255, 255, 255, 0.32)' : 'rgba(0, 0, 0, 0.18)';
             const radarGridColor = isDark ? 'rgba(255, 255, 255, 0.24)' : 'rgba(0, 0, 0, 0.14)';
             const radarLabelColor = isDark ? '#ffffff' : '#1e192b';
@@ -377,44 +380,6 @@
 
             const futureLabels = [];
             const futurePredictions = [];
-            const oneDayMs = 24 * 60 * 60 * 1000;
-
-            if (actualCount > 0) {
-                // 1. Group records by unique calendar date (YYYY-MM-DD) to calculate daily averages
-                const dailyMap = {};
-                chronRows.forEach(r => {
-                    if (!r.created_at) return;
-                    const dateObj = new Date(r.created_at);
-                    if (isNaN(dateObj.getTime())) return;
-                    
-                    const dateStr = dateObj.toISOString().split('T')[0];
-                    if (!dailyMap[dateStr]) {
-                        dailyMap[dateStr] = { sum: 0.0, count: 0 };
-                    }
-                    dailyMap[dateStr].sum += parseFloat(r.burnout_score) || 0.0;
-                    dailyMap[dateStr].count += 1;
-                });
-
-                // Convert map to sorted array of daily averages, using cross-browser safe date creation
-                const dailyRecords = Object.keys(dailyMap).map(dateStr => {
-                    const parts = dateStr.split('-');
-                    const dateObj = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]), 12, 0, 0);
-                    return {
-                        dateStr: dateStr,
-                        burnout_score: dailyMap[dateStr].sum / dailyMap[dateStr].count,
-                        timeMs: dateObj.getTime()
-                    };
-                }).sort((a, b) => a.timeMs - b.timeMs);
-
-                // Run Holt's smoothing over daily aggregated array
-                const dailyCount = dailyRecords.length;
-                const alpha = 0.4;
-                const beta = 0.3;
-                const phi = 0.85;
-
-                let level = dailyCount > 0 ? dailyRecords[0].burnout_score : 0.0;
-                let trend = 0.0;
-
 
             if (actualCount >= 1) {
                 // Initialize Holt's parameters
@@ -477,14 +442,16 @@
                         {
                             label: 'Actual Burnout Score',
                             data: actualDatasetData,
-                            borderColor: isDark ? '#a855f7' : '#8455ef',
-                            backgroundColor: isDark ? 'rgba(168, 85, 247, 0.15)' : 'rgba(132, 85, 239, 0.1)',
+                            borderColor: isDark ? '#c084fc' : '#8455ef',
+                            backgroundColor: isDark ? 'rgba(192, 132, 252, 0.25)' : 'rgba(132, 85, 239, 0.1)',
                             fill: false,
                             tension: 0.3,
-                            borderWidth: 3.5,
-                            pointBackgroundColor: isDark ? '#c084fc' : '#6b38d4',
-                            pointHoverRadius: 7,
-                            pointRadius: 4
+                            borderWidth: 4,
+                            pointBackgroundColor: isDark ? '#ffffff' : '#6b38d4',
+                            pointBorderColor: isDark ? '#c084fc' : '#ffffff',
+                            pointBorderWidth: 2,
+                            pointHoverRadius: 8,
+                            pointRadius: 5
                         },
                         {
                             label: '7-Day Predicted Trend',
@@ -494,10 +461,10 @@
                             borderDash: [6, 6],
                             fill: false,
                             tension: 0.3,
-                            borderWidth: 2.5,
+                            borderWidth: 3,
                             pointBackgroundColor: '#f43f5e',
-                            pointHoverRadius: 5,
-                            pointRadius: 3
+                            pointHoverRadius: 6,
+                            pointRadius: 4
                         }
                     ]
                 },
@@ -539,6 +506,7 @@
                         y: {
                             min: 0,
                             max: 4,
+                            border: { display: true, color: axisBorderColor, width: 1.5 },
                             grid: { color: gridColor },
                             ticks: { 
                                 stepSize: 1,
@@ -547,6 +515,7 @@
                             }
                         },
                         x: {
+                            border: { display: true, color: axisBorderColor, width: 1.5 },
                             grid: { color: gridColor },
                             ticks: { color: textColor, font: { family: 'Plus Jakarta Sans', weight: 'bold' } }
                         }
