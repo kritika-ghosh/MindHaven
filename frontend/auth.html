@@ -14,7 +14,7 @@
     <script src="js/theme.js"></script>
     <link href="css/styles.css" rel="stylesheet"/>
 </head>
-<body class="bg-background text-on-background font-body-md overflow-x-hidden min-h-screen relative flex items-center justify-center p-4">
+<body class="bg-background text-on-background font-body-md overflow-x-hidden min-h-screen relative flex flex-col items-center justify-between p-4 md:px-8">
     <!-- WebGL Background Canvas -->
     <canvas id="webgl-bg"></canvas>
 
@@ -28,113 +28,116 @@
     <!-- Page Transition Overlay -->
     <div id="page-transition-overlay"></div>
 
-    <!-- Main Auth Card -->
-    <div class="w-full max-w-md glass-card rounded-[40px] p-8 relative md:p-10 border-white/50 shadow-2xl flex flex-col items-center select-none" id="auth-container">
-        
-        <div class="flex items-center gap-3 border-b border-white/20 pb-4 mb-6 text-left w-full">
-            <div class="w-10 h-10 rounded-full flex items-center justify-center text-white flex-shrink-0" style="background:var(--col-primary-glow)">
-                <span class="material-symbols-outlined text-[24px]" style="font-variation-settings:'FILL' 1">psychology</span>
+    <!-- Main Content Wrap -->
+    <main class="flex-1 flex flex-col items-center justify-center w-full my-auto py-8">
+        <!-- Main Auth Card -->
+        <div class="w-full max-w-md glass-card rounded-[40px] p-8 relative md:p-10 border-white/50 shadow-2xl flex flex-col items-center select-none" id="auth-container">
+            
+            <div class="flex items-center gap-3 border-b border-white/20 pb-4 mb-6 text-left w-full">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center text-white flex-shrink-0" style="background:var(--col-primary-glow)">
+                    <span class="material-symbols-outlined text-[24px]" style="font-variation-settings:'FILL' 1">psychology</span>
+                </div>
+                <div>
+                    <h1 class="font-title-md text-2xl font-extrabold tracking-tight text-on-surface">Welcome to MindHaven</h1>
+                    <p class="text-xs text-on-surface-variant font-semibold mt-1" id="auth-subtitle">Sign in to begin your wellness assessment</p>
+                </div>
             </div>
-            <div>
-                <h1 class="font-title-md text-2xl font-extrabold tracking-tight text-on-surface">Welcome to MindHaven</h1>
-                <p class="text-xs text-on-surface-variant font-semibold mt-1" id="auth-subtitle">Sign in to begin your wellness assessment</p>
+
+            <!-- Sliding Forms Wrap -->
+            <div class="w-full relative overflow-hidden h-[340px]" id="forms-wrapper">
+                <!-- Form 1: Sign In -->
+                <form id="signin-form" class="w-full space-y-5 absolute top-0 left-0 transition-transform duration-500 ease-out" onsubmit="handleAuthSubmit(event, 'signin')">
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-on-surface-variant/80 uppercase tracking-widest pl-1" for="signin-email">Email Address</label>
+                        <div class="relative flex items-center">
+                            <span class="material-symbols-outlined absolute left-4 text-on-surface-variant text-[20px]">alternate_email</span>
+                            <input class="w-full pl-12 pr-4 py-3.5 rounded-2xl glass-input text-sm font-semibold border-white/40 focus:ring-2 focus:ring-primary/20" id="signin-email" placeholder="name@domain.com" required type="email"/>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <div class="flex justify-between items-center pl-1">
+                            <label class="text-xs font-bold text-on-surface-variant/80 uppercase tracking-widest" for="signin-password">Password</label>
+                            <a class="text-xs font-bold text-primary hover:underline" href="#">Forgot Password?</a>
+                        </div>
+                        <div class="relative flex items-center">
+                            <span class="material-symbols-outlined absolute left-4 text-on-surface-variant text-[20px]">lock</span>
+                            <input class="w-full pl-12 pr-4 py-3.5 rounded-2xl glass-input text-sm font-semibold border-white/40 focus:ring-2 focus:ring-primary/20" id="signin-password" placeholder="••••••••" required type="password"/>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center pl-1">
+                        <input class="rounded text-primary focus:ring-primary/20 border-white/40 bg-white/20 w-4 h-4 cursor-pointer" id="remember-me" type="checkbox"/>
+                        <label class="text-xs font-bold text-on-surface-variant/80 ml-2 cursor-pointer" for="remember-me">Keep me signed in</label>
+                    </div>
+
+                    <button class="w-full pill-3d py-4 text-white font-bold text-sm rounded-2xl flex items-center justify-center gap-2 group mt-2" type="submit">
+                        <span class="material-symbols-outlined text-[18px]">verified_user</span>
+                        Sign In
+                    </button>
+                </form>
+
+                <!-- Form 2: Sign Up (Initally translated out) -->
+                <form id="signup-form" class="w-full space-y-5 absolute top-0 left-0 transition-transform duration-500 ease-out translate-x-full" onsubmit="handleAuthSubmit(event, 'signup')">
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-on-surface-variant/80 uppercase tracking-widest pl-1" for="signup-name">Full Name</label>
+                        <div class="relative flex items-center">
+                            <span class="material-symbols-outlined absolute left-4 text-on-surface-variant text-[20px]">person</span>
+                            <input class="w-full pl-12 pr-4 py-3.5 rounded-2xl glass-input text-sm font-semibold border-white/40 focus:ring-2 focus:ring-primary/20" id="signup-name" placeholder="John Doe" type="text"/>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-on-surface-variant/80 uppercase tracking-widest pl-1" for="signup-email">Email Address</label>
+                        <div class="relative flex items-center">
+                            <span class="material-symbols-outlined absolute left-4 text-on-surface-variant text-[20px]">alternate_email</span>
+                            <input class="w-full pl-12 pr-4 py-3.5 rounded-2xl glass-input text-sm font-semibold border-white/40 focus:ring-2 focus:ring-primary/20" id="signup-email" placeholder="name@domain.com" type="email"/>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-on-surface-variant/80 uppercase tracking-widest pl-1" for="signup-password">Create Password</label>
+                        <div class="relative flex items-center">
+                            <span class="material-symbols-outlined absolute left-4 text-on-surface-variant text-[20px]">lock_reset</span>
+                            <input class="w-full pl-12 pr-4 py-3.5 rounded-2xl glass-input text-sm font-semibold border-white/40 focus:ring-2 focus:ring-primary/20" id="signup-password" placeholder="At least 6 characters" type="password"/>
+                        </div>
+                    </div>
+
+                    <button class="w-full pill-3d py-4 text-white font-bold text-sm rounded-2xl flex items-center justify-center gap-2 group mt-2" type="submit">
+                        <span class="material-symbols-outlined text-[18px]">add_circle</span>
+                        Create Account
+                    </button>
+                </form>
             </div>
-        </div>
 
-        <!-- Sliding Forms Wrap -->
-        <div class="w-full relative overflow-hidden h-[340px]" id="forms-wrapper">
-            <!-- Form 1: Sign In -->
-            <form id="signin-form" class="w-full space-y-5 absolute top-0 left-0 transition-transform duration-500 ease-out" onsubmit="handleAuthSubmit(event, 'signin')">
-                <div class="space-y-1.5">
-                    <label class="text-xs font-bold text-on-surface-variant/80 uppercase tracking-widest pl-1" for="signin-email">Email Address</label>
-                    <div class="relative flex items-center">
-                        <span class="material-symbols-outlined absolute left-4 text-on-surface-variant text-[20px]">alternate_email</span>
-                        <input class="w-full pl-12 pr-4 py-3.5 rounded-2xl glass-input text-sm font-semibold border-white/40 focus:ring-2 focus:ring-primary/20" id="signin-email" placeholder="name@domain.com" required type="email"/>
+            <!-- Footer Toggle Area -->
+            <div class="w-full border-t border-white/20 mt-6 pt-4 text-center space-y-4">
+                <p class="text-xs text-on-surface-variant font-bold" id="toggle-container">
+                    New to MindHaven? 
+                    <button class="text-primary hover:underline ml-1 font-extrabold focus:outline-none" onclick="toggleAuthMode('signup')" type="button">Create account</button>
+                </p>
+
+                <!-- Guest / Hackathon Demo Login -->
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-white/20"></div></div>
+                    <div class="relative flex justify-center">
+                        <span class="px-3 text-[10px] font-bold uppercase tracking-widest" style="background:rgba(252,249,248,0.4);color:#49445499">or</span>
                     </div>
                 </div>
 
-                <div class="space-y-1.5">
-                    <div class="flex justify-between items-center pl-1">
-                        <label class="text-xs font-bold text-on-surface-variant/80 uppercase tracking-widest" for="signin-password">Password</label>
-                        <a class="text-xs font-bold text-primary hover:underline" href="#">Forgot Password?</a>
-                    </div>
-                    <div class="relative flex items-center">
-                        <span class="material-symbols-outlined absolute left-4 text-on-surface-variant text-[20px]">lock</span>
-                        <input class="w-full pl-12 pr-4 py-3.5 rounded-2xl glass-input text-sm font-semibold border-white/40 focus:ring-2 focus:ring-primary/20" id="signin-password" placeholder="••••••••" required type="password"/>
-                    </div>
-                </div>
-
-                <div class="flex items-center pl-1">
-                    <input class="rounded text-primary focus:ring-primary/20 border-white/40 bg-white/20 w-4 h-4 cursor-pointer" id="remember-me" type="checkbox"/>
-                    <label class="text-xs font-bold text-on-surface-variant/80 ml-2 cursor-pointer" for="remember-me">Keep me signed in</label>
-                </div>
-
-                <button class="w-full pill-3d py-4 text-white font-bold text-sm rounded-2xl flex items-center justify-center gap-2 group mt-2" type="submit">
-                    <span class="material-symbols-outlined text-[18px]">verified_user</span>
-                    Sign In
+                <button onclick="guestLogin()" type="button"
+                    class="w-full py-3.5 rounded-2xl border font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 hover:bg-white/50"
+                    style="background:rgba(255,255,255,0.3);border-color:rgba(107,56,212,0.25);color:#6b38d4">
+                    <span class="material-symbols-outlined text-lg" style="font-variation-settings:'FILL' 1">badge</span>
+                    Continue as Guest (Demo Mode)
                 </button>
-            </form>
-
-            <!-- Form 2: Sign Up (Initally translated out) -->
-            <form id="signup-form" class="w-full space-y-5 absolute top-0 left-0 transition-transform duration-500 ease-out translate-x-full" onsubmit="handleAuthSubmit(event, 'signup')">
-                <div class="space-y-1.5">
-                    <label class="text-xs font-bold text-on-surface-variant/80 uppercase tracking-widest pl-1" for="signup-name">Full Name</label>
-                    <div class="relative flex items-center">
-                        <span class="material-symbols-outlined absolute left-4 text-on-surface-variant text-[20px]">person</span>
-                        <input class="w-full pl-12 pr-4 py-3.5 rounded-2xl glass-input text-sm font-semibold border-white/40 focus:ring-2 focus:ring-primary/20" id="signup-name" placeholder="John Doe" type="text"/>
-                    </div>
-                </div>
-
-                <div class="space-y-1.5">
-                    <label class="text-xs font-bold text-on-surface-variant/80 uppercase tracking-widest pl-1" for="signup-email">Email Address</label>
-                    <div class="relative flex items-center">
-                        <span class="material-symbols-outlined absolute left-4 text-on-surface-variant text-[20px]">alternate_email</span>
-                        <input class="w-full pl-12 pr-4 py-3.5 rounded-2xl glass-input text-sm font-semibold border-white/40 focus:ring-2 focus:ring-primary/20" id="signup-email" placeholder="name@domain.com" type="email"/>
-                    </div>
-                </div>
-
-                <div class="space-y-1.5">
-                    <label class="text-xs font-bold text-on-surface-variant/80 uppercase tracking-widest pl-1" for="signup-password">Create Password</label>
-                    <div class="relative flex items-center">
-                        <span class="material-symbols-outlined absolute left-4 text-on-surface-variant text-[20px]">lock_reset</span>
-                        <input class="w-full pl-12 pr-4 py-3.5 rounded-2xl glass-input text-sm font-semibold border-white/40 focus:ring-2 focus:ring-primary/20" id="signup-password" placeholder="At least 6 characters" type="password"/>
-                    </div>
-                </div>
-
-                <button class="w-full pill-3d py-4 text-white font-bold text-sm rounded-2xl flex items-center justify-center gap-2 group mt-2" type="submit">
-                    <span class="material-symbols-outlined text-[18px]">add_circle</span>
-                    Create Account
-                </button>
-            </form>
-        </div>
-
-        <!-- Footer Toggle Area -->
-        <div class="w-full border-t border-white/20 mt-6 pt-4 text-center space-y-4">
-            <p class="text-xs text-on-surface-variant font-bold" id="toggle-container">
-                New to MindHaven? 
-                <button class="text-primary hover:underline ml-1 font-extrabold focus:outline-none" onclick="toggleAuthMode('signup')" type="button">Create account</button>
-            </p>
-
-            <!-- Guest / Hackathon Demo Login -->
-            <div class="relative">
-                <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-white/20"></div></div>
-                <div class="relative flex justify-center">
-                    <span class="px-3 text-[10px] font-bold uppercase tracking-widest" style="background:rgba(252,249,248,0.4);color:#49445499">or</span>
-                </div>
+                <p class="text-[10px] font-medium" style="color:#49445480">Hackathon judges: click above for instant access with sample data</p>
             </div>
-
-            <button onclick="guestLogin()" type="button"
-                class="w-full py-3.5 rounded-2xl border font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 hover:bg-white/50"
-                style="background:rgba(255,255,255,0.3);border-color:rgba(107,56,212,0.25);color:#6b38d4">
-                <span class="material-symbols-outlined text-lg" style="font-variation-settings:'FILL' 1">badge</span>
-                Continue as Guest (Demo Mode)
-            </button>
-            <p class="text-[10px] font-medium" style="color:#49445480">Hackathon judges: click above for instant access with sample data</p>
         </div>
-    </div>
+    </main>
 
     <!-- Footer -->
-    <footer class="w-full text-center py-4 relative z-10 mt-6">
+    <footer class="w-full text-center py-4 relative z-10">
         <p class="text-xs text-on-surface-variant/60 font-semibold">
             made with love by kritika ghosh 🪻
         </p>
