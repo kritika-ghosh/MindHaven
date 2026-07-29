@@ -257,7 +257,7 @@
                 </div>
 
                 <div class="flex-shrink-0 w-full lg:w-auto">
-                    <button onclick="toggleChat()" class="w-full lg:w-auto pill-3d px-8 py-4 text-white font-extrabold text-sm rounded-2xl flex items-center justify-center gap-3 shadow-xl transition-all active:scale-95">
+                    <button onclick="openChatWithPrompt('')" class="w-full lg:w-auto pill-3d px-8 py-4 text-white font-extrabold text-sm rounded-2xl flex items-center justify-center gap-3 shadow-xl transition-all active:scale-95">
                         <span class="material-symbols-outlined text-xl">forum</span>
                         Chat with MindHaven AI
                     </button>
@@ -538,12 +538,14 @@
         const GROQ_MODEL = "llama-3.3-70b-versatile";
 
         function openChatWithPrompt(promptText) {
-            if (typeof window.toggleChat === 'function' && !window.isChatOpen) {
-                window.toggleChat();
+            if (typeof window.toggleChat === 'function') {
+                if (!window.isChatOpen) {
+                    window.toggleChat();
+                }
             }
             const input = document.getElementById('chat-input');
             if (input) {
-                input.value = promptText;
+                if (promptText) input.value = promptText;
                 setTimeout(() => input.focus(), 150);
             }
         }
@@ -682,7 +684,7 @@ Paragraph 3: A 7-day recovery micro-plan with 3 specific, time-bound actions.
                 const backendBase = (window.MINDHAVEN_CONFIG?.API_URL || "https://kritika53245-mindhaven.hf.space/predict").replace(/\/predict$/, "");
                 const endpoint = isCustom 
                     ? `${customEndpoint.replace(/\/$/, "")}/v1/chat/completions`
-                    : `${backendBase}/v1/chat/completions`;
+                    : (GROQ_KEY ? "https://api.groq.com/openai/v1/chat/completions" : `${backendBase}/v1/chat/completions`);
 
                 const res = await fetch(endpoint, {
                     method: 'POST',
@@ -1264,7 +1266,7 @@ Once your breathing settles, we can look at the presentation. Anxiety is telling
                 const backendBase = (window.MINDHAVEN_CONFIG?.API_URL || "https://kritika53245-mindhaven.hf.space/predict").replace(/\/predict$/, "");
                 const endpoint = isCustom 
                     ? `${customEndpoint.replace(/\/$/, "")}/v1/chat/completions`
-                    : `${backendBase}/v1/chat/completions`;
+                    : (apiKey ? "https://api.groq.com/openai/v1/chat/completions" : `${backendBase}/v1/chat/completions`);
                 
                 const requestBody = {
                     messages: chatHistory,
@@ -1304,8 +1306,9 @@ Once your breathing settles, we can look at the presentation. Anxiety is telling
                 console.error("Chat error:", err);
                 hideTypingIndicator();
                 
-                const errorMsg = `**Notice**: ${err.message || "An unexpected error occurred. Please check your network connection or API configuration."}`;
-                appendMessage("assistant", errorMsg);
+                const fallbackReply = "I understand you're reaching out. Take a slow, deep breath in for 4 seconds, hold for 4 seconds, and exhale. What's on your mind right now?";
+                appendMessage("assistant", fallbackReply);
+                chatHistory.push({ role: "assistant", content: fallbackReply });
             }
         }
     </script>

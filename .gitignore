@@ -1,3 +1,4 @@
 frontend/js/config.js
 .vercel
 .env*.local
+artifacts/
