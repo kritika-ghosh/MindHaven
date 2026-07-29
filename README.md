@@ -172,7 +172,7 @@ MindHaven replaces qualitative self-assessments with a late-fusion continuous re
 
 | Category | Feature Name | Description | Mathematical / Logic Source |
 | :--- | :--- | :--- | :--- |
-| **Psychometrics** | `Q1_inv`, `Q4_inv`, `Q5_inv` | Inverted survey questions (Exhaustion, Pride, Outcomes) | $\text{Q\_inv} = 4 - \text{Q\_raw}$ |
+| **Psychometrics** | `Q1_inv`, `Q4_inv`, `Q5_inv` | Inverted survey questions (Exhaustion, Pride, Outcomes) | $\text{Q}_{\text{inv}} = 4 - \text{Q}_{\text{raw}}$ |
 | **Psychometrics** | `Q2`, `Q3` | Direct Likert scale responses (Overwhelm, Stress) | Raw scale $[0 - 4]$ |
 | **Computer Vision** | `Avg_EAR`, `Std_EAR` | Mean & standard deviation of Eye Aspect Ratio | Blinking dynamics & drowsiness |
 | **Computer Vision** | `Avg_MAR`, `Std_MAR` | Mean & standard deviation of Mouth Aspect Ratio | Jaw tension & yawning frequency |
